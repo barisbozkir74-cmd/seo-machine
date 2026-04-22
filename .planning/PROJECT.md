@@ -12,15 +12,13 @@ Her website projesi için sıfırdan açılıp kurgulanan, tüm kararları kayde
 
 ### Validated
 
-(None yet — ship to validate)
+#### Project Core (Validated in Phase 2: project-core — 2026-04-22)
+- [x] Yeni proje oluşturma (ad, domain, sektör, hedef ülke/dil, iş modeli, site tipi, marka tonu, rakipler, notlar)
+- [x] Proje bazlı hafıza — tüm kararlar, stage geçmişi ve kurallar kalıcı olarak kaydedilir
+- [x] Tüm projelerin görüntülendiği merkezi proje paneli
+- [x] Her proje için 10 aşamalı stage engine (Intake → Discovery → Keyword Strategy → Blueprint → Page Planning → Page Package → Content → Audit → Launch Prep → Post-Launch)
 
 ### Active
-
-#### Project Core
-- [ ] Yeni proje oluşturma (ad, domain, sektör, hedef ülke/dil, iş modeli, site tipi, marka tonu, rakipler, notlar)
-- [ ] Proje bazlı hafıza — tüm kararlar, stage geçmişi ve kurallar kalıcı olarak kaydedilir
-- [ ] Tüm projelerin görüntülendiği merkezi proje paneli
-- [ ] Her proje için 10 aşamalı stage engine (Intake → Discovery → Keyword Strategy → Blueprint → Page Planning → Page Package → Content → Audit → Launch Prep → Post-Launch)
 
 #### Research & Intelligence
 - [ ] Rakip toplama ve kaydetme
