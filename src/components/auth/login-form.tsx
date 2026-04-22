@@ -23,9 +23,7 @@ import {
   FormItem,
   FormMessage,
 } from '@/components/ui/form'
-
-// TODO: implement in Plan 04
-// import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/client'
 
 const loginSchema = z.object({
   email: z
@@ -56,23 +54,26 @@ export function LoginForm() {
 
   async function onSubmit(values: LoginFormValues) {
     setAuthError(null)
-    try {
-      // TODO: implement in Plan 04
-      // const supabase = createClient()
-      // const { error } = await supabase.auth.signInWithPassword({
-      //   email: values.email,
-      //   password: values.password,
-      // })
-      // if (error) {
-      //   setAuthError('Incorrect email or password. Check your credentials and try again.')
-      //   return
-      // }
-      // router.push('/dashboard')
-      console.log('Login stub — implement in Plan 04', values)
-      router.push('/dashboard')
-    } catch {
-      setAuthError('Something went wrong. Please try again.')
+    const supabase = createClient()
+    const { error } = await supabase.auth.signInWithPassword({
+      email: values.email,
+      password: values.password,
+    })
+
+    if (error) {
+      let message = 'Something went wrong. Please try again.'
+      if (
+        error.message.toLowerCase().includes('invalid login credentials') ||
+        error.message.toLowerCase().includes('invalid email or password')
+      ) {
+        message = 'Incorrect email or password. Check your credentials and try again.'
+      }
+      setAuthError(message)
+      return
     }
+
+    router.push('/dashboard')
+    router.refresh()
   }
 
   return (
@@ -124,11 +125,11 @@ export function LoginForm() {
                 </FormItem>
               )}
             />
+            {authError && (
+              <p className="text-sm text-destructive text-center mb-2">{authError}</p>
+            )}
           </CardContent>
           <CardFooter className="flex flex-col gap-3">
-            {authError && (
-              <p className="text-sm text-destructive text-center">{authError}</p>
-            )}
             <Button
               type="submit"
               className="w-full h-11"

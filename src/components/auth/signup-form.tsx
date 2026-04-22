@@ -23,9 +23,7 @@ import {
   FormItem,
   FormMessage,
 } from '@/components/ui/form'
-
-// TODO: implement in Plan 04
-// import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/client'
 
 const signupSchema = z.object({
   email: z
@@ -56,27 +54,26 @@ export function SignupForm() {
 
   async function onSubmit(values: SignupFormValues) {
     setAuthError(null)
-    try {
-      // TODO: implement in Plan 04
-      // const supabase = createClient()
-      // const { error } = await supabase.auth.signUp({
-      //   email: values.email,
-      //   password: values.password,
-      // })
-      // if (error) {
-      //   if (error.message.toLowerCase().includes('already')) {
-      //     setAuthError('An account with this email already exists. Sign in instead.')
-      //   } else {
-      //     setAuthError('Something went wrong. Please try again.')
-      //   }
-      //   return
-      // }
-      // router.push('/dashboard')
-      console.log('Signup stub — implement in Plan 04', values)
-      router.push('/dashboard')
-    } catch {
-      setAuthError('Something went wrong. Please try again.')
+    const supabase = createClient()
+    const { error } = await supabase.auth.signUp({
+      email: values.email,
+      password: values.password,
+    })
+
+    if (error) {
+      let message = 'Something went wrong. Please try again.'
+      if (
+        error.message.toLowerCase().includes('already registered') ||
+        error.message.toLowerCase().includes('already exists')
+      ) {
+        message = 'An account with this email already exists. Sign in instead.'
+      }
+      setAuthError(message)
+      return
     }
+
+    router.push('/dashboard')
+    router.refresh()
   }
 
   return (
@@ -128,11 +125,11 @@ export function SignupForm() {
                 </FormItem>
               )}
             />
+            {authError && (
+              <p className="text-sm text-destructive text-center mb-2">{authError}</p>
+            )}
           </CardContent>
           <CardFooter className="flex flex-col gap-3">
-            {authError && (
-              <p className="text-sm text-destructive text-center">{authError}</p>
-            )}
             <Button
               type="submit"
               className="w-full h-11"
