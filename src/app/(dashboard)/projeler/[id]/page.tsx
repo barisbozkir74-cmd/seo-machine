@@ -6,6 +6,7 @@ import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Tick02Icon, RadioButtonIcon, CircleIcon } from '@hugeicons/core-free-icons'
+import { StageTransition } from './stage-transition'
 
 type Stage = {
   id: string
@@ -54,6 +55,8 @@ export default async function ProjeDetayPage({
     .order('created_at', { ascending: true })
 
   const stageList = (stages ?? []) as Stage[]
+  const activeStage = stageList.find((s) => s.status === 'active') ?? null
+  const isLastStage = stageList.length > 0 && stageList.every((s) => s.status === 'completed')
 
   return (
     <div className="flex flex-col h-screen">
@@ -184,10 +187,16 @@ export default async function ProjeDetayPage({
 
           <Separator className="my-8" />
 
-          {/* Stage geçiş butonu — Plan 02-05 tarafından doldurulacak placeholder */}
-          <div>
-            {/* 02-05-PLAN tarafından StageTransitionButton buraya eklenecek */}
-          </div>
+          {/* Stage geçiş butonu */}
+          <StageTransition
+            projectId={project.id}
+            activeStage={
+              activeStage
+                ? { id: activeStage.id, stage_name: activeStage.stage_name }
+                : null
+            }
+            isLastStage={isLastStage}
+          />
         </div>
       </div>
     </div>
