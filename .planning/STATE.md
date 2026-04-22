@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: "Phase 1 Plan 02 complete — Plan 03 (RLS policies + Vault) is next"
-last_updated: "2026-04-22T13:57:06Z"
-last_activity: "2026-04-22 — Phase 01 Plan 02 completed (all 10 core DB tables migration)"
+status: checkpoint
+stopped_at: "Plan 03 Task 2 — awaiting user: run supabase db push to apply migrations to hosted Supabase"
+last_updated: "2026-04-22T14:10:00Z"
+last_activity: "2026-04-22 — Plan 03 Task 1 complete (RLS policies migration + Vault helper). Awaiting supabase db push."
 progress:
   total_phases: 8
   completed_phases: 0
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-22)
 
 **Core value:** Her website projesi için sıfırdan açılıp kurgulanan, tüm kararları kaydeden ve stage bazlı ilerleyen tek merkezi proje yönetim sistemi
-**Current focus:** Phase 01-foundation — Plan 03 (RLS policies + Vault API key storage)
+**Current focus:** Phase 01-foundation — Plan 03 Task 2 (CHECKPOINT: user must push migrations to hosted Supabase)
 
 ## Current Position
 
-Phase: 01-foundation — EXECUTING
+Phase: 01-foundation — CHECKPOINT
 Plan: 3 of 4
-Status: Plan 02 complete. Ready for Plan 03 (RLS policies + Vault).
-Last activity: 2026-04-22 — Plan 02 completed (all 10 core database tables: projects, stages, rules, competitors, keywords, keyword_clusters, pages, internal_links, audits, workflow_runs)
+Status: Plan 03 Task 1 complete. BLOCKING checkpoint: user must run `npx supabase db push`.
+Last activity: 2026-04-22 — RLS policies (20260422000002_rls_policies.sql) and Vault helper (lib/supabase/vault.ts) committed at 65a0321.
 
-Progress: [████░░░░░░] 50% (2/4 Phase 1 plans complete)
+Progress: [████░░░░░░] 50% (2/4 Phase 1 plans complete — Plan 03 partial, awaiting push)
 
 ## Performance Metrics
 
@@ -48,7 +48,7 @@ Progress: [████░░░░░░] 50% (2/4 Phase 1 plans complete)
 
 **Recent Trend:**
 
-- Last 5 plans: 01-01 (14 min), 01-02 (6 min)
+- Last 5 plans: 01-01 (14 min), 01-02 (6 min), 01-03 partial (8 min)
 - Trend: improving
 
 *Updated after each plan completion*
@@ -71,15 +71,17 @@ Recent decisions affecting current work:
 - Tables created in dependency order to resolve circular FK (keywords <-> keyword_clusters)
 - rules.project_id nullable: NULL = global rule, non-NULL = project-scoped (supports RULE-03)
 - Performance indexes added for all project_id, user_id FKs per T-02-04 threat model
+- RLS UPDATE policies use both USING and WITH CHECK — prevents user_id tampering (T-03-04)
+- lib/supabase/vault.ts is server-only; SUPABASE_SERVICE_ROLE_KEY never NEXT_PUBLIC_ (T-03-01, T-03-03)
 
 ### Pending Todos
 
-- Plan 03: RLS policies + Vault helper for API keys
+- Plan 03 Task 2: User must run `npx supabase db push` (BLOCKING checkpoint)
 - Plan 04: @supabase/ssr auth clients, middleware, wire forms to Supabase
 
 ### Blockers/Concerns
 
-None.
+- BLOCKING: supabase db push required by user before Plan 03 can be marked complete and Plan 04 can start
 
 ## Deferred Items
 
@@ -91,5 +93,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-04-22
-Stopped at: Phase 1 Plan 02 complete — Plan 03 (RLS policies + Vault) is next
-Resume file: .planning/phases/01-foundation/01-03-PLAN.md
+Stopped at: Plan 03 Task 2 — checkpoint:human-action — user must run supabase db push
+Resume file: .planning/phases/01-foundation/01-03-PLAN.md (Task 2 — resume after push confirmed)
