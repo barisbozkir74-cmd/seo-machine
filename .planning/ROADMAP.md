@@ -13,7 +13,7 @@ This roadmap delivers the Decision OS MVP in 8 focused phases. Starting from a b
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation** - Supabase schema, auth, RLS, and API key security (completed 2026-04-22)
-- [ ] **Phase 2: Project Core** - Project creation, central dashboard, stage engine, decision memory
+- [x] **Phase 2: Project Core** - Project creation, central dashboard, stage engine, decision memory (completed 2026-04-22)
 - [ ] **Phase 3: Rules Engine** - Global and project-scoped SEO rules that govern all downstream production
 - [ ] **Phase 4: Competitor Intelligence** - Manual and automated competitor tracking with gap/opportunity reports
 - [ ] **Phase 5: Keyword Import & Enrichment** - CSV/manual keyword entry with DataForSEO enrichment
@@ -54,10 +54,10 @@ Plans:
 Plans:
 - [x] 02-01-PLAN.md — shadcn bileşenleri kurulumu (dialog, table, badge, textarea, separator) (completed 2026-04-22)
 - [x] 02-02-PLAN.md — Projeler listesi dashboard sayfası (/dashboard/projeler — tablo + boş durum) (completed 2026-04-22)
-- [ ] 02-03-PLAN.md — Yeni proje modal + Server Action + Zod validasyon (projects + 10 stages INSERT)
-- [ ] 02-04-PLAN.md — Proje detay sayfası 2 sütunlu layout + stage listesi (/dashboard/projeler/[id])
-- [ ] 02-05-PLAN.md — Stage geçiş mantığı + onay dialogu (advanceStage Server Action)
-- [ ] 02-06-PLAN.md — Karar hafızası — not formu + audits tablosu (addNote Server Action)
+- [x] 02-03-PLAN.md — Yeni proje modal + Server Action + Zod validasyon (projects + 10 stages INSERT)
+- [x] 02-04-PLAN.md — Proje detay sayfası 2 sütunlu layout + stage listesi (/dashboard/projeler/[id])
+- [x] 02-05-PLAN.md — Stage geçiş mantığı + onay dialogu (advanceStage Server Action)
+- [x] 02-06-PLAN.md — Karar hafızası — not formu + audits tablosu (addNote Server Action)
 **UI hint**: yes
 
 ### Phase 3: Rules Engine
@@ -136,7 +136,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 4/4 | Complete | 2026-04-22 |
-| 2. Project Core | 2/6 | In progress | - |
+| 2. Project Core | 6/6 | Complete    | 2026-04-22 |
 | 3. Rules Engine | 0/? | Not started | - |
 | 4. Competitor Intelligence | 0/? | Not started | - |
 | 5. Keyword Import & Enrichment | 0/? | Not started | - |
