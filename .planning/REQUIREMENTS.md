@@ -23,7 +23,8 @@
 **: Her proje 10 aşamalı stage engine üzerinde ilerler: Intake → Discovery → Keyword Strategy → Site Blueprint → Page Planning → Page Package → Content Production → SEO Audit → Launch Prep → Post-Launch
 - [x] **PROJ-04
 **: Kullanıcı aktif stage'i görebilir ve bir sonraki stage'e geçiş aksiyonunu başlatabilir
-- [ ] **PROJ-05**: Sistem proje bazlı kararları ve notları kalıcı olarak kaydeder (Decision Memory)
+- [x] **PROJ-05
+**: Sistem proje bazlı kararları ve notları kalıcı olarak kaydeder (Decision Memory)
 
 ### Rules Engine
 

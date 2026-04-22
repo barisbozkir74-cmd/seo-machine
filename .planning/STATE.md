@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Completed 02-05-PLAN.md — Stage geçiş mantığı + onay dialogu
-last_updated: "2026-04-22T22:13:49.485Z"
+status: verifying
+stopped_at: "Completed 02-06-PLAN.md — Karar hafızası: not formu + audits tablosu"
+last_updated: "2026-04-22T22:17:59.488Z"
 last_activity: 2026-04-22
 progress:
   total_phases: 8
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 10
-  completed_plans: 9
-  percent: 90
+  completed_plans: 10
+  percent: 100
 ---
 
 # Project State
@@ -27,10 +27,10 @@ See: .planning/PROJECT.md (updated 2026-04-22)
 
 Phase: --phase (2) — EXECUTING
 Plan: 6 of 6 (02-03 next)
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-22
 
-Progress: [█████████░] 90%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -56,6 +56,7 @@ Progress: [█████████░] 90%
 | Phase 02-project-core P02-03 | 12 | 2 tasks | 3 files |
 | Phase 02-project-core P02-04 | 8 | 1 tasks | 1 files |
 | Phase 02-project-core P02-05 | 12 | 2 tasks | 3 files |
+| Phase 02-project-core P02-06 | 8 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -92,6 +93,9 @@ Recent decisions affecting current work:
 - maybeSingle() kullanıldı: .single() son stage'de hata fırlatır, maybeSingle() null döner — isLastStage tespiti doğru çalışır
 - DialogTrigger render prop pattern: base-ui asChild desteklemiyor — render={<Button />} eşdeğer davranış sağlar
 - isLastStage: stageList.length > 0 && every completed — boş liste yanlışlıkla tamamlandı göstermez
+- addNote stage doğrulaması: stages sorgusunda id+project_id+user_id üçlüsü — ownership garantisi
+- user çekimi page.tsx üstüne alındı: tek getUser() çağrısı hem auth hem notes sorgusu için
+- audits tablosu not formatı: event_type='note', entity_type='stage', entity_id=stageId, payload={content}
 
 ### Pending Todos
 
@@ -110,6 +114,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-22T22:13:49.479Z
-Stopped at: Completed 02-05-PLAN.md — Stage geçiş mantığı + onay dialogu
+Last session: 2026-04-22T22:17:59.479Z
+Stopped at: Completed 02-06-PLAN.md — Karar hafızası: not formu + audits tablosu
 Resume file: None
