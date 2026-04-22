@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { NewProjectModal } from './new-project-modal'
 import {
   Table,
   TableBody,
@@ -38,7 +39,9 @@ export default async function ProjelerPage() {
       <main className="p-8">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-xl font-semibold">Projeler</h1>
-          <Button>Yeni Proje Oluştur</Button>
+          <NewProjectModal>
+            <Button>Yeni Proje Oluştur</Button>
+          </NewProjectModal>
         </div>
         <p className="text-sm text-muted-foreground">
           Projeler yüklenemedi. Lütfen sayfayı yenileyin.
@@ -71,7 +74,9 @@ export default async function ProjelerPage() {
     <main className="p-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl font-semibold">Projeler</h1>
-        <Button>Yeni Proje Oluştur</Button>
+        <NewProjectModal>
+          <Button>Yeni Proje Oluştur</Button>
+        </NewProjectModal>
       </div>
 
       {projelerListesi.length === 0 ? (
@@ -80,7 +85,9 @@ export default async function ProjelerPage() {
           <p className="text-sm text-muted-foreground">
             Ajansınızın ilk projesini oluşturun ve stage bazlı takibe başlayın.
           </p>
-          <Button>Yeni Proje Oluştur</Button>
+          <NewProjectModal>
+            <Button>Yeni Proje Oluştur</Button>
+          </NewProjectModal>
         </div>
       ) : (
         <Table>
