@@ -10,7 +10,7 @@
 ### Infrastructure & Auth
 
 - [ ] **INFR-01**: Kullanıcı email ve şifre ile giriş yapabilir ve oturumu tarayıcı yenilemesinde devam eder *(UI scaffolded in 01-01; auth wiring in 01-04)*
-- [ ] **INFR-02**: Supabase Postgres şeması (projects, stages, competitors, keywords, keyword_clusters, pages, internal_links, rules, audits, workflow_runs) kurulur
+- [x] **INFR-02**: Supabase Postgres şeması (projects, stages, competitors, keywords, keyword_clusters, pages, internal_links, rules, audits, workflow_runs) kurulur *(completed in 01-02)*
 - [ ] **INFR-03**: API key'ler (DataForSEO, Semrush, OpenAI) Supabase secrets üzerinden güvenli saklanır; hiçbiri frontend'e sızmaz
 - [ ] **INFR-04**: Supabase RLS politikaları kullanıcıyı sadece kendi projelerine erişebilecek şekilde kısıtlar
 
@@ -112,7 +112,7 @@
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | INFR-01 | Phase 1 | In Progress (UI done in 01-01, auth wired in 01-04) |
-| INFR-02 | Phase 1 | Pending |
+| INFR-02 | Phase 1 | Complete (01-02) |
 | INFR-03 | Phase 1 | Pending |
 | INFR-04 | Phase 1 | Pending |
 | PROJ-01 | Phase 2 | Pending |
@@ -147,4 +147,4 @@
 
 ---
 *Requirements defined: 2026-04-22*
-*Last updated: 2026-04-22 after roadmap creation*
+*Last updated: 2026-04-22 after 01-02 completion (INFR-02 marked complete)*
