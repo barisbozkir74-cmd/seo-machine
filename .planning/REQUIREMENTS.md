@@ -109,44 +109,42 @@
 
 ## Traceability
 
-*(Roadmap oluşturulunca doldurulacak)*
-
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INFR-01 | — | Pending |
-| INFR-02 | — | Pending |
-| INFR-03 | — | Pending |
-| INFR-04 | — | Pending |
-| PROJ-01 | — | Pending |
-| PROJ-02 | — | Pending |
-| PROJ-03 | — | Pending |
-| PROJ-04 | — | Pending |
-| PROJ-05 | — | Pending |
-| RULE-01 | — | Pending |
-| RULE-02 | — | Pending |
-| RULE-03 | — | Pending |
-| COMP-01 | — | Pending |
-| COMP-02 | — | Pending |
-| COMP-03 | — | Pending |
-| COMP-04 | — | Pending |
-| KEYW-01 | — | Pending |
-| KEYW-02 | — | Pending |
-| KEYW-03 | — | Pending |
-| KEYW-04 | — | Pending |
-| KEYW-05 | — | Pending |
-| KEYW-06 | — | Pending |
-| KEYW-07 | — | Pending |
-| BLUE-01 | — | Pending |
-| BLUE-02 | — | Pending |
-| BLUE-03 | — | Pending |
-| BLUE-04 | — | Pending |
-| BLUE-05 | — | Pending |
+| INFR-01 | Phase 1 | Pending |
+| INFR-02 | Phase 1 | Pending |
+| INFR-03 | Phase 1 | Pending |
+| INFR-04 | Phase 1 | Pending |
+| PROJ-01 | Phase 2 | Pending |
+| PROJ-02 | Phase 2 | Pending |
+| PROJ-03 | Phase 2 | Pending |
+| PROJ-04 | Phase 2 | Pending |
+| PROJ-05 | Phase 2 | Pending |
+| RULE-01 | Phase 3 | Pending |
+| RULE-02 | Phase 3 | Pending |
+| RULE-03 | Phase 3 | Pending |
+| COMP-01 | Phase 4 | Pending |
+| COMP-02 | Phase 4 | Pending |
+| COMP-03 | Phase 4 | Pending |
+| COMP-04 | Phase 4 | Pending |
+| KEYW-01 | Phase 5 | Pending |
+| KEYW-02 | Phase 5 | Pending |
+| KEYW-03 | Phase 5 | Pending |
+| KEYW-04 | Phase 6 | Pending |
+| KEYW-05 | Phase 6 | Pending |
+| KEYW-06 | Phase 6 | Pending |
+| KEYW-07 | Phase 6 | Pending |
+| BLUE-01 | Phase 7 | Pending |
+| BLUE-02 | Phase 7 | Pending |
+| BLUE-03 | Phase 7 | Pending |
+| BLUE-04 | Phase 8 | Pending |
+| BLUE-05 | Phase 8 | Pending |
 
 **Coverage:**
 - v1 requirements: 28 total
-- Mapped to phases: 0 (roadmap pending)
-- Unmapped: 28 ⚠️
+- Mapped to phases: 28/28
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-22*
-*Last updated: 2026-04-22 after initial definition*
+*Last updated: 2026-04-22 after roadmap creation*
