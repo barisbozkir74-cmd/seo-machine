@@ -34,7 +34,7 @@ export async function seedGlobalRules(): Promise<void> {
   } = await supabase.auth.getUser()
   if (!user) return
 
-  await supabase.from('rules').upsert(
+  const { error } = await supabase.from('rules').upsert(
     GLOBAL_RULES_SEED.map((rule) => ({
       user_id: user.id,
       project_id: null,
@@ -42,8 +42,12 @@ export async function seedGlobalRules(): Promise<void> {
       rule_key: rule.rule_key,
       rule_value: rule.rule_value,
     })),
-    { onConflict: 'user_id,rule_key,scope' }
+    { onConflict: 'user_id,project_id,rule_key,scope' }
   )
+
+  if (error) {
+    console.error('[seedGlobalRules] upsert failed:', error.message)
+  }
 }
 
 export async function toggleRule(
