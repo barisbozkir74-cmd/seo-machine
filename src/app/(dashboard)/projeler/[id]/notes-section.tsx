@@ -34,6 +34,8 @@ export function NotesSection({ stageId, projectId, initialNotes }: NotesSectionP
       } else {
         setError(result.error)
       }
+    } catch {
+      setError('Bağlantı hatası. Lütfen tekrar deneyin.')
     } finally {
       setIsPending(false)
     }
