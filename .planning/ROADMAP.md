@@ -32,7 +32,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. All core database tables exist (projects, stages, competitors, keywords, keyword_clusters, pages, internal_links, rules, audits, workflow_runs)
   3. API keys for DataForSEO, Semrush, and OpenAI are stored in Supabase secrets and are never exposed to the browser
   4. A logged-in user cannot read or modify another user's project data (RLS enforcement verified)
-**Plans**: TBD
+**Plans**: 4 plans
+Plans:
+- [x] 01-01-PLAN.md — Next.js scaffold, shadcn/ui dark theme, login/signup UI pages (completed 2026-04-22)
+- [ ] 01-02-PLAN.md — All 10 database tables migration (projects, stages, competitors, keywords, keyword_clusters, pages, internal_links, rules, audits, workflow_runs)
+- [ ] 01-03-PLAN.md — RLS policies for all tables + supabase db push + Vault helper for API keys
+- [ ] 01-04-PLAN.md — @supabase/ssr auth clients, middleware route protection, wire forms to Supabase auth
 **UI hint**: yes
 
 ### Phase 2: Project Core
@@ -123,7 +128,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/? | Not started | - |
+| 1. Foundation | 1/4 | Executing | - |
 | 2. Project Core | 0/? | Not started | - |
 | 3. Rules Engine | 0/? | Not started | - |
 | 4. Competitor Intelligence | 0/? | Not started | - |
