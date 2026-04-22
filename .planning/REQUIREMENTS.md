@@ -32,7 +32,7 @@
 **: Kullanıcı proje bazlı SEO kuralları tanımlayabilir (örn: SEO title focus keyword ile başlasın mı, H1 exact match olsun mu, slug exact match olsun mu)
 - [x] **RULE-02
 **: Kural seti panelden güncellenebilir; sistem güncel kuralları sonraki üretimlerde uygular
-- [ ] **RULE-03**: Global (tüm projeler) ve proje bazlı kurallar birbirinden ayrılır; proje kuralı global kuralı ezer
+- [x] **RULE-03**: Global (tüm projeler) ve proje bazlı kurallar birbirinden ayrılır; proje kuralı global kuralı ezer
 
 ### Competitor Intelligence
 
@@ -126,9 +126,9 @@
 | PROJ-03 | Phase 2 | Complete |
 | PROJ-04 | Phase 2 | Complete |
 | PROJ-05 | Phase 2 | Complete |
-| RULE-01 | Phase 3 | Pending |
-| RULE-02 | Phase 3 | Pending |
-| RULE-03 | Phase 3 | Pending |
+| RULE-01 | Phase 3 | Complete |
+| RULE-02 | Phase 3 | Complete |
+| RULE-03 | Phase 3 | Complete |
 | COMP-01 | Phase 4 | Pending |
 | COMP-02 | Phase 4 | Pending |
 | COMP-03 | Phase 4 | Pending |
