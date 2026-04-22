@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 2 Plan 02 complete — projeler listesi dashboard sayfası
-last_updated: "2026-04-22T22:18:00.000Z"
-last_activity: 2026-04-22 — 02-02-PLAN.md executed (projeler page, dashboard redirect)
+stopped_at: Completed 02-03-PLAN.md — Yeni proje modal + Server Action + Zod validasyon
+last_updated: "2026-04-22T22:06:33.307Z"
+last_activity: 2026-04-22
 progress:
   total_phases: 8
   completed_phases: 1
   total_plans: 10
-  completed_plans: 4
-  percent: 40
+  completed_plans: 7
+  percent: 70
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-04-22)
 ## Current Position
 
 Phase: --phase (2) — EXECUTING
-Plan: 3 of 6 (02-03 next)
-Status: Executing Phase 2
-Last activity: 2026-04-22 — 02-02 completed (/dashboard/projeler sayfası, dashboard redirect)
+Plan: 4 of 6 (02-03 next)
+Status: Ready to execute
+Last activity: 2026-04-22
 
-Progress: [██████████] 100% Phase 1 complete | Phase 2: [██░░░░] 2/6 plans complete
+Progress: [███████░░░] 70%
 
 ## Performance Metrics
 
@@ -53,6 +53,7 @@ Progress: [██████████] 100% Phase 1 complete | Phase 2: [█
 - Trend: stable
 
 *Updated after each plan completion*
+| Phase 02-project-core P02-03 | 12 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -81,6 +82,9 @@ Recent decisions affecting current work:
 - Supabase nested relation sorgusu .select('*, stages(stage_name, status)') ile JOIN yerine ilişki sorgusu kullanıldı
 - Badge renk ataması className ile direkt CSS — variant prop kullanılmıyor (UI-SPEC zorunluluğu)
 - dashboard/page.tsx stub'ı sync redirect ile değiştirildi — async Supabase çağrısı gereksizdi
+- DialogTrigger render prop — @base-ui/react asChild desteklemiyor, render prop eşdeğer davranış sağlıyor
+- Zod şeması server ve client'ta ayrı tanımlandı — bağımsız bundle'lar için
+- Stages INSERT başarısız olursa orphan project DELETE ile temizleniyor
 
 ### Pending Todos
 
@@ -99,6 +103,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-22T22:18:00Z
-Stopped at: 02-02 complete — 02-03 (Yeni proje modal) sonraki
-Resume file: .planning/phases/02-project-core/02-03-PLAN.md
+Last session: 2026-04-22T22:06:33.298Z
+Stopped at: Completed 02-03-PLAN.md — Yeni proje modal + Server Action + Zod validasyon
+Resume file: None

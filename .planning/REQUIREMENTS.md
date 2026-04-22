@@ -16,7 +16,8 @@
 
 ### Project Core
 
-- [ ] **PROJ-01**: Kullanıcı yeni proje oluşturabilir (ad, domain, sektör, hedef ülke, hedef dil, iş modeli, site tipi, marka tonu, rakipler, notlar, özel kurallar)
+- [x] **PROJ-01
+**: Kullanıcı yeni proje oluşturabilir (ad, domain, sektör, hedef ülke, hedef dil, iş modeli, site tipi, marka tonu, rakipler, notlar, özel kurallar)
 - [ ] **PROJ-02**: Kullanıcı tüm projelerini merkezi panelden görebilir (liste + durum bilgisi)
 - [ ] **PROJ-03**: Her proje 10 aşamalı stage engine üzerinde ilerler: Intake → Discovery → Keyword Strategy → Site Blueprint → Page Planning → Page Package → Content Production → SEO Audit → Launch Prep → Post-Launch
 - [ ] **PROJ-04**: Kullanıcı aktif stage'i görebilir ve bir sonraki stage'e geçiş aksiyonunu başlatabilir
