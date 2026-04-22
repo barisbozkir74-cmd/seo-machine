@@ -43,12 +43,15 @@ export default async function ProjeDetayPage({
     data: { user },
   } = await supabase.auth.getUser()
 
+  if (!user) notFound()
+
   const { data: project } = await supabase
     .from('projects')
     .select(
       'id, name, domain, sector, target_country, target_language, business_model, site_type, brand_tone, notes, created_at'
     )
     .eq('id', id)
+    .eq('user_id', user.id)
     .single()
 
   if (!project) notFound()
@@ -57,6 +60,7 @@ export default async function ProjeDetayPage({
     .from('stages')
     .select('id, stage_name, status, started_at, completed_at')
     .eq('project_id', id)
+    .eq('user_id', user.id)
     .order('created_at', { ascending: true })
 
   const stageList = (stages ?? []) as Stage[]
