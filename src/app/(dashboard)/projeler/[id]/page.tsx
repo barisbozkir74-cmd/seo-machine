@@ -80,7 +80,7 @@ export default async function ProjeDetayPage({
       {/* Breadcrumb + başlık */}
       <div className="p-8 pb-4">
         <Link
-          href="/dashboard/projeler"
+          href="/projeler"
           className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 mb-4"
         >
           ← Projeler

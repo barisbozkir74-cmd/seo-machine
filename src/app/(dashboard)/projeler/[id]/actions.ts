@@ -69,7 +69,7 @@ export async function advanceStage(
     isLastStage = true
   }
 
-  revalidatePath(`/dashboard/projeler/${projectId}`)
+  revalidatePath(`/projeler/${projectId}`)
   return { success: true, isLastStage }
 }
 
@@ -126,6 +126,6 @@ export async function addNote(
     return { success: false, error: 'Not kaydedilemedi. Lütfen tekrar deneyin.' }
   }
 
-  revalidatePath(`/dashboard/projeler/${projectId}`)
+  revalidatePath(`/projeler/${projectId}`)
   return { success: true }
 }

@@ -101,6 +101,6 @@ export async function createProject(
   }
 
   // 5. Revalidate and return
-  revalidatePath('/dashboard/projeler')
+  revalidatePath('/projeler')
   return { success: true, projectId: project.id }
 }

@@ -123,7 +123,7 @@ export default async function ProjelerPage() {
                 >
                   <TableCell>
                     <Link
-                      href={`/dashboard/projeler/${proje.id}`}
+                      href={`/projeler/${proje.id}`}
                       className="hover:underline font-medium"
                     >
                       {proje.name}
