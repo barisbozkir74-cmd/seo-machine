@@ -68,7 +68,11 @@ Plans:
   1. User can define project-level SEO rules (e.g., whether SEO title must start with focus keyword, whether H1 must be exact match, whether slug must be exact match)
   2. User can edit any rule from the dashboard and the change is persisted immediately
   3. A project-level rule overrides the global default for that project; projects without a custom rule fall back to the global rule
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 03-01-PLAN.md — Switch bileşeni + seedGlobalRules + toggleRule actions + global kurallar sayfası (/ayarlar/kurallar)
+- [ ] 03-02-PLAN.md — RuleToggleRow Client Component + toggleProjectRule/resetProjectRule actions + global sayfa wire-up
+- [ ] 03-03-PLAN.md — Proje kuralları sayfası (/projeler/[id]/kurallar) + dashboard nav + proje detay sol sütun linki
 **UI hint**: yes
 
 ### Phase 4: Competitor Intelligence
@@ -137,7 +141,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 |-------|----------------|--------|-----------|
 | 1. Foundation | 4/4 | Complete | 2026-04-22 |
 | 2. Project Core | 6/6 | Complete    | 2026-04-22 |
-| 3. Rules Engine | 0/? | Not started | - |
+| 3. Rules Engine | 0/3 | Not started | - |
 | 4. Competitor Intelligence | 0/? | Not started | - |
 | 5. Keyword Import & Enrichment | 0/? | Not started | - |
 | 6. Keyword Clustering & Scoring | 0/? | Not started | - |

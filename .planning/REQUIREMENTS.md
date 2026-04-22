@@ -28,8 +28,10 @@
 
 ### Rules Engine
 
-- [ ] **RULE-01**: Kullanıcı proje bazlı SEO kuralları tanımlayabilir (örn: SEO title focus keyword ile başlasın mı, H1 exact match olsun mu, slug exact match olsun mu)
-- [ ] **RULE-02**: Kural seti panelden güncellenebilir; sistem güncel kuralları sonraki üretimlerde uygular
+- [x] **RULE-01
+**: Kullanıcı proje bazlı SEO kuralları tanımlayabilir (örn: SEO title focus keyword ile başlasın mı, H1 exact match olsun mu, slug exact match olsun mu)
+- [x] **RULE-02
+**: Kural seti panelden güncellenebilir; sistem güncel kuralları sonraki üretimlerde uygular
 - [ ] **RULE-03**: Global (tüm projeler) ve proje bazlı kurallar birbirinden ayrılır; proje kuralı global kuralı ezer
 
 ### Competitor Intelligence
