@@ -74,13 +74,13 @@ Exceptions: Touch targets on interactive elements must be minimum 44px height (a
 | Role | Size | Weight | Line Height | Usage |
 |------|------|--------|-------------|-------|
 | Body | 16px | 400 (regular) | 1.5 | Input placeholder, helper text, descriptive copy |
-| Label | 14px | 500 (medium) | 1.4 | Form field labels, error messages |
+| Label | 14px | 600 (semibold) | 1.4 | Form field labels, error messages |
 | Heading | 24px | 600 (semibold) | 1.2 | Page heading ("Sign in to SEO Machine") |
 | Display | 14px | 400 (regular) | 1.5 | Footer link copy ("Don't have an account?") |
 
 Font family: `Inter, ui-sans-serif, system-ui, -apple-system, sans-serif`
 
-Maximum 2 weights in use per screen: 400 (regular) for body/display and 600 (semibold) for headings. Labels use 500 only because shadcn ships this; treat it as part of the "semibold tier" visually.
+Declared weights: 400 (regular) for body/display and 600 (semibold) for labels/headings. Implementation caveat: shadcn ships some internal elements at weight 500 — this is acceptable at the CSS level, but the contract declares only 2 weights and the executor must not introduce weight 500 as an explicit design choice.
 
 ---
 
@@ -99,6 +99,8 @@ Palette is Slate-based (shadcn default Slate). Dark mode is the primary mode for
 | Foreground | `--foreground` | `#f8fafc` (Slate 50) | Primary text on dark background |
 
 Accent (`--primary`) is reserved for: submit button only (one per page). No other interactive element uses the accent color. Links use `--muted-foreground` underlined, not accent.
+
+**Primary visual anchor:** The primary visual focal point on each auth screen is the submit button — the single element using `--primary` accent on a dark canvas. Everything else recedes into Slate 900/950 surfaces.
 
 **60/30/10 breakdown:**
 - 60% `--background`: page canvas
