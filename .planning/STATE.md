@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in-progress
-stopped_at: "Plan 03 complete — ready for Plan 04"
-last_updated: "2026-04-22T15:30:00Z"
-last_activity: "2026-04-22 — Plan 03 complete. Migrations applied to hosted Supabase (ref: jmailuedcajgidfzigof) via supabase db push."
+stopped_at: "Phase 01-foundation complete — all 4 plans done"
+last_updated: "2026-04-22T16:00:00Z"
+last_activity: "2026-04-22 — Plan 04 complete. @supabase/ssr auth clients, middleware, wired forms, dashboard stub all delivered. INFR-01 satisfied."
 progress:
   total_phases: 8
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 4
-  completed_plans: 3
-  percent: 75
+  completed_plans: 4
+  percent: 100
 ---
 
 # Project State
@@ -21,35 +21,35 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-22)
 
 **Core value:** Her website projesi için sıfırdan açılıp kurgulanan, tüm kararları kaydeden ve stage bazlı ilerleyen tek merkezi proje yönetim sistemi
-**Current focus:** Phase 01-foundation — Plan 04 (auth clients, middleware, wire forms to Supabase)
+**Current focus:** Phase 01-foundation COMPLETE — ready for Phase 02 (Project Core)
 
 ## Current Position
 
-Phase: 01-foundation — in progress
-Plan: 4 of 4 (next)
-Status: Plan 03 complete. Both migrations applied to hosted Supabase (ref: jmailuedcajgidfzigof). Ready for Plan 04.
-Last activity: 2026-04-22 — Plan 03 complete: supabase db push confirmed by user.
+Phase: 01-foundation — COMPLETE
+Plan: 4 of 4 (done)
+Status: All 4 plans complete. Auth foundation fully delivered. INFR-01 satisfied.
+Last activity: 2026-04-22 — Plan 04 complete: Supabase auth clients, middleware, forms wired, dashboard stub.
 
-Progress: [███████░░░] 75% (3/4 Phase 1 plans complete)
+Progress: [██████████] 100% (4/4 Phase 1 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 2
-- Average duration: 10 min
-- Total execution time: 0.33 hours
+- Total plans completed: 4
+- Average duration: 11 min
+- Total execution time: 0.73 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01-foundation | 3/4 | 28 min | ~9 min |
+| 01-foundation | 4/4 | 43 min | ~11 min |
 
 **Recent Trend:**
 
-- Last 5 plans: 01-01 (14 min), 01-02 (6 min), 01-03 partial (8 min)
-- Trend: improving
+- Last 5 plans: 01-01 (14 min), 01-02 (6 min), 01-03 (8 min), 01-04 (15 min)
+- Trend: stable
 
 *Updated after each plan completion*
 
@@ -66,31 +66,35 @@ Recent decisions affecting current work:
 - shadcn v4 uses @base-ui/react (not @radix-ui) — form.tsx must be created manually in future plans if needed
 - Tailwind v4 is CSS-first (no tailwind.config.ts) — all theme customization via CSS custom properties in globals.css
 - Dark mode enforced statically via html className="dark" — no theme toggle needed for internal tool
-- Route structure: app/(auth)/ for public auth pages, app/(dashboard)/ for protected pages (Plan 04+)
-- Supabase auth calls stubbed in forms until Plan 04 wires @supabase/ssr browser client
+- Route structure: app/(auth)/ for public auth pages, app/(dashboard)/ for protected pages
+- Supabase client files at src/lib/supabase/ (not root lib/) — @/* alias maps to src/*
+- middleware.ts at project root (not inside src/) — Next.js convention
 - Tables created in dependency order to resolve circular FK (keywords <-> keyword_clusters)
 - rules.project_id nullable: NULL = global rule, non-NULL = project-scoped (supports RULE-03)
 - Performance indexes added for all project_id, user_id FKs per T-02-04 threat model
 - RLS UPDATE policies use both USING and WITH CHECK — prevents user_id tampering (T-03-04)
 - lib/supabase/vault.ts is server-only; SUPABASE_SERVICE_ROLE_KEY never NEXT_PUBLIC_ (T-03-01, T-03-03)
+- Auth error messages unified for login (T-04-01) — "Incorrect email or password..." does not reveal email existence
+- Dashboard layout has server-side auth guard independent of middleware (T-04-03 defense-in-depth)
+- router.push + router.refresh() pattern after auth (forces session cookie propagation)
 
 ### Pending Todos
 
-- Plan 04: @supabase/ssr auth clients, middleware, wire forms to Supabase
+None — Phase 01-foundation complete. Ready for Phase 02 (Project Core).
 
 ### Blockers/Concerns
 
-None — Plan 03 complete, migrations confirmed on hosted Supabase.
+None.
 
 ## Deferred Items
 
 | Category | Item | Status | Deferred At |
 |----------|------|--------|-------------|
-| Auth | Supabase signInWithPassword/signUp in login-form.tsx and signup-form.tsx | Intentional stub | Plan 01 |
-| Config | supabase start (requires Docker) | User must run manually | Plan 01 |
+| Config | supabase start (requires Docker) | User must run manually if using local dev | Plan 01 |
+| Dashboard UI | Full dashboard is a stub showing email only | Intentional — Phase 2 builds real UI | Plan 04 |
 
 ## Session Continuity
 
 Last session: 2026-04-22
-Stopped at: Plan 03 complete — user confirmed supabase db push success (ref: jmailuedcajgidfzigof)
-Resume file: .planning/phases/01-foundation/01-04-PLAN.md
+Stopped at: Phase 01-foundation complete — all 4 plans done
+Resume file: Next phase plan (Phase 02)

@@ -12,7 +12,7 @@ This roadmap delivers the Decision OS MVP in 8 focused phases. Starting from a b
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Foundation** - Supabase schema, auth, RLS, and API key security
+- [x] **Phase 1: Foundation** - Supabase schema, auth, RLS, and API key security (completed 2026-04-22)
 - [ ] **Phase 2: Project Core** - Project creation, central dashboard, stage engine, decision memory
 - [ ] **Phase 3: Rules Engine** - Global and project-scoped SEO rules that govern all downstream production
 - [ ] **Phase 4: Competitor Intelligence** - Manual and automated competitor tracking with gap/opportunity reports
@@ -37,7 +37,7 @@ Plans:
 - [x] 01-01-PLAN.md — Next.js scaffold, shadcn/ui dark theme, login/signup UI pages (completed 2026-04-22)
 - [x] 01-02-PLAN.md — All 10 database tables migration (projects, stages, competitors, keywords, keyword_clusters, pages, internal_links, rules, audits, workflow_runs) (completed 2026-04-22)
 - [x] 01-03-PLAN.md — RLS policies for all tables + supabase db push + Vault helper for API keys (completed 2026-04-22)
-- [ ] 01-04-PLAN.md — @supabase/ssr auth clients, middleware route protection, wire forms to Supabase auth
+- [x] 01-04-PLAN.md — @supabase/ssr auth clients, middleware route protection, wire forms to Supabase auth (completed 2026-04-22)
 **UI hint**: yes
 
 ### Phase 2: Project Core
@@ -128,7 +128,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 2/4 | Executing | - |
+| 1. Foundation | 4/4 | Complete | 2026-04-22 |
 | 2. Project Core | 0/? | Not started | - |
 | 3. Rules Engine | 0/? | Not started | - |
 | 4. Competitor Intelligence | 0/? | Not started | - |
