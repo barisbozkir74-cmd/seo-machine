@@ -4,13 +4,12 @@ import { createClient } from '@/lib/supabase/server'
 import {
   Table,
   TableBody,
-  TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { seedGlobalRules } from './actions'
-// RuleToggleRow Plan 03-02'de eklenecek — şimdi sadece tablo satırını statik render et
+import { seedGlobalRules, toggleRule } from './actions'
+import { RuleToggleRow } from '@/components/rules/RuleToggleRow'
 
 const RULE_META: Record<string, { label: string; recommended: boolean; category: string }> = {
   title_starts_with_keyword: { label: 'SEO title focus keyword ile başlamalı', recommended: true, category: 'SEO Title' },
@@ -87,13 +86,16 @@ export default async function GlobalKurallarPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="text-xs font-normal uppercase text-muted-foreground w-24">
+                      Kapsam
+                    </TableHead>
                     <TableHead className="text-xs font-normal uppercase text-muted-foreground">
                       Kural
                     </TableHead>
                     <TableHead className="text-xs font-normal uppercase text-muted-foreground w-48">
                       Önerilen
                     </TableHead>
-                    <TableHead className="text-xs font-normal uppercase text-muted-foreground w-16">
+                    <TableHead className="text-xs font-normal uppercase text-muted-foreground w-16 text-right">
                       Durum
                     </TableHead>
                   </TableRow>
@@ -101,21 +103,16 @@ export default async function GlobalKurallarPage() {
                 <TableBody>
                   {categoryRules.map(([ruleKey, meta]) => {
                     const currentValue = ruleValues[ruleKey] ?? meta.recommended
-                    const matchesRecommended = currentValue === meta.recommended
                     return (
                       <TableRow key={ruleKey}>
-                        <TableCell className="text-sm">{meta.label}</TableCell>
-                        <TableCell>
-                          <span className={matchesRecommended ? 'text-xs text-muted-foreground' : 'text-xs text-amber-400'}>
-                            Önerilen: {meta.recommended ? 'Açık' : 'Kapalı'}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          {/* Plan 03-02'de RuleToggleRow ile değiştirilecek */}
-                          <span className="text-xs text-muted-foreground">
-                            {currentValue ? 'Açık' : 'Kapalı'}
-                          </span>
-                        </TableCell>
+                        <RuleToggleRow
+                          ruleKey={ruleKey}
+                          label={meta.label}
+                          currentValue={currentValue}
+                          recommendedValue={meta.recommended}
+                          scope="global"
+                          toggleAction={toggleRule}
+                        />
                       </TableRow>
                     )
                   })}
