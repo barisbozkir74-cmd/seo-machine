@@ -53,7 +53,7 @@ Plans:
 **Plans**: 6 plans
 Plans:
 - [x] 02-01-PLAN.md — shadcn bileşenleri kurulumu (dialog, table, badge, textarea, separator) (completed 2026-04-22)
-- [ ] 02-02-PLAN.md — Projeler listesi dashboard sayfası (/dashboard/projeler — tablo + boş durum)
+- [x] 02-02-PLAN.md — Projeler listesi dashboard sayfası (/dashboard/projeler — tablo + boş durum) (completed 2026-04-22)
 - [ ] 02-03-PLAN.md — Yeni proje modal + Server Action + Zod validasyon (projects + 10 stages INSERT)
 - [ ] 02-04-PLAN.md — Proje detay sayfası 2 sütunlu layout + stage listesi (/dashboard/projeler/[id])
 - [ ] 02-05-PLAN.md — Stage geçiş mantığı + onay dialogu (advanceStage Server Action)
@@ -136,7 +136,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 4/4 | Complete | 2026-04-22 |
-| 2. Project Core | 1/6 | In progress | - |
+| 2. Project Core | 2/6 | In progress | - |
 | 3. Rules Engine | 0/? | Not started | - |
 | 4. Competitor Intelligence | 0/? | Not started | - |
 | 5. Keyword Import & Enrichment | 0/? | Not started | - |

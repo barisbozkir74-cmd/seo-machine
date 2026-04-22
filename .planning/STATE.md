@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 2 Plan 01 complete — shadcn bileşenleri kurulumu
-last_updated: "2026-04-22T22:05:00.000Z"
-last_activity: 2026-04-22 — 02-01-PLAN.md executed (shadcn components)
+stopped_at: Phase 2 Plan 02 complete — projeler listesi dashboard sayfası
+last_updated: "2026-04-22T22:18:00.000Z"
+last_activity: 2026-04-22 — 02-02-PLAN.md executed (projeler page, dashboard redirect)
 progress:
   total_phases: 8
   completed_phases: 1
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-04-22)
 ## Current Position
 
 Phase: --phase (2) — EXECUTING
-Plan: 2 of 6 (02-02 next)
+Plan: 3 of 6 (02-03 next)
 Status: Executing Phase 2
-Last activity: 2026-04-22 — 02-01 completed (shadcn dialog, table, badge, textarea, separator)
+Last activity: 2026-04-22 — 02-02 completed (/dashboard/projeler sayfası, dashboard redirect)
 
-Progress: [██████████] 100% Phase 1 complete | Phase 2: [█░░░░░] 1/6 plans complete
+Progress: [██████████] 100% Phase 1 complete | Phase 2: [██░░░░] 2/6 plans complete
 
 ## Performance Metrics
 
@@ -78,10 +78,13 @@ Recent decisions affecting current work:
 - Auth error messages unified for login (T-04-01) — "Incorrect email or password..." does not reveal email existence
 - Dashboard layout has server-side auth guard independent of middleware (T-04-03 defense-in-depth)
 - router.push + router.refresh() pattern after auth (forces session cookie propagation)
+- Supabase nested relation sorgusu .select('*, stages(stage_name, status)') ile JOIN yerine ilişki sorgusu kullanıldı
+- Badge renk ataması className ile direkt CSS — variant prop kullanılmıyor (UI-SPEC zorunluluğu)
+- dashboard/page.tsx stub'ı sync redirect ile değiştirildi — async Supabase çağrısı gereksizdi
 
 ### Pending Todos
 
-02-02: Projeler listesi dashboard sayfası — sonraki plan.
+02-03: Yeni proje modal + Server Action + Zod validasyon — sonraki plan.
 
 ### Blockers/Concerns
 
@@ -92,10 +95,10 @@ None.
 | Category | Item | Status | Deferred At |
 |----------|------|--------|-------------|
 | Config | supabase start (requires Docker) | User must run manually if using local dev | Plan 01 |
-| Dashboard UI | Full dashboard is a stub showing email only | Intentional — Phase 2 builds real UI | Plan 04 |
+| Dashboard UI | Full dashboard is a stub showing email only | RESOLVED — 02-02 ile /dashboard/projeler sayfası oluşturuldu | Plan 04 |
 
 ## Session Continuity
 
-Last session: --stopped-at
-Stopped at: Phase 2 context gathered
-Resume file: --resume-file
+Last session: 2026-04-22T22:18:00Z
+Stopped at: 02-02 complete — 02-03 (Yeni proje modal) sonraki
+Resume file: .planning/phases/02-project-core/02-03-PLAN.md
