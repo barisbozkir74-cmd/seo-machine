@@ -72,3 +72,60 @@ export async function advanceStage(
   revalidatePath(`/dashboard/projeler/${projectId}`)
   return { success: true, isLastStage }
 }
+
+export type AddNoteResult =
+  | { success: true }
+  | { success: false; error: string }
+
+export async function addNote(
+  stageId: string,
+  projectId: string,
+  content: string
+): Promise<AddNoteResult> {
+  // 1. Validate content
+  if (!content || content.trim().length === 0) {
+    return { success: false, error: 'Not içeriği boş olamaz.' }
+  }
+  if (content.length > 5000) {
+    return { success: false, error: 'Not en fazla 5000 karakter olabilir.' }
+  }
+
+  // 2. Authenticate
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) {
+    return { success: false, error: 'Oturum bulunamadı.' }
+  }
+
+  // 3. Verify stage ownership (T-02-06-01)
+  const { data: stage } = await supabase
+    .from('stages')
+    .select('id')
+    .eq('id', stageId)
+    .eq('project_id', projectId)
+    .eq('user_id', user.id)
+    .single()
+
+  if (!stage) {
+    return { success: false, error: 'Aşama bulunamadı.' }
+  }
+
+  // 4. Insert note into audits
+  const { error } = await supabase.from('audits').insert({
+    project_id: projectId,
+    user_id: user.id,
+    event_type: 'note',
+    entity_type: 'stage',
+    entity_id: stageId,
+    payload: { content: content.trim() },
+  })
+
+  if (error) {
+    return { success: false, error: 'Not kaydedilemedi. Lütfen tekrar deneyin.' }
+  }
+
+  revalidatePath(`/dashboard/projeler/${projectId}`)
+  return { success: true }
+}

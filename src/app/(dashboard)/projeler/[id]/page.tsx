@@ -38,6 +38,10 @@ export default async function ProjeDetayPage({
   const { id } = await params
   const supabase = await createClient()
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
   const { data: project } = await supabase
     .from('projects')
     .select(
@@ -57,6 +61,18 @@ export default async function ProjeDetayPage({
   const stageList = (stages ?? []) as Stage[]
   const activeStage = stageList.find((s) => s.status === 'active') ?? null
   const isLastStage = stageList.length > 0 && stageList.every((s) => s.status === 'completed')
+
+  // Aktif stage için geçmiş notları server'da çek (T-02-06-04: explicit user_id filter)
+  const { data: notes } = activeStage && user
+    ? await supabase
+        .from('audits')
+        .select('id, created_at, payload')
+        .eq('entity_type', 'stage')
+        .eq('entity_id', activeStage.id)
+        .eq('project_id', project.id)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+    : { data: [] }
 
   return (
     <div className="flex flex-col h-screen">
