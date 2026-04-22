@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Tick02Icon, RadioButtonIcon, CircleIcon } from '@hugeicons/core-free-icons'
 import { StageTransition } from './stage-transition'
+import { NotesSection } from './notes-section'
 
 type Stage = {
   id: string
@@ -192,14 +193,14 @@ export default async function ProjeDetayPage({
 
           <Separator className="mb-8" />
 
-          {/* Not alanı — Plan 02-06 tarafından doldurulacak placeholder */}
-          <div>
-            <h2 className="text-base font-semibold mb-4">Notlar</h2>
-            <p className="text-sm text-muted-foreground">
-              {/* 02-06-PLAN tarafından not formu ve geçmiş notlar buraya eklenecek */}
-              Bu aşama için henüz not eklenmemiş.
-            </p>
-          </div>
+          {/* Notlar bölümü — aktif stage için not formu ve geçmiş notlar */}
+          {activeStage && (
+            <NotesSection
+              stageId={activeStage.id}
+              projectId={project.id}
+              initialNotes={(notes ?? []) as Array<{ id: string; created_at: string; payload: { content: string } }>}
+            />
+          )}
 
           <Separator className="my-8" />
 
