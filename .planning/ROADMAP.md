@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation** - Supabase schema, auth, RLS, and API key security (completed 2026-04-22)
 - [x] **Phase 2: Project Core** - Project creation, central dashboard, stage engine, decision memory (completed 2026-04-22)
-- [ ] **Phase 3: Rules Engine** - Global and project-scoped SEO rules that govern all downstream production
+- [x] **Phase 3: Rules Engine** - Global and project-scoped SEO rules that govern all downstream production (completed 2026-04-23)
 - [ ] **Phase 4: Competitor Intelligence** - Manual and automated competitor tracking with gap/opportunity reports
 - [ ] **Phase 5: Keyword Import & Enrichment** - CSV/manual keyword entry with DataForSEO enrichment
 - [ ] **Phase 6: Keyword Clustering & Scoring** - SERP-based clustering, cannibalization prevention, opportunity scoring
@@ -72,7 +72,7 @@ Plans:
 Plans:
 - [x] 03-01-PLAN.md — Switch bileşeni + seedGlobalRules + toggleRule actions + global kurallar sayfası (/ayarlar/kurallar) (completed 2026-04-23)
 - [x] 03-02-PLAN.md — RuleToggleRow Client Component + toggleProjectRule/resetProjectRule actions + global sayfa wire-up (completed 2026-04-23)
-- [ ] 03-03-PLAN.md — Proje kuralları sayfası (/projeler/[id]/kurallar) + dashboard nav + proje detay sol sütun linki
+- [x] 03-03-PLAN.md — Proje kuralları sayfası (/projeler/[id]/kurallar) + dashboard nav + proje detay sol sütun linki (completed 2026-04-23)
 **UI hint**: yes
 
 ### Phase 4: Competitor Intelligence
@@ -141,7 +141,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 |-------|----------------|--------|-----------|
 | 1. Foundation | 4/4 | Complete | 2026-04-22 |
 | 2. Project Core | 6/6 | Complete    | 2026-04-22 |
-| 3. Rules Engine | 2/3 | In progress | - |
+| 3. Rules Engine | 3/3 | Complete | 2026-04-23 |
 | 4. Competitor Intelligence | 0/? | Not started | - |
 | 5. Keyword Import & Enrichment | 0/? | Not started | - |
 | 6. Keyword Clustering & Scoring | 0/? | Not started | - |
