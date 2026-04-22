@@ -44,8 +44,6 @@ export async function seedGlobalRules(): Promise<void> {
     })),
     { onConflict: 'user_id,rule_key,scope' }
   )
-
-  revalidatePath('/ayarlar/kurallar')
 }
 
 export async function toggleRule(
