@@ -22,7 +22,7 @@ export async function advanceStage(
   }
 
   // 2. Complete current stage — only if it's active, belongs to this project and user
-  const { error: completeError } = await supabase
+  const { data: updated, error: completeError } = await supabase
     .from('stages')
     .update({
       status: 'completed',
@@ -32,8 +32,9 @@ export async function advanceStage(
     .eq('project_id', projectId)
     .eq('user_id', user.id)
     .eq('status', 'active')
+    .select('id')
 
-  if (completeError) {
+  if (completeError || !updated || updated.length === 0) {
     return { success: false, error: 'Aşama tamamlanamadı. Lütfen tekrar deneyin.' }
   }
 
