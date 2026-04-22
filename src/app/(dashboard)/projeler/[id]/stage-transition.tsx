@@ -44,7 +44,11 @@ export function StageTransition({
     }
   }
 
-  if (isLastStage || !activeStage) {
+  if (!activeStage && !isLastStage) {
+    return null
+  }
+
+  if (isLastStage) {
     return (
       <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-4">
         <p className="text-sm text-emerald-400">
