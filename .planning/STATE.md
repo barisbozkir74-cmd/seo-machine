@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-04-22)
 Phase: 1 of 8 (Foundation)
 Plan: 0 of ? in current phase
 Status: Ready to plan
-Last activity: 2026-04-22 — Roadmap created, all 28 v1 requirements mapped to 8 phases
+Last activity: 2026-04-22 — Phase 1 context gathered (App Router, @supabase/ssr, Supabase CLI local+prod, UUID PKs, hard deletes, created_at+updated_at)
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -63,5 +63,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-22
-Stopped at: Roadmap created — ready to plan Phase 1
-Resume file: None
+Stopped at: Phase 1 context gathered — ready to plan Phase 1
+Resume file: .planning/phases/01-foundation/01-CONTEXT.md
