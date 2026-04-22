@@ -36,7 +36,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 Plans:
 - [x] 01-01-PLAN.md — Next.js scaffold, shadcn/ui dark theme, login/signup UI pages (completed 2026-04-22)
 - [x] 01-02-PLAN.md — All 10 database tables migration (projects, stages, competitors, keywords, keyword_clusters, pages, internal_links, rules, audits, workflow_runs) (completed 2026-04-22)
-- [ ] 01-03-PLAN.md — RLS policies for all tables + supabase db push + Vault helper for API keys
+- [x] 01-03-PLAN.md — RLS policies for all tables + supabase db push + Vault helper for API keys (completed 2026-04-22)
 - [ ] 01-04-PLAN.md — @supabase/ssr auth clients, middleware route protection, wire forms to Supabase auth
 **UI hint**: yes
 

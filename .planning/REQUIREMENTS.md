@@ -11,8 +11,8 @@
 
 - [ ] **INFR-01**: Kullanıcı email ve şifre ile giriş yapabilir ve oturumu tarayıcı yenilemesinde devam eder *(UI scaffolded in 01-01; auth wiring in 01-04)*
 - [x] **INFR-02**: Supabase Postgres şeması (projects, stages, competitors, keywords, keyword_clusters, pages, internal_links, rules, audits, workflow_runs) kurulur *(completed in 01-02)*
-- [ ] **INFR-03**: API key'ler (DataForSEO, Semrush, OpenAI) Supabase secrets üzerinden güvenli saklanır; hiçbiri frontend'e sızmaz
-- [ ] **INFR-04**: Supabase RLS politikaları kullanıcıyı sadece kendi projelerine erişebilecek şekilde kısıtlar
+- [x] **INFR-03**: API key'ler (DataForSEO, Semrush, OpenAI) Supabase secrets üzerinden güvenli saklanır; hiçbiri frontend'e sızmaz *(completed in 01-03)*
+- [x] **INFR-04**: Supabase RLS politikaları kullanıcıyı sadece kendi projelerine erişebilecek şekilde kısıtlar *(completed in 01-03)*
 
 ### Project Core
 
@@ -113,8 +113,8 @@
 |-------------|-------|--------|
 | INFR-01 | Phase 1 | In Progress (UI done in 01-01, auth wired in 01-04) |
 | INFR-02 | Phase 1 | Complete (01-02) |
-| INFR-03 | Phase 1 | Pending |
-| INFR-04 | Phase 1 | Pending |
+| INFR-03 | Phase 1 | Complete (01-03) |
+| INFR-04 | Phase 1 | Complete (01-03) |
 | PROJ-01 | Phase 2 | Pending |
 | PROJ-02 | Phase 2 | Pending |
 | PROJ-03 | Phase 2 | Pending |
@@ -147,4 +147,4 @@
 
 ---
 *Requirements defined: 2026-04-22*
-*Last updated: 2026-04-22 after 01-02 completion (INFR-02 marked complete)*
+*Last updated: 2026-04-22 after 01-03 completion (INFR-03, INFR-04 marked complete)*

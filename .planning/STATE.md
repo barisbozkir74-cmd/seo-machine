@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: checkpoint
-stopped_at: "Plan 03 Task 2 — awaiting user: run supabase db push to apply migrations to hosted Supabase"
-last_updated: "2026-04-22T14:10:00Z"
-last_activity: "2026-04-22 — Plan 03 Task 1 complete (RLS policies migration + Vault helper). Awaiting supabase db push."
+status: in-progress
+stopped_at: "Plan 03 complete — ready for Plan 04"
+last_updated: "2026-04-22T15:30:00Z"
+last_activity: "2026-04-22 — Plan 03 complete. Migrations applied to hosted Supabase (ref: jmailuedcajgidfzigof) via supabase db push."
 progress:
   total_phases: 8
   completed_phases: 0
   total_plans: 4
-  completed_plans: 2
-  percent: 50
+  completed_plans: 3
+  percent: 75
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-22)
 
 **Core value:** Her website projesi için sıfırdan açılıp kurgulanan, tüm kararları kaydeden ve stage bazlı ilerleyen tek merkezi proje yönetim sistemi
-**Current focus:** Phase 01-foundation — Plan 03 Task 2 (CHECKPOINT: user must push migrations to hosted Supabase)
+**Current focus:** Phase 01-foundation — Plan 04 (auth clients, middleware, wire forms to Supabase)
 
 ## Current Position
 
-Phase: 01-foundation — CHECKPOINT
-Plan: 3 of 4
-Status: Plan 03 Task 1 complete. BLOCKING checkpoint: user must run `npx supabase db push`.
-Last activity: 2026-04-22 — RLS policies (20260422000002_rls_policies.sql) and Vault helper (lib/supabase/vault.ts) committed at 65a0321.
+Phase: 01-foundation — in progress
+Plan: 4 of 4 (next)
+Status: Plan 03 complete. Both migrations applied to hosted Supabase (ref: jmailuedcajgidfzigof). Ready for Plan 04.
+Last activity: 2026-04-22 — Plan 03 complete: supabase db push confirmed by user.
 
-Progress: [████░░░░░░] 50% (2/4 Phase 1 plans complete — Plan 03 partial, awaiting push)
+Progress: [███████░░░] 75% (3/4 Phase 1 plans complete)
 
 ## Performance Metrics
 
@@ -44,7 +44,7 @@ Progress: [████░░░░░░] 50% (2/4 Phase 1 plans complete — P
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01-foundation | 2/4 | 20 min | 10 min |
+| 01-foundation | 3/4 | 28 min | ~9 min |
 
 **Recent Trend:**
 
@@ -76,12 +76,11 @@ Recent decisions affecting current work:
 
 ### Pending Todos
 
-- Plan 03 Task 2: User must run `npx supabase db push` (BLOCKING checkpoint)
 - Plan 04: @supabase/ssr auth clients, middleware, wire forms to Supabase
 
 ### Blockers/Concerns
 
-- BLOCKING: supabase db push required by user before Plan 03 can be marked complete and Plan 04 can start
+None — Plan 03 complete, migrations confirmed on hosted Supabase.
 
 ## Deferred Items
 
@@ -93,5 +92,5 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-04-22
-Stopped at: Plan 03 Task 2 — checkpoint:human-action — user must run supabase db push
-Resume file: .planning/phases/01-foundation/01-03-PLAN.md (Task 2 — resume after push confirmed)
+Stopped at: Plan 03 complete — user confirmed supabase db push success (ref: jmailuedcajgidfzigof)
+Resume file: .planning/phases/01-foundation/01-04-PLAN.md

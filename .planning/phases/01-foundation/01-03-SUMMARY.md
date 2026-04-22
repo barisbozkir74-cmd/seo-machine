@@ -3,7 +3,7 @@ phase: 01-foundation
 plan: 03
 subsystem: database/security
 tags: [supabase, rls, postgres, security, vault, api-keys, server-only]
-status: partial — awaiting Task 2 (supabase db push by user)
+status: complete
 
 # Dependency graph
 requires:
@@ -43,16 +43,16 @@ completed: 2026-04-22
 
 # Phase 01 Plan 03: RLS Policies and Vault Helper Summary
 
-**STATUS: PARTIAL — Task 1 complete and committed; Task 2 (supabase db push) awaits user action**
+**STATUS: COMPLETE — Both tasks done; migrations applied to hosted Supabase project (ref: jmailuedcajgidfzigof)**
 
 **RLS enabled on all 10 tables with 4 per-user isolation policies each; server-only Vault helper created for secure API key retrieval using Supabase service role key**
 
 ## Performance
 
-- **Duration:** ~8 min (Task 1 only)
+- **Duration:** ~8 min (Task 1) + user action (Task 2)
 - **Started:** 2026-04-22
-- **Completed (Task 1):** 2026-04-22
-- **Tasks:** 1 of 2 complete (Task 2 is human-action checkpoint)
+- **Completed:** 2026-04-22
+- **Tasks:** 2 of 2 complete
 - **Files modified:** 2 created, 2 modified
 
 ## Accomplishments
@@ -69,7 +69,7 @@ completed: 2026-04-22
 ## Task Commits
 
 1. **Task 1: RLS migration and Vault helper** — `65a0321` (feat)
-2. **Task 2: Push migrations to hosted Supabase** — PENDING (human-action checkpoint)
+2. **Task 2: Push migrations to hosted Supabase** — COMPLETE (user ran `npx supabase db push` successfully; project ref: jmailuedcajgidfzigof)
 
 ## Files Created/Modified
 
