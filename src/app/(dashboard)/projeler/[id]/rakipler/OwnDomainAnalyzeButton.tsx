@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { fetchOwnDomainData } from './actions'
 
 type Props = {
   projectId: string
@@ -16,11 +17,9 @@ export function OwnDomainAnalyzeButton({ projectId, domain }: Props) {
     setIsPending(true)
     setError(null)
     try {
-      // fetchOwnDomainData DB'ye yazmaz — SSR render için veri döner
-      // Server Action import burada dynamic yapılır (server-only modülü)
-      const { fetchOwnDomainData } = await import('./actions')
+      // CR-01 FIX: fetchOwnDomainData artık projects.own_category_structure'a persist ediyor
+      // ve revalidatePath çağırıyor — reload sonrası SSR DB'den okur, sütun dolar
       await fetchOwnDomainData(projectId, domain)
-      // DB'ye yazılmadığı için revalidatePath etkisiz — sayfayı yenile
       window.location.reload()
     } catch {
       setError('Analiz başarısız. Lütfen tekrar deneyin.')
