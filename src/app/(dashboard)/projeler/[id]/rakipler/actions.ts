@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { getDataForSeoCredentials } from '@/lib/supabase/vault'
-import { fetchSerpDomains, fetchTopPages } from '@/lib/dataforseo/client'
+import { fetchSerpDomains, fetchTopPages, fetchRankedKeywords, fetchBacklinksSummary } from '@/lib/dataforseo/client'
 import { extractCategories } from '@/lib/competitors/url-categories'
 
 export type ActionResult =
@@ -112,6 +112,8 @@ export async function discoverCompetitors(
 
 // ─── COMP-02: Seçilen rakipleri toplu ekle (SERP keşif onayından sonra) ───────
 
+const MAX_DOMAINS = 20
+
 export async function addCompetitors(
   projectId: string,
   domains: string[]
@@ -134,15 +136,28 @@ export async function addCompetitors(
     return { success: false, error: 'En az bir domain seçin.' }
   }
 
-  const rows = domains.map((d) => ({
-    user_id: user.id,
-    project_id: projectId,
-    domain: d.replace(/^www\./, '').trim(),
-    source: 'serp' as const,
-  }))
+  // CR-02: Maksimum domain sayısı kontrolü
+  if (domains.length > MAX_DOMAINS) {
+    return { success: false, error: `Maksimum ${MAX_DOMAINS} rakip aynı anda eklenebilir.` }
+  }
 
-  // ignoreDuplicates: true — aynı domain tekrar eklenirse hata verme
-  const { error } = await supabase.from('competitors').insert(rows)
+  const rows = domains
+    .filter((d) => d.trim().length > 0 && d.length <= 253) // CR-02: RFC 1035 max
+    .map((d) => ({
+      user_id: user.id,
+      project_id: projectId,
+      domain: d.replace(/^www\./, '').trim(),
+      source: 'serp' as const,
+    }))
+
+  if (!rows.length) {
+    return { success: false, error: 'Geçerli domain bulunamadı.' }
+  }
+
+  // WR-01: upsert with ignoreDuplicates — aynı domain tekrar eklenirse hata verme
+  const { error } = await supabase
+    .from('competitors')
+    .upsert(rows, { onConflict: 'project_id,domain', ignoreDuplicates: true })
 
   if (error) {
     return { success: false, error: 'Rakipler eklenemedi. Lütfen tekrar deneyin.' }
@@ -195,12 +210,19 @@ export async function fetchCompetitorData(
     // URL pattern analizi ile kategori çıkarımı (D-05)
     const categoryStructure = extractCategories(pages)
 
+    // COMP-03: content_areas — "Diğer" hariç içerik konu alanları
+    const contentAreas: typeof categoryStructure = {}
+    for (const [cat, data] of Object.entries(categoryStructure)) {
+      if (cat !== 'Diğer') contentAreas[cat] = data
+    }
+
     // competitors tablosuna JSONB UPDATE (D-07)
     const { error } = await supabase
       .from('competitors')
       .update({
         top_pages: topPages,
         category_structure: categoryStructure,
+        content_areas: contentAreas,
         updated_at: new Date().toISOString(),
       })
       .eq('id', competitorId)
@@ -218,12 +240,99 @@ export async function fetchCompetitorData(
   }
 }
 
-// ─── D-10: Kullanıcı domain'i için kategori yapısı çek (DB'ye yazılmaz) ────────
+// ─── Rakip silme ──────────────────────────────────────────────────────────────
+
+export async function deleteCompetitor(
+  competitorId: string,
+  projectId: string
+): Promise<ActionResult> {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Oturum bulunamadı.' }
+
+  const isOwner = await verifyProjectOwnership(supabase, projectId, user.id)
+  if (!isOwner) return { success: false, error: 'Proje bulunamadı.' }
+
+  const { error } = await supabase
+    .from('competitors')
+    .delete()
+    .eq('id', competitorId)
+    .eq('project_id', projectId)
+    .eq('user_id', user.id)
+
+  if (error) return { success: false, error: 'Rakip silinemedi.' }
+
+  revalidatePath(`/projeler/${projectId}/rakipler`)
+  return { success: true }
+}
+
+// ─── SEO detay verisi: ranked keywords + backlinks ───────────────────────────
+
+export async function fetchCompetitorSeoData(
+  competitorId: string,
+  projectId: string
+): Promise<ActionResult> {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Oturum bulunamadı.' }
+
+  const { data: competitor } = await supabase
+    .from('competitors')
+    .select('id, domain')
+    .eq('id', competitorId)
+    .eq('project_id', projectId)
+    .eq('user_id', user.id)
+    .single()
+
+  if (!competitor) return { success: false, error: 'Rakip bulunamadı.' }
+
+  try {
+    const credentials = await getDataForSeoCredentials()
+
+    const [keywordsRaw, backlinks] = await Promise.all([
+      fetchRankedKeywords(competitor.domain, credentials),
+      fetchBacklinksSummary(competitor.domain, credentials),
+    ])
+
+    const ranked_keywords = keywordsRaw.map((item) => ({
+      keyword: item.keyword,
+      position: item.ranked_serp_element?.serp_item?.rank_absolute ?? null,
+      search_volume: item.keyword_data?.keyword_info?.search_volume ?? 0,
+      etv: item.keyword_data?.impressions_info?.etv ?? 0,
+      cpc: item.keyword_data?.keyword_info?.cpc ?? 0,
+    }))
+
+    const { error } = await supabase
+      .from('competitors')
+      .update({ ranked_keywords, backlinks_summary: backlinks, updated_at: new Date().toISOString() })
+      .eq('id', competitorId)
+      .eq('user_id', user.id)
+
+    if (error) return { success: false, error: 'Veri kaydedilemedi.' }
+
+    revalidatePath(`/projeler/${projectId}/rakipler/${competitorId}`)
+    return { success: true }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Bilinmeyen hata'
+    return { success: false, error: `SEO verisi çekme başarısız: ${message}` }
+  }
+}
+
+// ─── D-10: Kullanıcı domain'i için kategori yapısı çek ve DB'ye persist et ────
 
 export async function fetchOwnDomainData(
   projectId: string,
   domain: string
 ): Promise<Record<string, number> | null> {
+  // WR-03: null/boş domain guard
+  if (!domain || domain.trim() === '' || domain === 'null') return null
+
   const supabase = await createClient()
 
   const {
@@ -231,7 +340,6 @@ export async function fetchOwnDomainData(
   } = await supabase.auth.getUser()
   if (!user) return null
 
-  // Ownership check — sadece kendi projesini analiz edebilir
   const { data: project } = await supabase
     .from('projects')
     .select('id')
@@ -242,21 +350,25 @@ export async function fetchOwnDomainData(
 
   try {
     const credentials = await getDataForSeoCredentials()
-
-    // relevant_pages endpoint — lokasyon bağımsız (Q2 RESOLVED)
     const pages = await fetchTopPages(domain, credentials)
-
-    // URL pattern analizi ile kategori → sayfa sayısı haritası
     const categoryStructure = extractCategories(pages)
 
-    // Record<string, number>: kategori → pageCount (SSR render için yeterli)
     const result: Record<string, number> = {}
     for (const [cat, data] of Object.entries(categoryStructure)) {
       result[cat] = data.pageCount
     }
 
+    // CR-01 FIX: Sonucu DB'ye persist et — OwnDomainAnalyzeButton artık no-op değil
+    await supabase
+      .from('projects')
+      .update({ own_category_structure: result })
+      .eq('id', projectId)
+      .eq('user_id', user.id)
+
+    revalidatePath(`/projeler/${projectId}/rakipler`)
     return result
-  } catch {
+  } catch (err) {
+    console.error('[fetchOwnDomainData] DataForSEO error:', err)
     return null
   }
 }
