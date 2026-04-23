@@ -63,13 +63,16 @@ export async function toggleRule(
     return { success: false, error: 'Oturum bulunamadı.' }
   }
 
-  const { error } = await supabase
-    .from('rules')
-    .update({ rule_value: String(newValue) })
-    .eq('rule_key', ruleKey)
-    .eq('user_id', user.id)
-    .eq('scope', 'global')
-    .is('project_id', null)
+  const { error } = await supabase.from('rules').upsert(
+    {
+      user_id: user.id,
+      project_id: null,
+      scope: 'global' as const,
+      rule_key: ruleKey,
+      rule_value: String(newValue),
+    },
+    { onConflict: 'user_id,project_id,rule_key,scope' }
+  )
 
   if (error) {
     return { success: false, error: 'Kural güncellenemedi. Lütfen tekrar deneyin.' }
