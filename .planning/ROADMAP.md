@@ -84,7 +84,11 @@ Plans:
   2. After providing target keywords, the system automatically identifies competitors from SERP data via DataForSEO and adds them to the list
   3. For each competitor, user can view their top pages, category structure, and content topic areas
   4. System generates a gap and opportunity report showing where competitors are weak and which keyword areas can be entered quickly
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [x] 04-01-PLAN.md — Lib katmanı: vault.ts + dataforseo/client.ts + url-categories.ts + proje detay sol sütun Rakipler linki (completed 2026-04-23)
+- [x] 04-02-PLAN.md — Server Actions: addCompetitor, discoverCompetitors, addCompetitors, fetchCompetitorData (completed 2026-04-23)
+- [ ] 04-03-PLAN.md — Rakipler sayfası UI: page.tsx + CompetitorDiscoveryDialog + CompetitorFetchButton + gap raporu tablosu
 **UI hint**: yes
 
 ### Phase 5: Keyword Import & Enrichment
@@ -142,7 +146,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 1. Foundation | 4/4 | Complete | 2026-04-22 |
 | 2. Project Core | 6/6 | Complete    | 2026-04-22 |
 | 3. Rules Engine | 3/3 | Complete | 2026-04-23 |
-| 4. Competitor Intelligence | 0/? | Not started | - |
+| 4. Competitor Intelligence | 2/3 | In Progress | - |
 | 5. Keyword Import & Enrichment | 0/? | Not started | - |
 | 6. Keyword Clustering & Scoring | 0/? | Not started | - |
 | 7. Site Blueprint & Tree | 0/? | Not started | - |
