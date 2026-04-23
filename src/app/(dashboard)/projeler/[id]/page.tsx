@@ -164,8 +164,14 @@ export default async function ProjeDetayPage({
               </li>
             ))}
           </ul>
-          {/* Proje Kuralları — Separator + nav linki (Phase 3) */}
+          {/* Proje araçları — Separator + nav linkleri (Phase 3+) */}
           <Separator className="my-4" />
+          <Link
+            href={`/projeler/${id}/rakipler`}
+            className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 px-3 py-2 rounded-md hover:bg-secondary"
+          >
+            Rakipler
+          </Link>
           <Link
             href={`/projeler/${id}/kurallar`}
             className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 px-3 py-2 rounded-md hover:bg-secondary"
