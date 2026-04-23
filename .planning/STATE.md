@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: planning
-stopped_at: Phase 4 context gathered — Competitor Intelligence
-last_updated: "2026-04-23T00:45:00Z"
+status: completed
+stopped_at: Completed 04-01-PLAN.md — DataForSEO Lib Katmanı ve Navigasyon
+last_updated: "2026-04-23T01:21:04.153Z"
 last_activity: 2026-04-23
 progress:
   total_phases: 8
   completed_phases: 3
-  total_plans: 13
-  completed_plans: 13
-  percent: 92
+  total_plans: 16
+  completed_plans: 14
+  percent: 88
 ---
 
 # Project State
@@ -61,6 +61,7 @@ Progress: [█████████░] 92%
 | Phase 03-rules-engine P01 | 12 | 2 tasks | 3 files |
 | Phase 03-rules-engine P02 | 8 | 2 tasks | 3 files |
 | Phase 03-rules-engine P03 | 10 | 2 tasks | 5 files |
+| Phase 04-competitor-intelligence P04-01 | 3 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -108,6 +109,9 @@ Recent decisions affecting current work:
 - RULE_META ve CATEGORIES sabitleri src/lib/rules/rule-meta.ts'e çıkarıldı — her iki sayfadan import edildi (DRY)
 - resolvedRules scope alanı explicit 'global' | 'project' type annotation — TS2322 önlendi
 - toggleProjectRule.bind(null, id) pattern: Server Action partial application ile proje ID SSR'da sabitleniyor
+- vault.ts env var fallback öncelikli — DATAFORSEO_LOGIN/PASSWORD env var mevcutsa Supabase Vault sorgusu yapılmaz
+- extractCategories() server-only değil — pure function, test edilebilir, client da kullanabilir
+- .env.local.example kullanıldı — .gitignore .env* pattern'ı .env.example commit edilmesini engelliyor
 
 ### Pending Todos
 
@@ -126,6 +130,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-23T00:45:00Z
-Stopped at: Completed 03-03-PLAN.md — Proje Kuralları Sayfası + Navigasyon (Phase 3 complete)
+Last session: 2026-04-23T01:21:04.145Z
+Stopped at: Completed 04-01-PLAN.md — DataForSEO Lib Katmanı ve Navigasyon
 Resume file: None
