@@ -36,10 +36,14 @@
 
 ### Competitor Intelligence
 
-- [ ] **COMP-01**: Kullanıcı bir projeye manuel rakip domain ekleyebilir ve listesini görebilir
-- [ ] **COMP-02**: Sistem DataForSEO ile hedef keyword'ler için SERP'ten rakipleri otomatik tespit eder
-- [ ] **COMP-03**: Rakip başına top sayfalar, kategori yapısı ve içerik alanları görüntülenir (Semrush/DataForSEO kaynaklı)
-- [ ] **COMP-04**: Sistem rakip analizinden boşluk ve fırsat raporu çıkarır (rakiplerin zayıf olduğu alanlar, hızlı girilebilecek keyword boşlukları)
+- [x] **COMP-01
+**: Kullanıcı bir projeye manuel rakip domain ekleyebilir ve listesini görebilir
+- [x] **COMP-02
+**: Sistem DataForSEO ile hedef keyword'ler için SERP'ten rakipleri otomatik tespit eder
+- [x] **COMP-03
+**: Rakip başına top sayfalar, kategori yapısı ve içerik alanları görüntülenir (Semrush/DataForSEO kaynaklı)
+- [x] **COMP-04
+**: Sistem rakip analizinden boşluk ve fırsat raporu çıkarır (rakiplerin zayıf olduğu alanlar, hızlı girilebilecek keyword boşlukları)
 
 ### Keyword Center
 
