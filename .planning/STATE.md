@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 04-03-PLAN.md — Rakipler Sayfası UI
-last_updated: "2026-04-23T01:29:56.273Z"
+stopped_at: Completed 04-04-PLAN.md — Phase 4 Gap Closure (COMP-03, COMP-04 kapatıldı)
+last_updated: "2026-04-23T22:25:02Z"
 last_activity: 2026-04-23
 progress:
   total_phases: 8
@@ -25,9 +25,9 @@ See: .planning/PROJECT.md (updated 2026-04-22)
 
 ## Current Position
 
-Phase: 4 (devam ediyor)
-Plan: 2/3 plans tamamlandı (04-01, 04-02) — 04-03 kaldı
-Status: Phase 4 in progress — Wave 3 (UI) bekliyor
+Phase: 4 (tamamlandı)
+Plan: 4/4 plans tamamlandı (04-01, 04-02, 04-03, 04-04)
+Status: Phase 4 complete — Phase 5 (Keyword Import & Enrichment) bir sonraki
 Last activity: 2026-04-23
 
 Progress: [██████████] 100%
@@ -64,6 +64,7 @@ Progress: [██████████] 100%
 | Phase 04-competitor-intelligence P04-01 | 3 | 2 tasks | 5 files |
 | Phase 04-competitor-intelligence P04-02 | 2 | 2 tasks | 1 files |
 | Phase 04-competitor-intelligence P04-03 | 5 | 2 tasks | 4 files |
+| Phase 04-competitor-intelligence P04-04 | 12 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -117,7 +118,11 @@ Recent decisions affecting current work:
 - discoverCompetitors DB'ye yazmaz — sadece domain[] döner; addCompetitors() ile ayrı commit (D-04 dialog flow)
 - top_pages JSONB'de title yok — DataForSEO Relevant Pages endpoint'te title gelmiyor (RESEARCH.md Pitfall 1)
 - updated_at manuel set edildi — kullanıcı son çekim zamanını görebilir (D-06)
-- fetchOwnDomainData sonucu DB'ye yazılmaz — SSR page.tsx'e döner, null dönerse gap tablosunda uyarı gösterilir (Q3 RESOLVED)
+- fetchOwnDomainData sonucu DB'ye yazılmaz — SSR page.tsx'e döner, null dönerse gap tablosunda uyarı gösterilir (Q3 RESOLVED — 04-04'te override edildi)
+- own_category_structure JSONB olarak projects tablosuna eklendi — fetchOwnDomainData artık persist ediyor (04-04 CR-01 fix)
+- OwnDomainAnalyzeButton statik import kullanıyor — dynamic import kaldırıldı (04-04)
+- content_areas 'Diğer' kategorisi hariç CategoryStructure shape kullanıyor (04-04 COMP-03)
+- opportunityCategories: Set<string> SSR'da hesaplanıyor, serialize edilmiyor (04-04 COMP-04)
 - verifyProjectOwnership yardımcı fonksiyon: 4 action'da tekrar eden ownership check DRY pattern
 - buildGapReport SSR'da hesaplanır — pure function olarak tanımlandı, client bundle maliyeti yok (COMP-04)
 - OwnDomainAnalyzeButton dynamic import('./actions') — server-only modülü client'ta doğrudan import edilemez
@@ -139,6 +144,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-23T01:29:44.295Z
-Stopped at: Completed 04-03-PLAN.md — Rakipler Sayfası UI
+Last session: 2026-04-23T22:25:02Z
+Stopped at: Completed 04-04-PLAN.md — Phase 4 Gap Closure (COMP-03, COMP-04 kapatıldı)
 Resume file: None

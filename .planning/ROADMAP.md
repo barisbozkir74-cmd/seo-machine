@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Foundation** - Supabase schema, auth, RLS, and API key security (completed 2026-04-22)
 - [x] **Phase 2: Project Core** - Project creation, central dashboard, stage engine, decision memory (completed 2026-04-22)
 - [x] **Phase 3: Rules Engine** - Global and project-scoped SEO rules that govern all downstream production (completed 2026-04-23)
-- [ ] **Phase 4: Competitor Intelligence** - Manual and automated competitor tracking with gap/opportunity reports
+- [x] **Phase 4: Competitor Intelligence** - Manual and automated competitor tracking with gap/opportunity reports (completed 2026-04-23)
 - [ ] **Phase 5: Keyword Import & Enrichment** - CSV/manual keyword entry with DataForSEO enrichment
 - [ ] **Phase 6: Keyword Clustering & Scoring** - SERP-based clustering, cannibalization prevention, opportunity scoring
 - [ ] **Phase 7: Site Blueprint & Tree** - Auto-generated site tree from clusters with keyword-to-page mapping
@@ -88,7 +88,8 @@ Plans:
 Plans:
 - [x] 04-01-PLAN.md — Lib katmanı: vault.ts + dataforseo/client.ts + url-categories.ts + proje detay sol sütun Rakipler linki (completed 2026-04-23)
 - [x] 04-02-PLAN.md — Server Actions: addCompetitor, discoverCompetitors, addCompetitors, fetchCompetitorData (completed 2026-04-23)
-- [ ] 04-03-PLAN.md — Rakipler sayfası UI: page.tsx + CompetitorDiscoveryDialog + CompetitorFetchButton + gap raporu tablosu
+- [x] 04-03-PLAN.md — Rakipler sayfası UI: page.tsx + CompetitorDiscoveryDialog + CompetitorFetchButton + gap raporu tablosu (completed 2026-04-23)
+- [x] 04-04-PLAN.md — Gap closure: content_areas, own_category_structure persist, Fırsat Skoru, addCompetitors validasyon (completed 2026-04-23)
 **UI hint**: yes
 
 ### Phase 5: Keyword Import & Enrichment
@@ -146,7 +147,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 1. Foundation | 4/4 | Complete | 2026-04-22 |
 | 2. Project Core | 6/6 | Complete    | 2026-04-22 |
 | 3. Rules Engine | 3/3 | Complete | 2026-04-23 |
-| 4. Competitor Intelligence | 2/3 | In Progress | - |
+| 4. Competitor Intelligence | 4/4 | Complete | 2026-04-23 |
 | 5. Keyword Import & Enrichment | 0/? | Not started | - |
 | 6. Keyword Clustering & Scoring | 0/? | Not started | - |
 | 7. Site Blueprint & Tree | 0/? | Not started | - |
