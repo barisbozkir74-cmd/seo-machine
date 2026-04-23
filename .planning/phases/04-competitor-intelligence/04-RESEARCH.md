@@ -666,22 +666,25 @@ Alternatif: Eğer DataForSEO credentials Vault'ta değil de doğrudan environmen
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **DataForSEO Vault Setup**
+1. **DataForSEO Vault Setup** — RESOLVED
    - Bilinen: SUPABASE_SERVICE_ROLE_KEY `.env.local`'da mevcut
    - Belirsiz: DataForSEO login/password Vault'ta mı yoksa env var olarak mı saklandı?
    - Öneri: Planner Wave 0'da `DATAFORSEO_LOGIN` / `DATAFORSEO_PASSWORD` env var olarak da desteklesin (Vault yoksa fallback)
+   - **RESOLUTION:** Env var fallback kullanılacak: `DATAFORSEO_LOGIN` / `DATAFORSEO_PASSWORD`. Vault Phase 1'de kurulmamış; env var birincil kaynak.
 
-2. **relevant_pages endpoint — lokasyon bağımsızlığı**
+2. **relevant_pages endpoint — lokasyon bağımsızlığı** — RESOLVED
    - Bilinen: endpoint `location_code` ve `language_code` alıyor
    - Belirsiz: Türk domain'leri için Türkiye lokasyonu mu, global mi daha iyi sonuç veriyor?
    - Öneri: Turkey (2792) başlat, kullanıcı eğer global rakip ekliyorsa location parametresi proje ayarlarından çekilebilir (project.target_country)
+   - **RESOLUTION:** `location_code` parametresi relevant_pages endpoint'e eklenmeyecek; DataForSEO relevant_pages endpoint global olarak çalışır (lokasyon bağımsız). SERP endpoint için `location_code: 2792` (Turkey) kullanılacak.
 
-3. **Gap raporu — kullanıcı domain'inin kendi sayfaları**
+3. **Gap raporu — kullanıcı domain'inin kendi sayfaları** — RESOLVED
    - Bilinen: D-10'da kullanıcının domain'i de sütun olarak gösterilecek
    - Belirsiz: Kullanıcının domain'i için top_pages nasıl çekilecek? Ayrı bir "Kendi Domain'ini Analiz Et" butonu mu gerekiyor?
    - Öneri: Kullanıcının domain'ini de `competitors` tablosuna `source='self'` ile ekle; aynı "Veri Çek" flow'u çalışır
+   - **RESOLUTION:** Kullanıcı domain'i `competitors` tablosuna eklenmez (`source='self'` yok). Bunun yerine: `page.tsx` SSR'da `fetchOwnDomainData(projectId, project.domain)` Server Action'ı çağrılır; bu DataForSEO relevant_pages ile kategori yapısını çıkarır ve `Record<string, number>` olarak döner. Sonuç DB'ye yazılmaz, yalnızca SSR render için kullanılır. Veri çekilmemişse gap tablosunda "Kendi siteniz için veri çekilmedi" + "Analiz Et" butonu gösterilir (`OwnDomainAnalyzeButton` component).
 
 ---
 
