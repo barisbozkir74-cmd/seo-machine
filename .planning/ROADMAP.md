@@ -18,7 +18,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 4: Competitor Intelligence** - Manual and automated competitor tracking with gap/opportunity reports (completed 2026-04-23)
 - [x] **Phase 5: Keyword Import & Enrichment** - CSV/manual keyword entry with DataForSEO enrichment (completed 2026-04-24)
 - [x] **Phase 6: Keyword Clustering & Scoring** - SERP-based clustering, cannibalization prevention, opportunity scoring (completed 2026-04-24)
-- [ ] **Phase 7: Site Blueprint & Tree** - Auto-generated site tree from clusters with keyword-to-page mapping
+- [x] **Phase 7: Site Blueprint & Tree** - Auto-generated site tree from clusters with keyword-to-page mapping (completed 2026-04-24)
 - [ ] **Phase 8: Page Planner & Internal Links** - Page type assignment, focus keywords, internal link map, orphan detection
 
 ## Phase Details
@@ -129,7 +129,10 @@ Plans:
   1. System generates a site tree from keyword clusters (menu groups, category/service/product/blog separation, hub-spoke structure) with one action
   2. Every keyword is mapped to exactly one page; the system detects and flags any mapping conflicts
   3. User can view the full site tree, add or remove pages, and reorder nodes through the dashboard
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [x] 07-01-PLAN.md — slugify helper + generatePagesFromClusters + reorderPage Server Actions (completed 2026-04-24)
+- [x] 07-02-PLAN.md — GeneratePagesDialog + ReorderButton + KeywordMappingTab + tab switcher + conflict detection (completed 2026-04-24)
 **UI hint**: yes
 
 ### Phase 8: Page Planner & Internal Links
