@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { getDataForSeoCredentials } from '@/lib/supabase/vault'
 import { fetchSerpDomains, fetchTopPages, fetchRankedKeywords, fetchBacklinksSummary } from '@/lib/dataforseo/client'
+import { resolveLocation } from '@/lib/dataforseo/location-map'
 import { extractCategories } from '@/lib/competitors/url-categories'
 
 export type ActionResult =
@@ -87,8 +88,13 @@ export async function discoverCompetitors(
     return { success: false, error: 'Oturum bulunamadı.' }
   }
 
-  const isOwner = await verifyProjectOwnership(supabase, projectId, user.id)
-  if (!isOwner) {
+  const { data: project } = await supabase
+    .from('projects')
+    .select('id, target_country, target_language')
+    .eq('id', projectId)
+    .eq('user_id', user.id)
+    .single()
+  if (!project) {
     return { success: false, error: 'Proje bulunamadı.' }
   }
 
@@ -96,13 +102,14 @@ export async function discoverCompetitors(
   if (!keywords.length || keywords.length > 3) {
     return { success: false, error: '1 ile 3 arasında keyword girin.' }
   }
-  if (keywords.some((kw) => kw.trim().length === 0 || kw.length > 700)) {
+  if (keywords.some((kw) => kw.trim().length === 0 || kw.trim().length > 700)) {
     return { success: false, error: 'Keyword boş olamaz ve 700 karakterden uzun olamaz.' }
   }
 
   try {
     const credentials = await getDataForSeoCredentials()
-    const domains = await fetchSerpDomains(keywords, credentials)
+    const location = resolveLocation(project.target_country, project.target_language)
+    const domains = await fetchSerpDomains(keywords, credentials, location)
     return { success: true, domains }
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Bilinmeyen hata'
@@ -195,11 +202,19 @@ export async function fetchCompetitorData(
     return { success: false, error: 'Rakip bulunamadı.' }
   }
 
+  const { data: project } = await supabase
+    .from('projects')
+    .select('target_country, target_language')
+    .eq('id', projectId)
+    .eq('user_id', user.id)
+    .single()
+
   try {
     const credentials = await getDataForSeoCredentials()
+    const location = resolveLocation(project?.target_country, project?.target_language)
 
     // DataForSEO Relevant Pages API — top 10 organik sayfa (D-05)
-    const pages = await fetchTopPages(competitor.domain, credentials)
+    const pages = await fetchTopPages(competitor.domain, credentials, location)
 
     // Top pages — URL + tahmini trafik (title bu endpoint'te gelmiyor — RESEARCH.md Pitfall 1)
     const topPages = pages.map((p) => ({
@@ -292,11 +307,19 @@ export async function fetchCompetitorSeoData(
 
   if (!competitor) return { success: false, error: 'Rakip bulunamadı.' }
 
+  const { data: project } = await supabase
+    .from('projects')
+    .select('target_country, target_language')
+    .eq('id', projectId)
+    .eq('user_id', user.id)
+    .single()
+
   try {
     const credentials = await getDataForSeoCredentials()
+    const location = resolveLocation(project?.target_country, project?.target_language)
 
     const [keywordsRaw, backlinks] = await Promise.all([
-      fetchRankedKeywords(competitor.domain, credentials),
+      fetchRankedKeywords(competitor.domain, credentials, 20, location),
       fetchBacklinksSummary(competitor.domain, credentials),
     ])
 
@@ -342,7 +365,7 @@ export async function fetchOwnDomainData(
 
   const { data: project } = await supabase
     .from('projects')
-    .select('id')
+    .select('id, target_country, target_language')
     .eq('id', projectId)
     .eq('user_id', user.id)
     .single()
@@ -350,7 +373,8 @@ export async function fetchOwnDomainData(
 
   try {
     const credentials = await getDataForSeoCredentials()
-    const pages = await fetchTopPages(domain, credentials)
+    const location = resolveLocation(project.target_country, project.target_language)
+    const pages = await fetchTopPages(domain, credentials, location)
     const categoryStructure = extractCategories(pages)
 
     const result: Record<string, number> = {}
