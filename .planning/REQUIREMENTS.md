@@ -152,8 +152,8 @@
 | BLUE-01 | Phase 7 | Pending |
 | BLUE-02 | Phase 7 | Pending |
 | BLUE-03 | Phase 7 | Pending |
-| BLUE-04 | Phase 8 | Pending |
-| BLUE-05 | Phase 8 | Pending |
+| BLUE-04 | Phase 8 | Complete |
+| BLUE-05 | Phase 8 | Complete |
 
 **Coverage:**
 - v1 requirements: 28 total

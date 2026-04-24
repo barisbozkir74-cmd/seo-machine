@@ -19,7 +19,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 5: Keyword Import & Enrichment** - CSV/manual keyword entry with DataForSEO enrichment (completed 2026-04-24)
 - [x] **Phase 6: Keyword Clustering & Scoring** - SERP-based clustering, cannibalization prevention, opportunity scoring (completed 2026-04-24)
 - [x] **Phase 7: Site Blueprint & Tree** - Auto-generated site tree from clusters with keyword-to-page mapping (completed 2026-04-24)
-- [ ] **Phase 8: Page Planner & Internal Links** - Page type assignment, focus keywords, internal link map, orphan detection
+- [x] **Phase 8: Page Planner & Internal Links** - Page type assignment, focus keywords, internal link map, orphan detection (completed 2026-04-24)
 
 ## Phase Details
 
@@ -145,8 +145,8 @@ Plans:
   3. Pages with no incoming or outgoing links are flagged as orphans with a visible warning
 **Plans**: 2 plans
 Plans:
-- [ ] 08-01-PLAN.md — Phase 7 technical debt (WR-01/02/03/04/05) + updatePageAttributes + suggestInternalLinks server actions
-- [ ] 08-02-PLAN.md — BulkEditPagesDialog + SuggestLinksButton + SuggestLinksDialog + orphan banner + page wiring
+- [x] 08-01-PLAN.md — Phase 7 technical debt (WR-01/02/03/04/05) + updatePageAttributes + suggestInternalLinks server actions (completed 2026-04-24)
+- [x] 08-02-PLAN.md — BulkEditPagesDialog + SuggestLinksButton + SuggestLinksDialog + orphan banner + page wiring (completed 2026-04-24)
 **UI hint**: yes
 
 ## Progress
@@ -161,6 +161,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 3. Rules Engine | 3/3 | Complete | 2026-04-23 |
 | 4. Competitor Intelligence | 4/4 | Complete | 2026-04-23 |
 | 5. Keyword Import & Enrichment | 2/2 | Complete | 2026-04-24 |
-| 6. Keyword Clustering & Scoring | 0/2 | Not started | - |
-| 7. Site Blueprint & Tree | 0/? | Not started | - |
-| 8. Page Planner & Internal Links | 0/2 | Not started | - |
+| 6. Keyword Clustering & Scoring | 2/2 | Complete | 2026-04-24 |
+| 7. Site Blueprint & Tree | 2/2 | Complete | 2026-04-24 |
+| 8. Page Planner & Internal Links | 2/2 | Complete | 2026-04-24 |

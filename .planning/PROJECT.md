@@ -20,19 +20,19 @@ Her website projesi için sıfırdan açılıp kurgulanan, tüm kararları kayde
 
 ### Active
 
-#### Research & Intelligence
-- [ ] Rakip toplama ve kaydetme
-- [ ] Rakip sayfa yapısı, içerik, kategori analizi
-- [ ] Pazar boşluğu ve fırsat tespiti (karar destek çıktısı)
+#### Research & Intelligence (Validated in Phase 4: competitor-intelligence — 2026-04-23)
+- [x] Rakip toplama ve kaydetme (COMP-01, COMP-02)
+- [x] Rakip sayfa yapısı, içerik, kategori analizi (COMP-03)
+- [x] Pazar boşluğu ve fırsat tespiti (karar destek çıktısı) (COMP-04)
 - [ ] Niche selection engine — volüm, rekabet, ticari değer, programmatic potansiyel skorlaması
 
-#### Keyword Strategy
-- [ ] CSV ile keyword import veya manuel giriş
-- [ ] DataForSEO ile keyword enrichment (hacim, intent, CPC, difficulty)
-- [ ] Keyword clustering (SERP similarity + intent mapping)
-- [ ] Opportunity scoring — traffic potential, commercial value, competition score
+#### Keyword Strategy (Validated in Phase 5-6 — 2026-04-24)
+- [x] CSV ile keyword import veya manuel giriş (KEYW-01, KEYW-02)
+- [x] DataForSEO ile keyword enrichment (hacim, intent, CPC, difficulty) (KEYW-03)
+- [x] Keyword clustering (SERP similarity + intent mapping) (KEYW-04)
+- [x] Opportunity scoring — traffic potential, commercial value, competition score (KEYW-06)
 - [ ] Cluster-to-revenue mapping (bilgi trafiği vs. ticari intent ayrımı)
-- [ ] Cannibalization prevention — tek cluster için tek primary page zorunluluğu
+- [x] Cannibalization prevention — tek cluster için tek primary page zorunluluğu (KEYW-05)
 
 #### Site Blueprint (Validated in Phase 7: site-blueprint-tree — 2026-04-24)
 - [x] Keyword cluster'larından site tree üretimi (generatePagesFromClusters — BLUE-01)
@@ -42,9 +42,9 @@ Her website projesi için sıfırdan açılıp kurgulanan, tüm kararları kayde
 - [x] Tab switcher: Ağaç Görünümü + Keyword Eşleme
 - [x] D-06 slugify: Türkçe normalize, max 60 char, -2/-3 duplicate suffix
 
-#### Page Production
-- [ ] Page planner — hangi sayfalar açılacak, tipi, önceliği, focus keyword'ü
-- [ ] Internal link map — pillar–support–bridge mantığı, orphan page kontrolü
+#### Page Production (Validated in Phase 8: page-planner-internal-links — 2026-04-24)
+- [x] Page planner — hangi sayfalar açılacak, tipi, önceliği, focus keyword'ü (BLUE-04)
+- [x] Internal link map — pillar–support–bridge mantığı, orphan page kontrolü (BLUE-05)
 - [ ] Page Package Engine — her sayfa için: slug, SEO title, meta description, H1, heading yapısı, içerik blokları, CTA, görsel isimleri, alt text, iç link giriş/çıkışı, schema, canonical, FAQ
 - [ ] Schema üretimi (page type'a göre: Organization, WebPage, Service, FAQPage, LocalBusiness vb.)
 - [ ] Metadata validator — rules engine ile title/meta/H1/slug tutarlılığı kontrolü
@@ -137,4 +137,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-24 — Phase 6 complete (Keyword Clustering & Scoring)*
+*Last updated: 2026-04-24 — Phase 8 complete (Page Planner & Internal Links) — v1.0 Decision OS MVP milestone complete*
