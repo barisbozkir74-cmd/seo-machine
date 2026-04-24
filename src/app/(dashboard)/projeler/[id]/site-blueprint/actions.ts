@@ -61,11 +61,19 @@ export async function addPage(
     .eq('project_id', projectId)
     .eq('user_id', user.id)
 
+  const { data: existingSlugRows } = await supabase
+    .from('pages')
+    .select('slug')
+    .eq('project_id', projectId)
+    .eq('user_id', user.id)
+  const existingSlugs = (existingSlugRows ?? []).map((r: { slug: string }) => r.slug)
+  const safeSlug = slugify(input.slug || input.title, existingSlugs)
+
   const { error } = await supabase.from('pages').insert({
     user_id: user.id,
     project_id: projectId,
     title: input.title,
-    slug: input.slug,
+    slug: safeSlug,
     page_type: input.page_type,
     parent_id: input.parent_id ?? null,
     priority: input.priority,
@@ -197,7 +205,7 @@ export async function generatePagesFromClusters(
   if (!isOwner) return { success: false, error: 'Proje bulunamadı.' }
 
   // Cluster ownership doğrula — rows'daki tüm clusterId'ler bu proje altında mı?
-  const clusterIds = rows.map((r) => r.clusterId)
+  const clusterIds = [...new Set(rows.map((r) => r.clusterId))]
   const { data: ownedClusters } = await supabase
     .from('keyword_clusters')
     .select('id')
@@ -345,21 +353,29 @@ export async function reorderPage(
   const current = siblingList[idx]
   const neighbor = siblingList[neighborIdx]
 
-  // sort_order takası — iki UPDATE, Promise.all
-  const [r1, r2] = await Promise.all([
-    supabase
-      .from('pages')
-      .update({ sort_order: neighbor.sort_order })
-      .eq('id', current.id)
-      .eq('user_id', user.id),
-    supabase
-      .from('pages')
-      .update({ sort_order: current.sort_order })
-      .eq('id', neighbor.id)
-      .eq('user_id', user.id),
-  ])
+  // sort_order takası — 3 adımlı sentinel swap (WR-01)
+  // Step 1: move current to sentinel -1 (cannot collide with valid sort_order >= 0)
+  await supabase
+    .from('pages')
+    .update({ sort_order: -1 })
+    .eq('id', current.id)
+    .eq('user_id', user.id)
 
-  if (r1.error || r2.error) {
+  // Step 2: move neighbor to current's old position
+  const r2 = await supabase
+    .from('pages')
+    .update({ sort_order: current.sort_order })
+    .eq('id', neighbor.id)
+    .eq('user_id', user.id)
+
+  // Step 3: move current to neighbor's old position
+  const r3 = await supabase
+    .from('pages')
+    .update({ sort_order: neighbor.sort_order })
+    .eq('id', current.id)
+    .eq('user_id', user.id)
+
+  if (r2.error || r3.error) {
     return { success: false, error: 'Sıralama güncellenemedi.' }
   }
 
