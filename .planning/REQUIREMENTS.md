@@ -74,16 +74,17 @@
 
 ### Page Package Engine
 
-- **PAGE-01**: Her sayfa için tam SEO paketi üretilir: slug, SEO title, meta description, H1, heading yapısı (H2–H4), içerik blokları taslağı, CTA alanları, görsel isimleri, alt text önerileri, iç link giriş/çıkışları, schema tipi, canonical önerisi, FAQ
-- **PAGE-02**: Schema üretimi sayfa tipine göre otomatik seçilir (Organization/WebSite, WebPage, Service, FAQPage, LocalBusiness, Product vb.) ve JSON-LD formatında çıktılanır
-- **PAGE-03**: Metadata validator, rules engine kurallarına göre title/meta/H1/slug tutarlılığını otomatik kontrol eder
-- **PAGE-04**: Sayfa paketi "kilitlenme" mekanizması — paket onaylanmadan içerik üretimine izin verilmez
-- **PAGE-05**: Revision history — her sayfa paketinin geçmiş versiyonları saklanır
+- [x] **PAGE-01**: Her sayfa için tam SEO paketi üretilir: slug, SEO title, meta description, H1, heading yapısı (H2–H4), içerik blokları taslağı, CTA alanları, görsel isimleri, alt text önerileri, iç link giriş/çıkışları, schema tipi, canonical önerisi, FAQ *(completed in Phase 9)*
+- [ ] **PAGE-02**: Schema üretimi sayfa tipine göre otomatik seçilir (Organization/WebSite, WebPage, Service, FAQPage, LocalBusiness, Product vb.) ve JSON-LD formatında çıktılanır
+- [ ] **PAGE-02b**: Kullanıcı JSON-LD schema'yı page package editöründeki ayrı 'Schema' sekmesinden önizleyebilir, manuel düzenleyebilir ve kopyalayabilir
+- [ ] **PAGE-03**: Metadata validator, rules engine kurallarına göre title/meta/H1/slug tutarlılığını kaydetme öncesinde otomatik kontrol eder ve uyarı verir
+- [x] **PAGE-04**: Sayfa paketi "kilitlenme" mekanizması — paket approved olmadan locked edilemez, locked iken düzenlenemez *(completed in Phase 9)*
+- [ ] **PAGE-05**: Revision history — her sayfa paketinin geçmiş versiyonları saklanır *(deferred to v3)*
 
 ### QA Scoring
 
-- **QUAL-01**: İkinci LLM modeli üretilen sayfa paketlerini denetler (intent drift, robotik dil, entity eksikliği, duplicate risk, iç link eksikliği)
-- **QUAL-02**: Her sayfa için SEO score, content score, human score, schema score ve readiness score hesaplanır ve gösterilir
+- [ ] **QUAL-01**: Kullanıcı paketi kilitlemeden önce sistem ikinci LLM modeliyle denetim çalıştırır (intent drift, robotik dil, entity eksikliği, duplicate risk, iç link eksikliği) — kilit aksiyonunda tetiklenir
+- [ ] **QUAL-02**: Her sayfa için SEO score, content score, human score, schema score ve readiness score hesaplanır ve page package editöründe görüntülenir
 
 ---
 
@@ -162,4 +163,4 @@
 
 ---
 *Requirements defined: 2026-04-22*
-*Last updated: 2026-04-22 after 01-04 completion (INFR-01 marked complete — all Phase 1 requirements satisfied)*
+*Last updated: 2026-04-24 — v2.0 requirements scoped: PAGE-02, PAGE-02b, PAGE-03, QUAL-01, QUAL-02 in milestone; PAGE-05 deferred to v3*
