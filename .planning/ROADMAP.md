@@ -183,3 +183,54 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 7. Site Blueprint & Tree | 2/2 | Complete | 2026-04-24 |
 | 8. Page Planner & Internal Links | 2/2 | Complete | 2026-04-24 |
 | 9. Page Package Generator | 1/4 | In Progress | - |
+
+---
+
+# Roadmap: SEO Machine — v2.0 Page Package OS
+
+## Overview
+
+v2.0 adds the quality control layer on top of the page package engine built in Phase 9. Two phases deliver this: Phase 10 builds the Schema Center (JSON-LD generation + editor tab), and Phase 11 completes the quality gate (metadata validator + LLM QA audit + 5-dimensional scoring). Together they ensure no page package can be locked without passing schema validation, rule-based metadata checks, and an AI-driven content audit.
+
+## Phases
+
+- [ ] **Phase 10: Schema Center** - page_type'a göre JSON-LD üretimi ve editörde Schema sekmesi
+- [ ] **Phase 11: Metadata Validator & QA Scoring** - Rules engine destekli metadata kontrolü, LLM QA denetimi ve 5-boyutlu scoring
+
+## Phase Details
+
+### Phase 10: Schema Center
+**Goal**: Her sayfa paketi için page_type'a uygun JSON-LD schema otomatik üretilir ve kullanıcı bunu editördeki ayrı Schema sekmesinden önizleyebilir, düzenleyebilir ve kopyalayabilir
+**Depends on**: Phase 9
+**Requirements**: PAGE-02, PAGE-02b
+**Success Criteria** (what must be TRUE):
+  1. Kullanıcı "Schema Üret" aksiyonunu tetiklediğinde sistem page_type'a göre doğru schema tipini seçer (Organization/WebSite, WebPage, Service, FAQPage, LocalBusiness, Product) ve JSON-LD formatında çıktı üretir
+  2. Üretilen JSON-LD page_packages tablosundaki schema sütununa kaydedilir ve sayfa yenilemesinde korunur
+  3. PagePackageEditor'da ayrı bir "Schema" sekmesi görünür; sekme açıldığında mevcut JSON-LD önizleme olarak gösterilir
+  4. Kullanıcı schema metnini editörde manuel olarak değiştirebilir ve değişiklikler kaydedilebilir
+  5. Kullanıcı schema içeriğini panoya kopyalayabilir (tek tıkla kopyala butonu)
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 11: Metadata Validator & QA Scoring
+**Goal**: Kullanıcı paketi kaydettiğinde veya kilitlemeden önce sistem rules engine kurallarına göre metadata tutarlılığını kontrol eder, Claude ile tam QA denetimi çalıştırır ve 5 boyutlu score hesaplayıp editörde gösterir
+**Depends on**: Phase 10
+**Requirements**: PAGE-03, QUAL-01, QUAL-02
+**Success Criteria** (what must be TRUE):
+  1. Kullanıcı paketi kaydederken sistem rules engine'daki aktif kurallara göre title/meta/H1/slug tutarlılığını otomatik kontrol eder ve kural ihlali varsa görünür uyarı gösterir
+  2. Kullanıcı paketi kilitlemeden (lock) önce sistem Claude claude-sonnet-4-6 ile QA denetimi çalıştırır: intent drift, robotik dil, entity eksikliği ve duplicate risk kontrol edilir; sonuçlar kullanıcıya gösterilir
+  3. Her sayfa için SEO score, content score, human score, schema score ve readiness score hesaplanır ve editörde sayısal olarak gösterilir
+  4. Readiness score 100 üzerinden hesaplanır; tüm skorlar paket kilitleme öncesinde görünürdür
+  5. QA denetimi geçemeyen (kritik sorun bulunan) paket kilitlenemiyor; kullanıcı sorunları gördükten sonra manuel olarak devam etmeyi onaylayabilir
+**Plans**: TBD
+**UI hint**: yes
+
+## Progress
+
+**Execution Order:**
+Phases execute in numeric order: 10 → 11
+
+| Phase | Plans Complete | Status | Completed |
+|-------|----------------|--------|-----------|
+| 10. Schema Center | 0/TBD | Not started | - |
+| 11. Metadata Validator & QA Scoring | 0/TBD | Not started | - |

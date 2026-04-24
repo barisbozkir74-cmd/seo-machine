@@ -155,12 +155,21 @@
 | BLUE-03 | Phase 7 | Pending |
 | BLUE-04 | Phase 8 | Complete |
 | BLUE-05 | Phase 8 | Complete |
+| PAGE-01 | Phase 9 | Complete |
+| PAGE-04 | Phase 9 | Complete |
+| PAGE-02 | Phase 10 | Pending |
+| PAGE-02b | Phase 10 | Pending |
+| PAGE-03 | Phase 11 | Pending |
+| QUAL-01 | Phase 11 | Pending |
+| QUAL-02 | Phase 11 | Pending |
 
 **Coverage:**
 - v1 requirements: 28 total
 - Mapped to phases: 28/28
+- v2 requirements (in-scope for v2.0): 5 total
+- Mapped to phases: 5/5
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-22*
-*Last updated: 2026-04-24 — v2.0 requirements scoped: PAGE-02, PAGE-02b, PAGE-03, QUAL-01, QUAL-02 in milestone; PAGE-05 deferred to v3*
+*Last updated: 2026-04-24 — v2.0 roadmap finalized: PAGE-02/PAGE-02b → Phase 10; PAGE-03/QUAL-01/QUAL-02 → Phase 11*

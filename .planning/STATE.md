@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: page-package-os
-status: defining_requirements
-stopped_at: Milestone v2.0 started — defining requirements
-last_updated: "2026-04-24T22:10:00Z"
+status: roadmap_ready
+stopped_at: Roadmap created — Phase 10 and 11 defined, ready to plan Phase 10
+last_updated: "2026-04-24T22:30:00Z"
 last_activity: 2026-04-24
 progress:
-  total_phases: 0
+  total_phases: 2
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-24)
 
 **Core value:** Her website projesi için sıfırdan açılıp kurgulanan, tüm kararları kaydeden ve stage bazlı ilerleyen tek merkezi proje yönetim sistemi
-**Current focus:** Milestone v2.0 — Page Package OS (defining requirements)
+**Current focus:** Milestone v2.0 — Page Package OS (roadmap ready, planning Phase 10)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 10 — Schema Center (not started)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-04-24 — Milestone v2.0 started
+Status: Roadmap ready
+Last activity: 2026-04-24 — v2.0 roadmap created (Phase 10 + Phase 11)
 
-Progress: [██████████] 100%
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
@@ -156,10 +156,14 @@ Recent decisions affecting current work:
 - handleSave önce createPagePackage idempotent çağrısı: package yoksa oluştur, sonra updatePagePackage
 - DialogContent (DialogPopup değil): dialog.tsx export adı esas alındı — fonksiyonel olarak aynı
 - Focus keyword Field daima disabled: readOnly veri, kullanıcı değiştiremez
+- v2.0 LLM for QUAL-01: Claude claude-sonnet-4-6 via Anthropic SDK (not OpenAI) — existing SDK pattern in codebase
+- v2.0 Schema generation: page_packages.schema_type (text) exists; new schema_jsonld (jsonb) column needed
+- v2.0 QUAL-02 scoring: extends QaBadge pattern; can be computed client-side or server-side at lock time
+- v2.0 PAGE-03 metadata validator: hooks into updatePagePackage action (save flow) and updatePackageStatus (lock flow)
 
 ### Pending Todos
 
-02-03: Yeni proje modal + Server Action + Zod validasyon — sonraki plan.
+None.
 
 ### Blockers/Concerns
 
@@ -171,9 +175,10 @@ None.
 |----------|------|--------|-------------|
 | Config | supabase start (requires Docker) | User must run manually if using local dev | Plan 01 |
 | Dashboard UI | Full dashboard is a stub showing email only | RESOLVED — 02-02 ile /dashboard/projeler sayfası oluşturuldu | Plan 04 |
+| Page Packages | Revision history (PAGE-05) | Deferred to v3 | Phase 9 planning |
 
 ## Session Continuity
 
-Last session: 2026-04-24T20:54:53.215Z
-Stopped at: Completed 09-03-PLAN.md — QaBadge, PackageStatusBadge, LockedBanner bileşenleri oluşturuldu
+Last session: 2026-04-24T22:30:00Z
+Stopped at: v2.0 roadmap created — Phase 10 (Schema Center) and Phase 11 (Metadata Validator & QA Scoring) defined
 Resume file: None
