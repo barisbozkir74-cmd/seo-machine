@@ -15,6 +15,9 @@ import { KeywordImport } from './KeywordImport'
 import { IntentBadge } from './IntentBadge'
 import { KeywordDeleteButton } from './KeywordDeleteButton'
 import { ProjectNav } from '../ProjectNav'
+import { ClusterButton } from './ClusterButton'
+import { ViewToggle } from './ViewToggle'
+import { ClusterPanel } from './ClusterPanel'
 
 function kdColor(kd: number): { dot: string; label: string } {
   if (kd < 30) return { dot: 'bg-emerald-400', label: 'Kolay' }
@@ -37,14 +40,28 @@ type KeywordRow = {
   search_intent: string | null
   enriched_at: string | null
   cluster_id: string | null
+  opportunity_score: number | null
+}
+
+type ClusterWithKeywords = {
+  id: string
+  cluster_name: string
+  intent: string | null
+  primary_keyword_id: string | null
+  keywords: KeywordRow[]
 }
 
 export default async function KeywordStratejisiPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ view?: string }>
 }) {
   const { id } = await params
+  const { view } = await searchParams
+  const isClusterView = view === 'cluster'
+
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -58,31 +75,57 @@ export default async function KeywordStratejisiPage({
     .single()
   if (!project) notFound()
 
-  // Keyword düz sorgusu — volume azalan (D-13)
+  // Keyword düz sorgusu — opportunity_score eklendi
   const { data: keywordsRaw } = await supabase
     .from('keywords')
-    .select('id, keyword, volume, cpc, difficulty, search_intent, enriched_at, cluster_id')
+    .select('id, keyword, volume, cpc, difficulty, search_intent, enriched_at, cluster_id, opportunity_score')
     .eq('project_id', id)
     .eq('user_id', user.id)
     .order('volume', { ascending: false, nullsFirst: false })
 
   const keywords: KeywordRow[] = (keywordsRaw ?? []) as KeywordRow[]
 
-  // Cluster adları badge gösterimi için
+  // Cluster adları + küme bilgisi
   const { data: clustersRaw } = await supabase
     .from('keyword_clusters')
-    .select('id, cluster_name')
+    .select('id, cluster_name, intent, primary_keyword_id')
     .eq('project_id', id)
     .eq('user_id', user.id)
+    .order('total_volume', { ascending: false, nullsFirst: false })
 
+  const clusters = clustersRaw ?? []
+
+  // Cluster map for flat table badge display
   const clusterMap: Record<string, string> = {}
-  for (const c of clustersRaw ?? []) {
+  for (const c of clusters) {
     clusterMap[c.id] = c.cluster_name
   }
 
+  // Cluster view için keyword'leri cluster'lara göre grupla
+  const clusterKeywordMap: Record<string, KeywordRow[]> = {}
+  for (const kw of keywords) {
+    if (kw.cluster_id) {
+      if (!clusterKeywordMap[kw.cluster_id]) clusterKeywordMap[kw.cluster_id] = []
+      clusterKeywordMap[kw.cluster_id].push(kw)
+    }
+  }
+
+  const clustersWithKeywords: ClusterWithKeywords[] = clusters.map((c) => ({
+    ...c,
+    keywords: clusterKeywordMap[c.id] ?? [],
+  }))
+
+  // ClusterPanel için allClusters (keyword count dahil)
+  const allClusters = clusters.map((c) => ({
+    id: c.id,
+    cluster_name: c.cluster_name,
+    intent: c.intent,
+    keyword_count: (clusterKeywordMap[c.id] ?? []).length,
+  }))
+
   // Özet sayıları
   const totalKeywords = keywords.length
-  const totalClusters = Object.keys(clusterMap).length
+  const totalClusters = clusters.length
   const pendingEnrichment = keywords.filter((kw) => !kw.enriched_at).length
 
   return (
@@ -111,7 +154,8 @@ export default async function KeywordStratejisiPage({
           <section className="space-y-3">
             <h2 className="text-base font-semibold">Keyword İçe Aktar</h2>
             <p className="text-sm text-muted-foreground">
-              Keyword listeni yapıştır — DataForSEO, Semrush, Ahrefs veya düz metin. Format: <code className="text-xs bg-secondary px-1 py-0.5 rounded">keyword tab volume tab KD</code>
+              Keyword listeni yapıştır — DataForSEO, Semrush, Ahrefs veya düz metin. Format:{' '}
+              <code className="text-xs bg-secondary px-1 py-0.5 rounded">keyword tab volume tab KD</code>
             </p>
             <KeywordImport projectId={id} />
           </section>
@@ -120,6 +164,7 @@ export default async function KeywordStratejisiPage({
 
           {/* Keyword listesi */}
           <section className="space-y-4">
+            {/* Section header: başlık + ViewToggle + ClusterButton */}
             <div className="flex items-center justify-between">
               <div className="space-y-1">
                 <h2 className="text-base font-semibold">
@@ -130,20 +175,36 @@ export default async function KeywordStratejisiPage({
                     </span>
                   )}
                 </h2>
-                {pendingEnrichment > 0 && (
-                  <p className="text-xs text-muted-foreground">
-                    {pendingEnrichment} keyword zenginleştirme bekliyor
-                  </p>
-                )}
               </div>
+              {totalKeywords > 0 && (
+                <div className="flex items-center gap-2">
+                  <ViewToggle currentView={view ?? 'flat'} />
+                  <ClusterButton projectId={id} hasExistingClusters={totalClusters > 0} />
+                </div>
+              )}
             </div>
+
+            {/* Enrichment uyarı banner */}
+            {pendingEnrichment > 0 && (
+              <div className="rounded-md border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-400">
+                {pendingEnrichment} keyword zenginleştirilmemiş — bunlar yalnızca metin benzerliğiyle kümelenecek.
+              </div>
+            )}
 
             {keywords.length === 0 ? (
               <div className="py-8 text-center">
                 <p className="text-sm text-muted-foreground">Henüz keyword eklenmemiş.</p>
                 <p className="text-sm text-muted-foreground">Yukarıdan keyword listeni içe aktar.</p>
               </div>
+            ) : isClusterView ? (
+              /* Küme Görünümü */
+              <ClusterPanel
+                clusters={clustersWithKeywords}
+                allClusters={allClusters}
+                projectId={id}
+              />
             ) : (
+              /* Düz Liste — 8 sütun (Skor eklendi) */
               <div className="rounded-md border border-border overflow-hidden">
                 <Table>
                   <TableHeader>
@@ -154,6 +215,7 @@ export default async function KeywordStratejisiPage({
                       <TableHead className="text-xs text-right w-18">CPC</TableHead>
                       <TableHead className="text-xs text-right w-16">KD</TableHead>
                       <TableHead className="text-xs w-28">Küme</TableHead>
+                      <TableHead className="text-xs text-right w-16">Skor</TableHead>
                       <TableHead className="text-xs w-28">Intent</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -192,6 +254,24 @@ export default async function KeywordStratejisiPage({
                               </Badge>
                             ) : (
                               <span className="text-sm text-muted-foreground">—</span>
+                            )}
+                          </TableCell>
+                          {/* Skor sütunu — Phase 6 yeni */}
+                          <TableCell className="text-right w-16">
+                            {kw.opportunity_score === null ? (
+                              <span className="text-sm text-muted-foreground">—</span>
+                            ) : kw.opportunity_score >= 70 ? (
+                              <Badge className="bg-violet-500/20 text-violet-400 text-xs border-0">
+                                {kw.opportunity_score.toFixed(1)}
+                              </Badge>
+                            ) : kw.opportunity_score >= 40 ? (
+                              <Badge className="bg-amber-500/20 text-amber-400 text-xs border-0">
+                                {kw.opportunity_score.toFixed(1)}
+                              </Badge>
+                            ) : (
+                              <Badge className="bg-secondary text-muted-foreground text-xs border-0">
+                                {kw.opportunity_score.toFixed(1)}
+                              </Badge>
                             )}
                           </TableCell>
                           <TableCell className="w-28">
