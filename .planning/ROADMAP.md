@@ -115,7 +115,10 @@ Plans:
   2. Each cluster has a primary keyword assigned; no keyword belongs to more than one cluster (cannibalization prevention enforced)
   3. Every keyword has an opportunity score calculated from traffic potential, commercial value, and competition score
   4. User can view all clusters and keywords in a panel, edit cluster assignments, and move keywords between clusters
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 06-01-PLAN.md — Backend core: clusterEnrichedKeywords (intent-first hibrid) + scoring.ts + clusterAndScoreKeywords / moveKeywordToCluster / setPrimaryKeyword Server Actions + vitest testleri
+- [ ] 06-02-PLAN.md — UI: ClusterButton + ViewToggle + ClusterPanel + MoveKeywordDialog + PrimaryKeywordStar + page.tsx Skor sütunu + searchParams view routing
 **UI hint**: yes
 
 ### Phase 7: Site Blueprint & Tree
@@ -152,6 +155,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 3. Rules Engine | 3/3 | Complete | 2026-04-23 |
 | 4. Competitor Intelligence | 4/4 | Complete | 2026-04-23 |
 | 5. Keyword Import & Enrichment | 2/2 | Complete | 2026-04-24 |
-| 6. Keyword Clustering & Scoring | 0/? | Not started | - |
+| 6. Keyword Clustering & Scoring | 0/2 | Not started | - |
 | 7. Site Blueprint & Tree | 0/? | Not started | - |
 | 8. Page Planner & Internal Links | 0/? | Not started | - |
