@@ -18,6 +18,7 @@ import { CompetitorDiscoveryDialog } from './CompetitorDiscoveryDialog'
 import { CompetitorFetchButton } from './CompetitorFetchButton'
 import { OwnDomainAnalyzeButton } from './OwnDomainAnalyzeButton'
 import { CompetitorDeleteButton } from './CompetitorDeleteButton'
+import { FetchAllButton } from './FetchAllButton'
 import { addCompetitor } from './actions'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -182,7 +183,15 @@ export default async function RakiplerPage({
 
           <div className="flex items-center justify-between">
             <h2 className="text-base font-semibold">Rakip Listesi</h2>
-            <CompetitorDiscoveryDialog projectId={id} />
+            <div className="flex items-center gap-2">
+              {competitors.length > 0 && (
+                <FetchAllButton
+                  projectId={id}
+                  competitors={competitors.map((c) => ({ id: c.id, domain: c.domain }))}
+                />
+              )}
+              <CompetitorDiscoveryDialog projectId={id} />
+            </div>
           </div>
 
           {/* Manuel ekleme formu */}
