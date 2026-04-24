@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: completed
-stopped_at: v1.0 Decision OS MVP milestone complete — Phase 8 human UAT passed, all 8 phases done
-last_updated: "2026-04-24T19:45:36.609Z"
-last_activity: 2026-04-24
+status: executing
+stopped_at: Completed 09-01-PLAN.md — page_packages migration deployed
+last_updated: "2026-04-24T20:55:00.000Z"
+last_activity: 2026-04-24 -- Phase 09 Plan 01 complete
 progress:
-  total_phases: 8
+  total_phases: 9
   completed_phases: 8
-  total_plans: 25
-  completed_plans: 25
-  percent: 100
+  total_plans: 29
+  completed_plans: 26
+  percent: 90
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-22)
 
 **Core value:** Her website projesi için sıfırdan açılıp kurgulanan, tüm kararları kaydeden ve stage bazlı ilerleyen tek merkezi proje yönetim sistemi
-**Current focus:** Phase --phase — 2
+**Current focus:** Phase 09 — page-package-generator
 
 ## Current Position
 
-Phase: 8 (tamamlandı)
-Plan: 2/2 plans tamamlandı (08-01, 08-02)
-Status: v1.0 Decision OS MVP milestone COMPLETE — tüm 8 faz tamamlandı
-Last activity: 2026-04-24
+Phase: 09 (page-package-generator) — EXECUTING
+Plan: 2 of 4
+Status: Executing Phase 09
+Last activity: 2026-04-24 -- 09-01 complete (page_packages migration deployed)
 
 Progress: [██████████] 100%
 
@@ -69,6 +69,7 @@ Progress: [██████████] 100%
 | Phase 05-keyword-import-enrichment P02 | 5 | 2 tasks | 3 files |
 | Phase 08-page-planner-internal-links P08-01 | 114 | 3 tasks | 5 files |
 | Phase 08-page-planner-internal-links P08-02 | 420 | 2 tasks | 5 files |
+| Phase 09-page-package-generator P09-01 | 8 | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -137,6 +138,10 @@ Recent decisions affecting current work:
 - BulkEditPagesDialog dirty state uses Map — only changed rows sent to updatePageAttributes
 - SuggestLinksDialog opened programmatically via open prop — no DialogTrigger asChild needed
 - Orphan computation runs SSR via Set of linkedPageIds — no extra DB query needed
+- page_packages tablosu pages'ten ayrı tutuldu — pages sadece site blueprint identity tutar (D-01, Phase 9)
+- Phase 9'da page_id UNIQUE constraint — versioning Phase 12'ye ertelendi (D-07)
+- supabase migration repair --status applied: önceden DB'ye uygulanmış migration'ları history'ye kayıt ettirme pattern
+- RLS UPDATE policy hem USING hem WITH CHECK — user_id tampering engellenir (T-09-01-01 mitigasyonu)
 
 ### Pending Todos
 
@@ -155,6 +160,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-24T19:45:36.601Z
-Stopped at: Completed 08-02-PLAN.md — Phase 8 Wave 2 client components
+Last session: 2026-04-24T20:55:00.000Z
+Stopped at: Completed 09-01-PLAN.md — page_packages migration deployed to Supabase
 Resume file: None
