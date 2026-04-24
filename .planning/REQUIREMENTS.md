@@ -136,13 +136,13 @@
 | RULE-01 | Phase 3 | Complete |
 | RULE-02 | Phase 3 | Complete |
 | RULE-03 | Phase 3 | Complete |
-| COMP-01 | Phase 4 | Pending |
-| COMP-02 | Phase 4 | Pending |
-| COMP-03 | Phase 4 | Pending |
-| COMP-04 | Phase 4 | Pending |
-| KEYW-01 | Phase 5 | Pending |
-| KEYW-02 | Phase 5 | Pending |
-| KEYW-03 | Phase 5 | Pending |
+| COMP-01 | Phase 4 | Complete |
+| COMP-02 | Phase 4 | Complete |
+| COMP-03 | Phase 4 | Complete |
+| COMP-04 | Phase 4 | Complete |
+| KEYW-01 | Phase 5 | Complete (05-01, 05-02) |
+| KEYW-02 | Phase 5 | Complete (05-01, 05-02) |
+| KEYW-03 | Phase 5 | Complete (05-01, 05-02) |
 | KEYW-04 | Phase 6 | Pending |
 | KEYW-05 | Phase 6 | Pending |
 | KEYW-06 | Phase 6 | Pending |

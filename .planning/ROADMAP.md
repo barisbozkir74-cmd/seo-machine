@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Project Core** - Project creation, central dashboard, stage engine, decision memory (completed 2026-04-22)
 - [x] **Phase 3: Rules Engine** - Global and project-scoped SEO rules that govern all downstream production (completed 2026-04-23)
 - [x] **Phase 4: Competitor Intelligence** - Manual and automated competitor tracking with gap/opportunity reports (completed 2026-04-23)
-- [ ] **Phase 5: Keyword Import & Enrichment** - CSV/manual keyword entry with DataForSEO enrichment
+- [x] **Phase 5: Keyword Import & Enrichment** - CSV/manual keyword entry with DataForSEO enrichment (completed 2026-04-24)
 - [ ] **Phase 6: Keyword Clustering & Scoring** - SERP-based clustering, cannibalization prevention, opportunity scoring
 - [ ] **Phase 7: Site Blueprint & Tree** - Auto-generated site tree from clusters with keyword-to-page mapping
 - [ ] **Phase 8: Page Planner & Internal Links** - Page type assignment, focus keywords, internal link map, orphan detection
@@ -100,7 +100,10 @@ Plans:
   1. User can upload a CSV file of keywords and all rows are imported into the project's keyword list
   2. User can add individual keywords one at a time through a form
   3. After import, the system fetches and displays volume, CPC, keyword difficulty, and search intent for each keyword via DataForSEO
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [x] 05-01-PLAN.md — fetchKeywordData (DataForSEO client) + importKeywords enrichment akışı + deleteKeyword Server Action (completed 2026-04-24)
+- [x] 05-02-PLAN.md — keyword-stratejisi page.tsx düz tabloya dönüşüm + KeywordDeleteButton + IntentBadge bileşenleri (completed 2026-04-24)
 **UI hint**: yes
 
 ### Phase 6: Keyword Clustering & Scoring
@@ -148,7 +151,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 2. Project Core | 6/6 | Complete    | 2026-04-22 |
 | 3. Rules Engine | 3/3 | Complete | 2026-04-23 |
 | 4. Competitor Intelligence | 4/4 | Complete | 2026-04-23 |
-| 5. Keyword Import & Enrichment | 0/? | Not started | - |
+| 5. Keyword Import & Enrichment | 2/2 | Complete | 2026-04-24 |
 | 6. Keyword Clustering & Scoring | 0/? | Not started | - |
 | 7. Site Blueprint & Tree | 0/? | Not started | - |
 | 8. Page Planner & Internal Links | 0/? | Not started | - |
