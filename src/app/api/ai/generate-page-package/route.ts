@@ -9,7 +9,16 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return new Response('Unauthorized', { status: 401 })
 
-  const { projectId, pageId } = await req.json() as { projectId: string; pageId: string }
+  let body: unknown
+  try {
+    body = await req.json()
+  } catch {
+    return new Response('Invalid JSON body', { status: 400 })
+  }
+  const { projectId, pageId } = body as { projectId?: string; pageId?: string }
+  if (!projectId || !pageId) {
+    return new Response('projectId and pageId are required', { status: 400 })
+  }
 
   // Proje bilgileri
   const { data: project } = await supabase
@@ -36,6 +45,7 @@ export async function POST(req: NextRequest) {
     .select('id, status')
     .eq('page_id', pageId)
     .eq('project_id', projectId)
+    .eq('user_id', user.id)
     .single()
 
   if (existingPkg?.status === 'locked') {
