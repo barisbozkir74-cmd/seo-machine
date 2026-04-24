@@ -80,7 +80,6 @@ export async function fetchTopPages(
           location_code: location.locationCode,
           language_code: location.languageCode,
           limit: 10,
-          order_by: [['metrics.organic.etv', 'desc']],
         },
       ]),
     }
