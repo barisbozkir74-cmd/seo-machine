@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 04-04-PLAN.md — Phase 4 Gap Closure (COMP-03, COMP-04 kapatıldı)
-last_updated: "2026-04-23T22:25:02Z"
+stopped_at: Completed 05-01-PLAN.md — fetchKeywordData + importKeywords enrichment + deleteKeyword
+last_updated: "2026-04-24T11:56:23.407Z"
 last_activity: 2026-04-23
 progress:
   total_phases: 8
   completed_phases: 4
-  total_plans: 16
-  completed_plans: 16
-  percent: 100
+  total_plans: 19
+  completed_plans: 18
+  percent: 95
 ---
 
 # Project State
@@ -27,10 +27,10 @@ See: .planning/PROJECT.md (updated 2026-04-22)
 
 Phase: 4 (tamamlandı)
 Plan: 4/4 plans tamamlandı (04-01, 04-02, 04-03, 04-04)
-Status: Phase 4 complete — Phase 5 (Keyword Import & Enrichment) bir sonraki
+Status: Phase 5 planned — Ready to execute (2 plans, 2 waves)
 Last activity: 2026-04-23
 
-Progress: [██████████] 100%
+Progress: [██████████] 95%
 
 ## Performance Metrics
 
@@ -65,6 +65,7 @@ Progress: [██████████] 100%
 | Phase 04-competitor-intelligence P04-02 | 2 | 2 tasks | 1 files |
 | Phase 04-competitor-intelligence P04-03 | 5 | 2 tasks | 4 files |
 | Phase 04-competitor-intelligence P04-04 | 12 | 2 tasks | 4 files |
+| Phase 05-keyword-import-enrichment P01 | 2 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -126,6 +127,9 @@ Recent decisions affecting current work:
 - verifyProjectOwnership yardımcı fonksiyon: 4 action'da tekrar eden ownership check DRY pattern
 - buildGapReport SSR'da hesaplanır — pure function olarak tanımlandı, client bundle maliyeti yok (COMP-04)
 - OwnDomainAnalyzeButton dynamic import('./actions') — server-only modülü client'ta doğrudan import edilemez
+- enrichedCount ImportKeywordsResult tipine eklendi — UI'da gösterilmiyor, ileriki fazlar için hazır
+- deleteKeyword üçlü ownership — keywordId + projectId + user.id; kümedeki son keyword silinince keyword_clusters da temizlenir (D-12)
+- fetchKeywordData: boş liste guard + keywords_data/google_ads/search_volume/live endpoint; Türkiye varsayılan (2792, tr)
 
 ### Pending Todos
 
@@ -144,6 +148,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-23T22:25:02Z
-Stopped at: Completed 04-04-PLAN.md — Phase 4 Gap Closure (COMP-03, COMP-04 kapatıldı)
+Last session: 2026-04-24T11:56:23.398Z
+Stopped at: Completed 05-01-PLAN.md — fetchKeywordData + importKeywords enrichment + deleteKeyword
 Resume file: None

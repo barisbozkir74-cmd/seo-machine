@@ -47,9 +47,12 @@
 
 ### Keyword Center
 
-- [ ] **KEYW-01**: Kullanıcı CSV dosyasıyla keyword listesi yükleyebilir
-- [ ] **KEYW-02**: Kullanıcı tekil keyword'leri manuel olarak ekleyebilir
-- [ ] **KEYW-03**: Sistem DataForSEO ile her keyword için hacim, CPC, keyword difficulty ve search intent çeker (enrichment)
+- [x] **KEYW-01
+**: Kullanıcı CSV dosyasıyla keyword listesi yükleyebilir
+- [x] **KEYW-02
+**: Kullanıcı tekil keyword'leri manuel olarak ekleyebilir
+- [x] **KEYW-03
+**: Sistem DataForSEO ile her keyword için hacim, CPC, keyword difficulty ve search intent çeker (enrichment)
 - [ ] **KEYW-04**: Sistem keyword'leri SERP similarity ve intent mapping ile otomatik cluster'lara böler
 - [ ] **KEYW-05**: Her cluster için primary keyword atanır; tekil keyword başka cluster'a atanamaz (cannibalization prevention)
 - [ ] **KEYW-06**: Sistem her keyword için opportunity score hesaplar (traffic potential, commercial value, competition score bileşimi)
