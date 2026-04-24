@@ -185,3 +185,49 @@ export async function fetchBacklinksSummary(
     rank: result.rank ?? 0,
   }
 }
+
+export type KeywordDataItem = {
+  keyword: string
+  search_volume: number | null
+  cpc: number | null
+  keyword_difficulty: number | null
+  search_intent: string | null
+}
+
+export async function fetchKeywordData(
+  keywords: string[],
+  credentials: { login: string; password: string },
+  location: { locationCode: number; languageCode: string } = { locationCode: 2792, languageCode: 'tr' }
+): Promise<KeywordDataItem[]> {
+  if (keywords.length === 0) return []
+
+  const authHeader = `Basic ${Buffer.from(`${credentials.login}:${credentials.password}`).toString('base64')}`
+
+  const response = await fetch(
+    'https://api.dataforseo.com/v3/keywords_data/google_ads/search_volume/live',
+    {
+      method: 'POST',
+      headers: { Authorization: authHeader, 'Content-Type': 'application/json' },
+      body: JSON.stringify([
+        {
+          keywords,
+          location_code: location.locationCode,
+          language_code: location.languageCode,
+        },
+      ]),
+    }
+  )
+
+  if (!response.ok) throw new Error(`DataForSEO Keyword Data API hatası: ${response.status}`)
+
+  const data = await response.json()
+  const items: Record<string, unknown>[] = data.tasks?.[0]?.result ?? []
+
+  return items.map((item) => ({
+    keyword: item.keyword as string,
+    search_volume: (item.search_volume as number) ?? null,
+    cpc: (item.cpc as number) ?? null,
+    keyword_difficulty: (item.keyword_difficulty as number) ?? null,
+    search_intent: (item.search_intent as string) ?? null,
+  }))
+}
