@@ -138,6 +138,7 @@ export async function createPagePackage(
         .from('page_packages')
         .select('id')
         .eq('page_id', pageId)
+        .eq('user_id', user.id)
         .single()
       if (existing) return { success: true, id: existing.id }
     }
@@ -167,6 +168,23 @@ export async function updatePackageStatus(
 
   const project = await verifyOwnership(supabase, projectId, user.id)
   if (!project) return { success: false, error: 'Proje bulunamadı.' }
+
+  // Mevcut durumu oku ve geçişin geçerli olup olmadığını doğrula
+  const { data: current } = await supabase
+    .from('page_packages')
+    .select('status')
+    .eq('id', packageId)
+    .eq('user_id', user.id)
+    .single()
+
+  const validTransitions: Record<string, string[]> = {
+    draft: ['approved'],
+    approved: ['locked', 'draft'],
+    locked: ['approved'],
+  }
+  if (!current || !validTransitions[current.status]?.includes(newStatus)) {
+    return { success: false, error: 'Geçersiz durum geçişi.' }
+  }
 
   const now = new Date().toISOString()
   const timestampField =
