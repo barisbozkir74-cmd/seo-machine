@@ -143,7 +143,10 @@ Plans:
   1. Each page in the blueprint has a page type (homepage/category/service/product/blog/landing), focus keyword, search intent, and priority level assigned
   2. System generates an internal link map showing pillar–support relationships and anchor text suggestions for each link
   3. Pages with no incoming or outgoing links are flagged as orphans with a visible warning
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 08-01-PLAN.md — Phase 7 technical debt (WR-01/02/03/04/05) + updatePageAttributes + suggestInternalLinks server actions
+- [ ] 08-02-PLAN.md — BulkEditPagesDialog + SuggestLinksButton + SuggestLinksDialog + orphan banner + page wiring
 **UI hint**: yes
 
 ## Progress
@@ -160,4 +163,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 5. Keyword Import & Enrichment | 2/2 | Complete | 2026-04-24 |
 | 6. Keyword Clustering & Scoring | 0/2 | Not started | - |
 | 7. Site Blueprint & Tree | 0/? | Not started | - |
-| 8. Page Planner & Internal Links | 0/? | Not started | - |
+| 8. Page Planner & Internal Links | 0/2 | Not started | - |
