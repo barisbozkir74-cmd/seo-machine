@@ -347,12 +347,14 @@ export function PagePackageEditor({
 
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-2">
-            <QaBadge
-              seoTitle={seoTitle}
-              metaDescription={metaDescription}
-              h1={h1}
-              focusKeyword={page.focus_keyword_text ?? null}
-            />
+            {pkg !== null && (
+              <QaBadge
+                seoTitle={seoTitle}
+                metaDescription={metaDescription}
+                h1={h1}
+                focusKeyword={page.focus_keyword_text ?? null}
+              />
+            )}
             <PackageStatusBadge status={pkg?.status ?? null} />
           </div>
 
