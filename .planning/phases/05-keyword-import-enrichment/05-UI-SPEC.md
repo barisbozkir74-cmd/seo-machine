@@ -62,8 +62,8 @@ Phase 3 tipografi sistemi korunur. Geist Sans fontu.
 
 Kurallar:
 - Sadece 2 font weight: 400 (normal) ve 600 (semibold)
-- CPC sütunu: `text-sm font-medium text-right` — numeric değerler sağa hizalı, orta ağırlık
-- Volume sütunu: `text-sm font-medium text-right` — Phase 2 mevcut pattern ile tutarlı
+- CPC sütunu: `text-sm font-normal text-right` — numeric değerler sağa hizalı, weight 400
+- Volume sütunu: `text-sm font-normal text-right` — numeric değerler sağa hizalı, weight 400
 - KD sütunu: `text-sm text-right` — Phase 2 mevcut pattern ile tutarlı
 - Enrichment bekleme durumundaki satır: `text-sm opacity-50` — içerik görünür ama soluk
 
