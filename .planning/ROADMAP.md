@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: Rules Engine** - Global and project-scoped SEO rules that govern all downstream production (completed 2026-04-23)
 - [x] **Phase 4: Competitor Intelligence** - Manual and automated competitor tracking with gap/opportunity reports (completed 2026-04-23)
 - [x] **Phase 5: Keyword Import & Enrichment** - CSV/manual keyword entry with DataForSEO enrichment (completed 2026-04-24)
-- [ ] **Phase 6: Keyword Clustering & Scoring** - SERP-based clustering, cannibalization prevention, opportunity scoring
+- [x] **Phase 6: Keyword Clustering & Scoring** - SERP-based clustering, cannibalization prevention, opportunity scoring (completed 2026-04-24)
 - [ ] **Phase 7: Site Blueprint & Tree** - Auto-generated site tree from clusters with keyword-to-page mapping
 - [ ] **Phase 8: Page Planner & Internal Links** - Page type assignment, focus keywords, internal link map, orphan detection
 
@@ -117,8 +117,8 @@ Plans:
   4. User can view all clusters and keywords in a panel, edit cluster assignments, and move keywords between clusters
 **Plans**: 2 plans
 Plans:
-- [ ] 06-01-PLAN.md — Backend core: clusterEnrichedKeywords (intent-first hibrid) + scoring.ts + clusterAndScoreKeywords / moveKeywordToCluster / setPrimaryKeyword Server Actions + vitest testleri
-- [ ] 06-02-PLAN.md — UI: ClusterButton + ViewToggle + ClusterPanel + MoveKeywordDialog + PrimaryKeywordStar + page.tsx Skor sütunu + searchParams view routing
+- [x] 06-01-PLAN.md — Backend core: clusterEnrichedKeywords (intent-first hibrid) + scoring.ts + clusterAndScoreKeywords / moveKeywordToCluster / setPrimaryKeyword Server Actions + vitest testleri
+- [x] 06-02-PLAN.md — UI: ClusterButton + ViewToggle + ClusterPanel + MoveKeywordDialog + PrimaryKeywordStar + page.tsx Skor sütunu + searchParams view routing
 **UI hint**: yes
 
 ### Phase 7: Site Blueprint & Tree
