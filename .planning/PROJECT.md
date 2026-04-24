@@ -34,11 +34,13 @@ Her website projesi için sıfırdan açılıp kurgulanan, tüm kararları kayde
 - [ ] Cluster-to-revenue mapping (bilgi trafiği vs. ticari intent ayrımı)
 - [ ] Cannibalization prevention — tek cluster için tek primary page zorunluluğu
 
-#### Site Blueprint
-- [ ] Keyword cluster'larından site tree üretimi
-- [ ] Menü, kategori/servis/ürün/blog ilişkisi ve hub-spoke yapısı
-- [ ] Search intent haritası
-- [ ] Keyword-to-page mapping (her keyword tam olarak bir sayfaya bağlanır)
+#### Site Blueprint (Validated in Phase 7: site-blueprint-tree — 2026-04-24)
+- [x] Keyword cluster'larından site tree üretimi (generatePagesFromClusters — BLUE-01)
+- [x] Menü, kategori/servis/ürün/blog ilişkisi — D-02 intent→page_type mapping
+- [x] Keyword-to-page mapping + conflict detection (BLUE-02)
+- [x] Site tree reorder — ↑↓ sort_order swap (BLUE-03)
+- [x] Tab switcher: Ağaç Görünümü + Keyword Eşleme
+- [x] D-06 slugify: Türkçe normalize, max 60 char, -2/-3 duplicate suffix
 
 #### Page Production
 - [ ] Page planner — hangi sayfalar açılacak, tipi, önceliği, focus keyword'ü
