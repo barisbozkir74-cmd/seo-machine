@@ -140,23 +140,6 @@ export async function upsertMenu(
 
 // ─── Phase 7: Site Blueprint Generation ────────────────────────────────────
 
-/**
- * D-02 Intent → page_type haritası.
- * Unknown/null/eşleşmeyen değerler 'blog' döner.
- */
-export const INTENT_TO_PAGE_TYPE: Record<string, string> = {
-  transactional: 'hizmet',
-  commercial: 'hizmet',
-  informational: 'blog',
-  navigational: 'ana-sayfa',
-}
-
-export function intentToPageType(intent: string | null | undefined): string {
-  if (!intent) return 'blog'
-  const key = intent.toLowerCase().trim()
-  return INTENT_TO_PAGE_TYPE[key] ?? 'blog'
-}
-
 export type GenerateRowInput = {
   clusterId: string
   pageName: string      // kullanıcının dialog'ta düzenlediği başlık (trim)
