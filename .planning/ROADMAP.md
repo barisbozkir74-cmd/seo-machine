@@ -159,8 +159,12 @@ Plans:
   3. Kullanıcı paketi manuel düzenleyip onaylayabilir (approved) ve kilitleyebilir (locked)
   4. Basit client-side QA validator: title ≤60, meta ≤155, H1 dolu, focus keyword title'da
   5. Sayfa listesinde her satırda package status badge (yok / draft / approved / locked) görünür
-**Plans**: TBD
-Plans: []
+**Plans**: 4 plans
+Plans:
+- [ ] 09-01-PLAN.md — page_packages migration SQL + supabase db push (BLOCKING)
+- [ ] 09-02-PLAN.md — Server actions (updatePagePackage→page_packages, createPagePackage, updatePackageStatus) + AI route locked check
+- [ ] 09-03-PLAN.md — Yeni bileşenler: QaBadge + PackageStatusBadge + LockedBanner
+- [ ] 09-04-PLAN.md — page.tsx evolve (page_packages join, PackageStatusBadge) + PagePackageEditor.tsx migration (status workflow, locked state, font-medium cleanup)
 **UI hint**: yes
 
 ## Progress
@@ -178,4 +182,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 6. Keyword Clustering & Scoring | 2/2 | Complete | 2026-04-24 |
 | 7. Site Blueprint & Tree | 2/2 | Complete | 2026-04-24 |
 | 8. Page Planner & Internal Links | 2/2 | Complete | 2026-04-24 |
-| 9. Page Package Generator | 0/? | Not started | - |
+| 9. Page Package Generator | 0/4 | Not started | - |
