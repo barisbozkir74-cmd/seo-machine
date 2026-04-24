@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState, useTransition, type ReactNode } from 'react'
+import { useEffect, useMemo, useState, useTransition, type ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -69,6 +69,10 @@ export function GeneratePagesDialog({
   )
 
   const [state, setState] = useState<RowState[]>(initialState)
+
+  useEffect(() => {
+    setState(initialState)
+  }, [initialState])
 
   const handleOpenChange = (next: boolean) => {
     if (!next) {

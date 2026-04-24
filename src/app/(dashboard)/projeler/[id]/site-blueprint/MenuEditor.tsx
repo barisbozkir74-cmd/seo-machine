@@ -5,6 +5,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { upsertMenu, type MenuType, type MenuItem } from './actions'
 
+// Local augmented type with stable key — extends the actions MenuItem
+type MenuItemWithKey = { label: string; href: string; page_id?: string; _key: string }
+
 type Props = {
   projectId: string
   menuType: MenuType
@@ -20,7 +23,9 @@ export function MenuEditor({
   menuTitle,
   initialItems,
 }: Props) {
-  const [items, setItems] = useState<MenuItem[]>(initialItems)
+  const [items, setItems] = useState<MenuItemWithKey[]>(
+    initialItems.map((item) => ({ ...item, _key: crypto.randomUUID() }))
+  )
   const [newItem, setNewItem] = useState(EMPTY_ITEM)
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saved' | 'error'>('idle')
   const [isPending, startTransition] = useTransition()
@@ -32,18 +37,21 @@ export function MenuEditor({
 
   function handleAddItem() {
     if (!newItem.label.trim() || !newItem.href.trim()) return
-    setItems((prev) => [...prev, { label: newItem.label.trim(), href: newItem.href.trim() }])
+    setItems((prev) => [
+      ...prev,
+      { label: newItem.label.trim(), href: newItem.href.trim(), _key: crypto.randomUUID() },
+    ])
     setNewItem(EMPTY_ITEM)
   }
 
-  function handleDeleteItem(index: number) {
-    setItems((prev) => prev.filter((_, i) => i !== index))
+  function handleDeleteItem(key: string) {
+    setItems((prev) => prev.filter((item) => item._key !== key))
   }
 
   function handleSave() {
     setSaveStatus('idle')
     startTransition(async () => {
-      const result = await upsertMenu(projectId, menuType, items)
+      const result = await upsertMenu(projectId, menuType, items.map(({ _key: _k, ...rest }) => rest))
       setSaveStatus(result.success ? 'saved' : 'error')
     })
   }
@@ -66,9 +74,9 @@ export function MenuEditor({
             Henüz item yok.
           </p>
         ) : (
-          items.map((item, index) => (
+          items.map((item) => (
             <div
-              key={index}
+              key={item._key}
               className="flex items-center gap-3 px-4 py-2 text-sm"
             >
               <span className="font-medium min-w-[120px] truncate">
@@ -80,7 +88,7 @@ export function MenuEditor({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => handleDeleteItem(index)}
+                onClick={() => handleDeleteItem(item._key)}
                 className="h-7 px-2 text-muted-foreground hover:text-destructive shrink-0"
               >
                 Sil
