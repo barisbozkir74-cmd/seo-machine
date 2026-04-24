@@ -30,11 +30,21 @@ type CategoryEntry = {
 
 type CategoryStructure = { [category: string]: CategoryEntry } | null
 
+type TopPagesNormalized = { total_count: number; pages: Array<{ url: string; etv: number }> }
+
+function normalizeTopPages(raw: unknown): TopPagesNormalized | null {
+  if (!raw) return null
+  if (Array.isArray(raw)) return { total_count: raw.length, pages: raw }
+  const obj = raw as TopPagesNormalized
+  if (obj.pages) return obj
+  return null
+}
+
 type Competitor = {
   id: string
   domain: string
   source: string
-  top_pages: { total_count: number; pages: Array<{ url: string; etv: number }> } | null
+  top_pages: unknown
   category_structure: CategoryStructure
   content_areas: Record<string, unknown> | null
   updated_at: string
@@ -209,8 +219,9 @@ export default async function RakiplerPage({
               </TableHeader>
               <TableBody>
                 {competitors.map((comp) => {
-                  const totalEtv = comp.top_pages
-                    ? comp.top_pages.pages.reduce((s, p) => s + (p.etv ?? 0), 0)
+                  const topPages = normalizeTopPages(comp.top_pages)
+                  const totalEtv = topPages
+                    ? topPages.pages.reduce((s, p) => s + (p.etv ?? 0), 0)
                     : null
                   const competitionLevel =
                     totalEtv === null
@@ -224,7 +235,7 @@ export default async function RakiplerPage({
                   return (
                     <TableRow key={comp.id}>
                       <TableCell className="font-medium">
-                        {comp.top_pages?.pages.length ? (
+                        {topPages?.pages.length ? (
                           <Link
                             href={`/projeler/${id}/rakipler/${comp.id}`}
                             className="hover:underline text-foreground"
@@ -250,8 +261,8 @@ export default async function RakiplerPage({
                         )}
                       </TableCell>
                       <TableCell className="text-right">
-                        {comp.top_pages ? (
-                          <span className="text-sm">{comp.top_pages.total_count}</span>
+                        {topPages ? (
+                          <span className="text-sm">{topPages.total_count}</span>
                         ) : (
                           <span className="text-muted-foreground text-xs">—</span>
                         )}
@@ -290,7 +301,7 @@ export default async function RakiplerPage({
                         <CompetitorFetchButton
                           competitorId={comp.id}
                           projectId={id}
-                          lastFetched={comp.top_pages?.pages.length ? comp.updated_at : null}
+                          lastFetched={topPages?.pages.length ? comp.updated_at : null}
                         />
                       </TableCell>
                       <TableCell className="text-right">
