@@ -290,7 +290,11 @@ export function PagePackageEditor({
     startTransition(async () => {
       // package yoksa önce oluştur
       if (!pkg) {
-        const createResult = await createPagePackage(projectId, page.id, 'manual')
+        const createResult = await createPagePackage(
+          projectId,
+          page.id,
+          aiStatus === 'done' ? 'ai' : 'manual'
+        )
         if (!createResult.success) {
           setSaveStatus('error')
           setErrorMsg(createResult.error)
