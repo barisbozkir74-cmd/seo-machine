@@ -63,8 +63,10 @@
 - [ ] **BLUE-01**: Sistem keyword cluster'larından otomatik site tree üretir (menü grupları, kategori/servis/ürün/blog ayrımı, hub-spoke yapısı)
 - [ ] **BLUE-02**: Her keyword tam olarak bir sayfaya map'lenir (keyword-to-page mapping); çakışma tespit edilir
 - [ ] **BLUE-03**: Kullanıcı oluşturulan site tree'yi görüntüleyebilir, sayfa ekleyebilir/çıkarabilir/yeniden sıralayabilir
-- [ ] **BLUE-04**: Sayfa planner: her sayfa için page type (homepage/category/service/product/blog/landing), focus keyword, intent ve öncelik atanır
-- [ ] **BLUE-05**: Internal link haritası üretilir — pillar ve support sayfa ilişkileri, anchor text önerileri; orphan sayfa tespit edilir ve uyarı verilir
+- [x] **BLUE-04
+**: Sayfa planner: her sayfa için page type (homepage/category/service/product/blog/landing), focus keyword, intent ve öncelik atanır
+- [x] **BLUE-05
+**: Internal link haritası üretilir — pillar ve support sayfa ilişkileri, anchor text önerileri; orphan sayfa tespit edilir ve uyarı verilir
 
 ---
 
