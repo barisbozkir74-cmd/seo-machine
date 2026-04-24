@@ -162,9 +162,9 @@ Plans:
 **Plans**: 4 plans
 Plans:
 - [x] 09-01-PLAN.md — page_packages migration SQL + supabase db push (BLOCKING) (completed 2026-04-24)
-- [ ] 09-02-PLAN.md — Server actions (updatePagePackage→page_packages, createPagePackage, updatePackageStatus) + AI route locked check
-- [ ] 09-03-PLAN.md — Yeni bileşenler: QaBadge + PackageStatusBadge + LockedBanner
-- [ ] 09-04-PLAN.md — page.tsx evolve (page_packages join, PackageStatusBadge) + PagePackageEditor.tsx migration (status workflow, locked state, font-medium cleanup)
+- [x] 09-02-PLAN.md — Server actions (updatePagePackage→page_packages, createPagePackage, updatePackageStatus) + AI route locked check
+- [x] 09-03-PLAN.md — Yeni bileşenler: QaBadge + PackageStatusBadge + LockedBanner
+- [x] 09-04-PLAN.md — page.tsx evolve (page_packages join, PackageStatusBadge) + PagePackageEditor.tsx migration (status workflow, locked state, font-medium cleanup)
 **UI hint**: yes
 
 ## Progress
