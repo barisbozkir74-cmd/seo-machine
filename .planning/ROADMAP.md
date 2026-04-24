@@ -149,6 +149,20 @@ Plans:
 - [x] 08-02-PLAN.md — BulkEditPagesDialog + SuggestLinksButton + SuggestLinksDialog + orphan banner + page wiring (completed 2026-04-24)
 **UI hint**: yes
 
+### Phase 9: Page Package Generator
+**Goal**: Her site blueprint sayfası için publish-ready SEO page package üretmek — AI destekli generation, manuel düzenleme, basit QA validator ve draft→approved→locked status workflow
+**Depends on**: Phase 8
+**Requirements**: BLUE-04 (evolved), PAGE-01 (partial)
+**Success Criteria** (what must be TRUE):
+  1. Her sayfa için ayrı `page_packages` tablosunda SEO paketi saklanır (seo_title, meta, H1, heading hierarchy, content blocks, CTA, FAQ, schema, secondary keywords)
+  2. "AI ile Üret" butonu streaming ile package üretir ve draft olarak kaydeder
+  3. Kullanıcı paketi manuel düzenleyip onaylayabilir (approved) ve kilitleyebilir (locked)
+  4. Basit client-side QA validator: title ≤60, meta ≤155, H1 dolu, focus keyword title'da
+  5. Sayfa listesinde her satırda package status badge (yok / draft / approved / locked) görünür
+**Plans**: TBD
+Plans: []
+**UI hint**: yes
+
 ## Progress
 
 **Execution Order:**
@@ -164,3 +178,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 6. Keyword Clustering & Scoring | 2/2 | Complete | 2026-04-24 |
 | 7. Site Blueprint & Tree | 2/2 | Complete | 2026-04-24 |
 | 8. Page Planner & Internal Links | 2/2 | Complete | 2026-04-24 |
+| 9. Page Package Generator | 0/? | Not started | - |
