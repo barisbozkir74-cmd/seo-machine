@@ -114,7 +114,20 @@ export async function updatePageAttributes(
     .single()
   if (!project) return { success: false, error: 'Proje bulunamadı.' }
 
-  // Bulk upsert — her satır mevcut kaydı günceller (id + user_id eşleşmeli)
+  // CR-01 fix: page ID'lerinin bu projeye ve kullanıcıya ait olduğunu doğrula
+  const updateIds = updates.map((u) => u.id)
+  const { data: ownedPages } = await supabase
+    .from('pages')
+    .select('id')
+    .in('id', updateIds)
+    .eq('project_id', projectId)
+    .eq('user_id', user.id)
+  const ownedIds = new Set((ownedPages ?? []).map((p: { id: string }) => p.id))
+  if (ownedIds.size !== updateIds.length) {
+    return { success: false, error: 'Bazı sayfalar bu projeye ait değil.' }
+  }
+
+  // Bulk upsert — tüm ID'ler doğrulandı; user_id ve project_id payload'a dahil
   const payload = updates.map((u) => ({
     id: u.id,
     project_id: projectId,
