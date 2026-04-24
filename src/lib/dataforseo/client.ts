@@ -61,7 +61,7 @@ export async function fetchTopPages(
   domain: string,
   credentials: { login: string; password: string },
   location: { locationCode: number; languageCode: string } = { locationCode: 2792, languageCode: 'tr' }
-): Promise<TopPageItem[]> {
+): Promise<{ items: TopPageItem[]; totalCount: number }> {
   const authHeader = `Basic ${Buffer.from(`${credentials.login}:${credentials.password}`).toString('base64')}`
 
   const cleanDomain = domain.replace(/^https?:\/\//, '').replace(/^www\./, '')
@@ -90,7 +90,11 @@ export async function fetchTopPages(
   }
 
   const data = await response.json()
-  return (data.tasks?.[0]?.result?.[0]?.items ?? []) as TopPageItem[]
+  const result = data.tasks?.[0]?.result?.[0]
+  return {
+    items: (result?.items ?? []) as TopPageItem[],
+    totalCount: result?.total_count ?? 0,
+  }
 }
 
 export type RankedKeywordItem = {

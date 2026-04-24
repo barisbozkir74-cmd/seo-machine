@@ -214,13 +214,16 @@ export async function fetchCompetitorData(
     const location = resolveLocation(project?.target_country, project?.target_language)
 
     // DataForSEO Relevant Pages API — top 10 organik sayfa (D-05)
-    const pages = await fetchTopPages(competitor.domain, credentials, location)
+    const { items: pages, totalCount } = await fetchTopPages(competitor.domain, credentials, location)
 
     // Top pages — URL + tahmini trafik (title bu endpoint'te gelmiyor — RESEARCH.md Pitfall 1)
-    const topPages = pages.map((p) => ({
-      url: p.page_address,
-      etv: p.metrics?.organic?.etv ?? 0,
-    }))
+    const topPages = {
+      total_count: totalCount,
+      pages: pages.map((p) => ({
+        url: p.page_address,
+        etv: p.metrics?.organic?.etv ?? 0,
+      })),
+    }
 
     // URL pattern analizi ile kategori çıkarımı (D-05)
     const categoryStructure = extractCategories(pages)
@@ -374,7 +377,7 @@ export async function fetchOwnDomainData(
   try {
     const credentials = await getDataForSeoCredentials()
     const location = resolveLocation(project.target_country, project.target_language)
-    const pages = await fetchTopPages(domain, credentials, location)
+    const { items: pages } = await fetchTopPages(domain, credentials, location)
     const categoryStructure = extractCategories(pages)
 
     const result: Record<string, number> = {}

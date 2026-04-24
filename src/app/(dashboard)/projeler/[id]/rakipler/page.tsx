@@ -34,7 +34,7 @@ type Competitor = {
   id: string
   domain: string
   source: string
-  top_pages: Array<{ url: string; etv: number }> | null
+  top_pages: { total_count: number; pages: Array<{ url: string; etv: number }> } | null
   category_structure: CategoryStructure
   content_areas: Record<string, unknown> | null
   updated_at: string
@@ -210,7 +210,7 @@ export default async function RakiplerPage({
               <TableBody>
                 {competitors.map((comp) => {
                   const totalEtv = comp.top_pages
-                    ? comp.top_pages.reduce((s, p) => s + (p.etv ?? 0), 0)
+                    ? comp.top_pages.pages.reduce((s, p) => s + (p.etv ?? 0), 0)
                     : null
                   const competitionLevel =
                     totalEtv === null
@@ -224,7 +224,7 @@ export default async function RakiplerPage({
                   return (
                     <TableRow key={comp.id}>
                       <TableCell className="font-medium">
-                        {comp.top_pages ? (
+                        {comp.top_pages?.pages.length ? (
                           <Link
                             href={`/projeler/${id}/rakipler/${comp.id}`}
                             className="hover:underline text-foreground"
@@ -250,7 +250,9 @@ export default async function RakiplerPage({
                         )}
                       </TableCell>
                       <TableCell className="text-right">
-                        {comp.top_pages ? comp.top_pages.length : (
+                        {comp.top_pages ? (
+                          <span className="text-sm">{comp.top_pages.total_count}</span>
+                        ) : (
                           <span className="text-muted-foreground text-xs">—</span>
                         )}
                       </TableCell>
@@ -288,7 +290,7 @@ export default async function RakiplerPage({
                         <CompetitorFetchButton
                           competitorId={comp.id}
                           projectId={id}
-                          lastFetched={comp.top_pages ? comp.updated_at : null}
+                          lastFetched={comp.top_pages?.pages.length ? comp.updated_at : null}
                         />
                       </TableCell>
                       <TableCell className="text-right">
