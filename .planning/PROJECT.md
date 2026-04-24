@@ -8,6 +8,16 @@ Bir web tasarım & SEO ajansının yeni gelen her website projesini uçtan uca y
 
 Her website projesi için sıfırdan açılıp kurgulanan, tüm kararları kaydeden ve stage bazlı ilerleyen **tek merkezi proje yönetim sistemi** — ajans çalışanı sistemi yönetir, sistem kendi başına rastgele akmaz.
 
+## Current Milestone: v2.0 Page Package OS
+
+**Goal:** Her sayfa paketini yayına taşımadan önce schema, metadata ve SEO kuralları çerçevesinde otomatik doğrulayan ve puanlayan bir kalite kontrol katmanı kurmak.
+
+**Target features:**
+- Schema Center — page_type'a göre JSON-LD üretimi (Organization, WebPage, Service, FAQPage, LocalBusiness)
+- Metadata Validator — title/meta/H1/slug tutarlılık kontrolü, kaydetme veya onay öncesi uyarı
+- Rules Engine — proje bazlı SEO kuralları, panelden değiştirilebilir
+- QA Scoring — SEO score, content score, human score, schema score, readiness score
+
 ## Requirements
 
 ### Validated
@@ -137,4 +147,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-24 — Phase 9 complete (Page Package Generator) — page_packages table live, AI streaming, status workflow, QA validator*
+*Last updated: 2026-04-24 — Milestone v2.0 started (Page Package OS) — Schema Center, Metadata Validator, Rules Engine, QA Scoring*
