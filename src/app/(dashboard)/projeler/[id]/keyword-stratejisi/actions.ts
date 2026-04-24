@@ -5,7 +5,8 @@ import { createClient } from '@/lib/supabase/server'
 import { getDataForSeoCredentials } from '@/lib/supabase/vault'
 import { fetchKeywordData } from '@/lib/dataforseo/client'
 import { parseKeywordText } from '@/lib/keywords/parser'
-import { clusterKeywords } from '@/lib/keywords/clustering'
+import { clusterKeywords, clusterEnrichedKeywords } from '@/lib/keywords/clustering'
+import { calculateOpportunityScore, buildScoringContext } from '@/lib/keywords/scoring'
 
 export type ImportKeywordsResult =
   | { success: true; clusterCount: number; keywordCount: number; enrichedCount: number }
@@ -177,6 +178,215 @@ export async function deleteKeyword(
         .eq('user_id', user.id)
     }
   }
+
+  revalidatePath(`/projeler/${projectId}/keyword-stratejisi`)
+  return { success: true }
+}
+
+// ─── Phase 6: Clustering & Scoring Actions ───────────────────────────────────
+
+export type ClusterAndScoreResult =
+  | { success: true; clusterCount: number }
+  | { success: false; error: string }
+
+export async function clusterAndScoreKeywords(
+  projectId: string
+): Promise<ClusterAndScoreResult> {
+  if (!projectId || !/^[0-9a-f-]{36}$/i.test(projectId)) {
+    return { success: false, error: 'Geçersiz proje ID.' }
+  }
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Oturum bulunamadı.' }
+
+  const { data: project } = await supabase
+    .from('projects')
+    .select('id')
+    .eq('id', projectId)
+    .eq('user_id', user.id)
+    .single()
+  if (!project) return { success: false, error: 'Proje bulunamadı.' }
+
+  // Enriched keywords'ü çek (Pitfall 1: enriched_at IS NOT NULL filtresi)
+  const { data: keywordsRaw } = await supabase
+    .from('keywords')
+    .select('id, keyword, volume, cpc, difficulty, search_intent')
+    .eq('project_id', projectId)
+    .eq('user_id', user.id)
+    .not('enriched_at', 'is', null)
+
+  const keywords = keywordsRaw ?? []
+
+  if (keywords.length === 0) {
+    return { success: false, error: 'Kümelenecek keyword bulunamadı. Önce zenginleştirme çalıştırın.' }
+  }
+
+  // DoS guard: 500+ keyword için uyarı döndür
+  if (keywords.length > 500) {
+    return { success: false, error: `Proje çok fazla keyword içeriyor (${keywords.length}). Kümeleme 500 keyword ile sınırlıdır.` }
+  }
+
+  // Intent-first hibrid clustering
+  const clusters = clusterEnrichedKeywords(keywords)
+
+  // Opportunity score context (batch normalizasyon için max değerler)
+  const scoringCtx = buildScoringContext(keywords)
+
+  let clusterCount = 0
+
+  for (const cluster of clusters) {
+    // keyword_clusters UPSERT — onConflict: project_id,cluster_name (Pitfall 3 önlemi: name "(intent)" suffix zaten içeriyor)
+    const { data: clusterRow, error: clusterErr } = await supabase
+      .from('keyword_clusters')
+      .upsert(
+        {
+          user_id: user.id,
+          project_id: projectId,
+          cluster_name: cluster.name,
+          total_volume: cluster.totalVolume,
+          intent: cluster.intent,
+        },
+        { onConflict: 'project_id,cluster_name', ignoreDuplicates: false }
+      )
+      .select('id')
+      .single()
+
+    if (clusterErr || !clusterRow) continue
+    clusterCount++
+
+    // Her keyword için opportunity_score hesapla ve cluster_id + score güncelle
+    const updates = cluster.keywords.map((kw) => ({
+      id: kw.id,
+      cluster_id: clusterRow.id,
+      opportunity_score: calculateOpportunityScore(kw, scoringCtx),
+    }))
+
+    // Toplu UPDATE — her keyword ayrı çağrı yerine Promise.all (Pitfall 4)
+    await Promise.all(
+      updates.map((u) =>
+        supabase
+          .from('keywords')
+          .update({ cluster_id: u.cluster_id, opportunity_score: u.opportunity_score })
+          .eq('id', u.id)
+          .eq('user_id', user.id)
+      )
+    )
+
+    // Primary keyword otomatik ata: cluster'ın ilk keyword'ü (en yüksek volume — clusterEnrichedKeywords sıralı döner)
+    if (cluster.keywords.length > 0) {
+      await supabase
+        .from('keyword_clusters')
+        .update({ primary_keyword_id: cluster.keywords[0].id })
+        .eq('id', clusterRow.id)
+        .eq('user_id', user.id)
+    }
+  }
+
+  revalidatePath(`/projeler/${projectId}/keyword-stratejisi`)
+  return { success: true, clusterCount }
+}
+
+export type MoveKeywordResult = { success: true } | { success: false; error: string }
+
+export async function moveKeywordToCluster(
+  keywordId: string,
+  newClusterId: string,
+  projectId: string
+): Promise<MoveKeywordResult> {
+  // UUID format validation
+  const uuidRegex = /^[0-9a-f-]{36}$/i
+  if (!uuidRegex.test(keywordId) || !uuidRegex.test(newClusterId) || !uuidRegex.test(projectId)) {
+    return { success: false, error: 'Geçersiz ID formatı.' }
+  }
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Oturum bulunamadı.' }
+
+  // Keyword ownership doğrula (Elevation of Privilege — T-06-01)
+  const { data: kw } = await supabase
+    .from('keywords')
+    .select('id, cluster_id')
+    .eq('id', keywordId)
+    .eq('project_id', projectId)
+    .eq('user_id', user.id)
+    .single()
+  if (!kw) return { success: false, error: 'Keyword bulunamadı.' }
+
+  // Hedef cluster'ın bu projeye ve user'a ait olduğunu doğrula (Elevation of Privilege)
+  const { data: targetCluster } = await supabase
+    .from('keyword_clusters')
+    .select('id')
+    .eq('id', newClusterId)
+    .eq('project_id', projectId)
+    .eq('user_id', user.id)
+    .single()
+  if (!targetCluster) return { success: false, error: 'Hedef küme bulunamadı.' }
+
+  // Pitfall 2: Keyword eski cluster'ın primary'si ise primary_keyword_id NULL yap
+  if (kw.cluster_id) {
+    await supabase
+      .from('keyword_clusters')
+      .update({ primary_keyword_id: null })
+      .eq('id', kw.cluster_id)
+      .eq('primary_keyword_id', keywordId)
+      .eq('user_id', user.id)
+  }
+
+  // Keyword cluster_id UPDATE — eski cluster_id otomatik ezilir (cannibalization prevention)
+  const { error } = await supabase
+    .from('keywords')
+    .update({ cluster_id: newClusterId })
+    .eq('id', keywordId)
+    .eq('user_id', user.id)
+
+  if (error) return { success: false, error: 'Küme ataması başarısız.' }
+
+  revalidatePath(`/projeler/${projectId}/keyword-stratejisi`)
+  return { success: true }
+}
+
+export type SetPrimaryKeywordResult = { success: true } | { success: false; error: string }
+
+export async function setPrimaryKeyword(
+  clusterId: string,
+  keywordId: string,
+  projectId: string
+): Promise<SetPrimaryKeywordResult> {
+  // UUID format validation
+  const uuidRegex = /^[0-9a-f-]{36}$/i
+  if (!uuidRegex.test(clusterId) || !uuidRegex.test(keywordId) || !uuidRegex.test(projectId)) {
+    return { success: false, error: 'Geçersiz ID formatı.' }
+  }
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Oturum bulunamadı.' }
+
+  // Tampering: keyword'ün bu cluster'a VE bu projeye VE bu user'a ait olduğunu doğrula (T-06-02)
+  const { data: kw } = await supabase
+    .from('keywords')
+    .select('id, cluster_id, project_id')
+    .eq('id', keywordId)
+    .eq('project_id', projectId)
+    .eq('user_id', user.id)
+    .single()
+  if (!kw) return { success: false, error: 'Keyword bulunamadı.' }
+
+  // Keyword bu cluster'ın üyesi mi? (başka projenin keyword UUID'si saldırısına karşı)
+  if (kw.cluster_id !== clusterId) {
+    return { success: false, error: 'Keyword bu kümenin üyesi değil.' }
+  }
+
+  const { error } = await supabase
+    .from('keyword_clusters')
+    .update({ primary_keyword_id: keywordId })
+    .eq('id', clusterId)
+    .eq('project_id', projectId)
+    .eq('user_id', user.id)
+
+  if (error) return { success: false, error: 'Primary atama başarısız.' }
 
   revalidatePath(`/projeler/${projectId}/keyword-stratejisi`)
   return { success: true }
