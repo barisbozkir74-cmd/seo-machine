@@ -50,7 +50,7 @@ Declared values (multiples of 4):
 
 Exceptions:
 - Dialog max-height: `max-h-[70vh]` with `overflow-y-auto` — exact vh value, not on pixel scale (per D-01 resolution)
-- Orphan banner: `px-4 py-3` = 16px/12px — py is 12px (not on scale), preserved from established amber warning pattern in Phase 7
+- Orphan banner: `px-4 py-4` = 16px/16px — both horizontal and vertical padding on the 4px scale
 
 ---
 
@@ -75,15 +75,15 @@ Dark mode values (active via `html className="dark"`):
 |------|---------------------|------------|-------|
 | Dominant (60%) | `--background` | `#020817` (Slate 950) | Page background, table row backgrounds, dialog body |
 | Secondary (30%) | `--card` / `--secondary` | `#0f172a` / `#1e293b` (Slate 900/800) | Table headers (`bg-secondary/40`), hover states (`hover:bg-muted/30`), dialog backgrounds |
-| Accent (10%) | `--primary` | `#f8fafc` (Slate 50) | Primary submit buttons only: "Kaydet" in BulkEditPagesDialog, "Seçilenleri Ekle" in SuggestLinksDialog |
+| Accent (10%) | `--primary` | `#f8fafc` (Slate 50) | Primary submit buttons only: "Değişiklikleri Kaydet" in BulkEditPagesDialog, "Seçilenleri Ekle" in SuggestLinksDialog |
 | Destructive | `--destructive` | `#ef4444` (Red 500) | Delete button hover states only |
 | Amber semantic | `text-amber-400` / `bg-amber-500/20` / `border-amber-500/30` | Amber | Orphan detection banner, "Tip Atanmamış" inline warning badge in SuggestLinksDialog |
 | Muted text | `--muted-foreground` | `#64748b` (Slate 500) | Slugs, secondary data, empty state copy, disabled states |
 
 Accent reserved for:
-- "Kaydet" primary button in BulkEditPagesDialog footer ONLY
+- "Değişiklikleri Kaydet" primary button in BulkEditPagesDialog footer ONLY
 - "Seçilenleri Ekle" primary button in SuggestLinksDialog footer ONLY
-- NOT used for: "Toplu Düzenle" header trigger button (use `variant="outline"`), "Öner" header trigger button (use `variant="outline"`), checkbox checked state (browser default), link-type badges
+- NOT used for: "Toplu Düzenle" header trigger button (use `variant="outline"`), "Link Öner" header trigger button (use `variant="outline"`), checkbox checked state (browser default), link-type badges
 
 Semantic colors by element:
 - `bg-amber-500/20 text-amber-400 border-amber-500/30` — orphan detection banner (D-05), "Tip Atanmamış" warning badge (D-04 edge case)
@@ -94,6 +94,26 @@ Semantic colors by element:
 - `bg-emerald-500/20 text-emerald-400 border-emerald-500/30` — link type "navigation" badge (existing, preserve)
 - `bg-slate-500/20 text-slate-400 border-slate-500/30` — link type "footer" badge (existing, preserve)
 - `bg-amber-500/20 text-amber-400 border-amber-500/30` — link type "breadcrumb" badge (existing, preserve)
+
+---
+
+## Focal Points
+
+### sayfalar/page.tsx — primary screen focal point
+
+**Primary focal element:** "Toplu Düzenle" button in the page header (top-right action group, left of "Sayfa Ekle").
+
+This is the entry point for the entire BulkEditPagesDialog workflow — the primary action introduced in Phase 8 for this screen. It must render at `variant="outline" size="sm"` and remain visually prominent against the page header. When `pages.length === 0` it is disabled; otherwise it is the first affordance the user should notice.
+
+Visual hierarchy: `h1 "Sayfa Listesi"` anchors the left; "Toplu Düzenle" anchors the right action area as the **dominant action** for this phase.
+
+### ic-link-haritasi/page.tsx — primary screen focal point
+
+**Primary focal element (when orphans exist):** The orphan warning banner (`bg-amber-500/20 border-amber-500/30`) rendered above the "Linkler" header row. The amber color is the highest-contrast element on screen and immediately draws attention to the problem requiring resolution.
+
+**Primary focal element (when no orphans exist):** The "Link Öner" button (`variant="outline" size="sm"`) in the header row action group — the main workflow driver for the ic-link-haritasi phase when the site is in a healthy state.
+
+These two focal states are mutually exclusive: the orphan banner dominates when it is visible; "Link Öner" becomes the visual anchor when the banner is absent.
 
 ---
 
@@ -115,7 +135,7 @@ Semantic colors by element:
 
 - "Toplu Düzenle": `variant="outline" size="sm"` — opens BulkEditPagesDialog
 - Disabled state when `pages.length === 0`: `disabled` prop + native `title="Düzenlenecek sayfa yok"` attribute on wrapping `<span>`
-- No loading state on the trigger button itself — loading is handled inside the dialog's "Kaydet" button
+- No loading state on the trigger button itself — loading is handled inside the dialog's "Değişiklikleri Kaydet" button
 
 ---
 
@@ -152,11 +172,11 @@ Semantic colors by element:
 
 **Footer:**
 - Left: dirty count summary — `"{N} satır değiştirildi"` (`text-sm text-muted-foreground`) — shows `"Değişiklik yok"` when 0 dirty rows
-- Right: `[İptal]` ghost variant + `[Kaydet]` primary variant
+- Right: `[Düzenlemeyi Kapat]` ghost variant + `[Değişiklikleri Kaydet]` primary variant
 
-**"Kaydet" button states:**
+**"Değişiklikleri Kaydet" button states:**
 - Default (0 dirty rows): `disabled` prop, primary fill but `opacity-50 cursor-not-allowed`
-- Default (1+ dirty rows): primary fill, text "Kaydet"
+- Default (1+ dirty rows): primary fill, text "Değişiklikleri Kaydet"
 - Loading: `opacity-50 cursor-wait`, text "Kaydediliyor…"
 - Success: dialog closes, page re-renders via `router.refresh()`
 
@@ -166,7 +186,7 @@ Semantic colors by element:
 
 ---
 
-### 3. "Öner" Button (SuggestLinksButton) — ic-link-haritasi/page.tsx header
+### 3. "Link Öner" Button (SuggestLinksButton) — ic-link-haritasi/page.tsx header
 
 **File:** `ic-link-haritasi/SuggestLinksButton.tsx` (Client Component)
 
@@ -179,10 +199,10 @@ Semantic colors by element:
 
 **After Phase 8:**
 ```
-[Linkler h2]                  [Öner button]  [Link Ekle button]
+[Linkler h2]                  [Link Öner button]  [Link Ekle button]
 ```
 
-- "Öner": `variant="outline" size="sm"` — calls `suggestInternalLinks` server action, then opens `SuggestLinksDialog` with returned suggestions
+- "Link Öner": `variant="outline" size="sm"` — calls `suggestInternalLinks` server action, then opens `SuggestLinksDialog` with returned suggestions
 - Disabled when `pages.length === 0`: native `title="Önce sayfa oluşturun"` on wrapper `<span>`
 - Loading state: `useTransition` — button text "Yükleniyor…", `opacity-50 cursor-wait`
 - If `suggestInternalLinks` returns empty array: display inline toast/text `"Önerilecek yeni link bulunamadı."` — no dialog opens
@@ -230,7 +250,7 @@ Displayed inline after the page title in the Kaynak Sayfa cell. These rows can s
 
 **Footer:**
 - Left: selection count — `"{N} öneri seçildi"` (`text-sm text-muted-foreground`)
-- Right: `[İptal]` ghost variant + `[Seçilenleri Ekle]` primary variant
+- Right: `[Vazgeç]` ghost variant + `[Seçilenleri Ekle]` primary variant
 
 **"Seçilenleri Ekle" button states:**
 - Default (0 selected): `disabled` prop, `opacity-50 cursor-not-allowed`
@@ -253,7 +273,7 @@ Displayed inline after the page title in the Kaynak Sayfa cell. These rows can s
 **Markup pattern (established from Phase 7 amber warning):**
 ```tsx
 {orphanPages.length > 0 && links.length > 0 && (
-  <div className="rounded-md border border-amber-500/30 bg-amber-500/20 px-4 py-3 text-sm text-amber-400">
+  <div className="rounded-md border border-amber-500/30 bg-amber-500/20 px-4 py-4 text-sm text-amber-400">
     <span className="font-semibold">⚠ {orphanPages.length} sayfa hiçbir linke bağlı değil: </span>
     {orphanPages.map((p, i) => (
       <span key={p.id}>
@@ -282,12 +302,14 @@ Displayed inline after the page title in the Kaynak Sayfa cell. These rows can s
 | Element | Copy (Turkish) |
 |---------|----------------|
 | Primary CTA — Toplu Düzenle trigger | "Toplu Düzenle" |
-| Primary CTA — BulkEditPagesDialog confirm | "Kaydet" |
+| Primary CTA — BulkEditPagesDialog confirm | "Değişiklikleri Kaydet" |
 | Primary CTA — BulkEditPagesDialog loading | "Kaydediliyor…" |
-| Primary CTA — SuggestLinksButton trigger | "Öner" |
+| Secondary CTA — BulkEditPagesDialog cancel | "Düzenlemeyi Kapat" |
+| Primary CTA — SuggestLinksButton trigger | "Link Öner" |
 | Primary CTA — SuggestLinksButton loading | "Yükleniyor…" |
 | Primary CTA — SuggestLinksDialog confirm | "Seçilenleri Ekle" |
 | Primary CTA — SuggestLinksDialog loading | "Ekleniyor…" |
+| Secondary CTA — SuggestLinksDialog cancel | "Vazgeç" |
 | BulkEditPagesDialog title | "Toplu Sayfa Düzenleme" |
 | BulkEditPagesDialog subtitle | "Sayfa özelliklerini toplu olarak düzenleyin." |
 | BulkEditPagesDialog dirty count | "{N} satır değiştirildi" |
@@ -320,10 +342,11 @@ Displayed inline after the page title in the Kaynak Sayfa cell. These rows can s
 |-------|--------|
 | Row — unchanged | `bg-background`, selects show current DB value |
 | Row — changed (dirty) | No visual diff on row itself; dirty count in footer increments |
-| Kaydet — no changes | `disabled opacity-50 cursor-not-allowed` primary button |
-| Kaydet — has changes | Primary fill, enabled |
-| Kaydet — submitting | `opacity-50 cursor-wait`, text "Kaydediliyor…", all selects disabled |
-| Kaydet — error | Button re-enables; error copy in footer left |
+| Değişiklikleri Kaydet — no changes | `disabled opacity-50 cursor-not-allowed` primary button |
+| Değişiklikleri Kaydet — has changes | Primary fill, enabled |
+| Değişiklikleri Kaydet — submitting | `opacity-50 cursor-wait`, text "Kaydediliyor…", all selects disabled |
+| Değişiklikleri Kaydet — error | Button re-enables; error copy in footer left |
+| Düzenlemeyi Kapat | Ghost variant; closes dialog without saving |
 
 ### SuggestLinksDialog — row and button states
 
@@ -338,12 +361,13 @@ Displayed inline after the page title in the Kaynak Sayfa cell. These rows can s
 | Seçilenleri Ekle — 0 selected | `disabled opacity-50 cursor-not-allowed` |
 | Seçilenleri Ekle — has selection | Primary fill, enabled |
 | Seçilenleri Ekle — submitting | `opacity-50 cursor-wait`, text "Ekleniyor…", all checkboxes and selects disabled |
+| Vazgeç | Ghost variant; closes dialog without adding links |
 
 ### SuggestLinksButton
 
 | State | Visual |
 |-------|--------|
-| Idle | `variant="outline" size="sm"` |
+| Idle | `variant="outline" size="sm"`, label "Link Öner" |
 | Fetching suggestions | `opacity-50 cursor-wait`, text "Yükleniyor…" |
 | No suggestions returned | Inline text beside button: `text-sm text-muted-foreground "Önerilecek yeni link bulunamadı."` |
 | Dialog opened | Button re-enables |
