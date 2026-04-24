@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 08-01-PLAN.md — WR fixes + new server actions
-last_updated: "2026-04-24T19:37:21.978Z"
+stopped_at: Completed 08-02-PLAN.md — Phase 8 Wave 2 client components
+last_updated: "2026-04-24T19:45:36.609Z"
 last_activity: 2026-04-24
 progress:
   total_phases: 8
-  completed_phases: 7
+  completed_phases: 8
   total_plans: 25
-  completed_plans: 24
-  percent: 96
+  completed_plans: 25
+  percent: 100
 ---
 
 # Project State
@@ -68,6 +68,7 @@ Progress: [██████████] 100%
 | Phase 05-keyword-import-enrichment P01 | 2 | 2 tasks | 2 files |
 | Phase 05-keyword-import-enrichment P02 | 5 | 2 tasks | 3 files |
 | Phase 08-page-planner-internal-links P08-01 | 114 | 3 tasks | 5 files |
+| Phase 08-page-planner-internal-links P08-02 | 420 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -133,6 +134,9 @@ Recent decisions affecting current work:
 - deleteKeyword üçlü ownership — keywordId + projectId + user.id; kümedeki son keyword silinince keyword_clusters da temizlenir (D-12)
 - fetchKeywordData: boş liste guard + keywords_data/google_ads/search_volume/live endpoint; Türkiye varsayılan (2792, tr)
 - IntentBadge className direkt renk ataması — variant prop kullanılmaz (D-11); group-hover pattern ile satır üzerinde × butonu görünür (D-12)
+- BulkEditPagesDialog dirty state uses Map — only changed rows sent to updatePageAttributes
+- SuggestLinksDialog opened programmatically via open prop — no DialogTrigger asChild needed
+- Orphan computation runs SSR via Set of linkedPageIds — no extra DB query needed
 
 ### Pending Todos
 
@@ -151,6 +155,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-24T19:37:21.970Z
-Stopped at: Completed 08-01-PLAN.md — WR fixes + new server actions
+Last session: 2026-04-24T19:45:36.601Z
+Stopped at: Completed 08-02-PLAN.md — Phase 8 Wave 2 client components
 Resume file: None
