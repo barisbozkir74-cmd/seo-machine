@@ -7,14 +7,20 @@ type QaRule = {
   severity: 'warning' | 'error'
 }
 
+export type { QaRule }
+
+type ProjectRules = Record<string, boolean>
+
 export type QaBadgeProps = {
   seoTitle: string
   metaDescription: string
   h1: string
   focusKeyword: string | null
+  slug: string | null
+  projectRules: ProjectRules
 }
 
-function computeQaRules(props: QaBadgeProps): QaRule[] {
+export function computeQaRules(props: QaBadgeProps): QaRule[] {
   const rules: QaRule[] = []
 
   // QA-01: SEO Title uzunluğu
@@ -42,6 +48,59 @@ function computeQaRules(props: QaBadgeProps): QaRule[] {
     !props.seoTitle.toLowerCase().includes(props.focusKeyword.toLowerCase())
   ) {
     rules.push({ id: 'QA-04', severity: 'warning' })
+  }
+
+  // Rules Engine entegrasyonu — yalnızca aktif kurallar değerlendirilir
+  if (props.projectRules['title_starts_with_keyword'] && props.focusKeyword) {
+    if (!props.seoTitle.toLowerCase().startsWith(props.focusKeyword.toLowerCase())) {
+      rules.push({ id: 'title_starts_with_keyword', severity: 'warning' })
+    }
+  }
+
+  if (props.projectRules['title_max_length_enforced']) {
+    if (props.seoTitle.length > 60) {
+      rules.push({ id: 'title_max_length_enforced', severity: 'error' })
+    }
+  }
+
+  // title_includes_brand: client context'te brand name mevcut değil — no-op
+  // h1_single_per_page: DOM H1 sayısı client'ta kontrol edilemez — no-op
+
+  if (props.projectRules['h1_includes_keyword'] && props.focusKeyword) {
+    if (!props.h1.toLowerCase().includes(props.focusKeyword.toLowerCase())) {
+      rules.push({ id: 'h1_includes_keyword', severity: 'warning' })
+    }
+  }
+
+  if (props.projectRules['h1_exact_match'] && props.focusKeyword) {
+    if (props.h1.toLowerCase() !== props.focusKeyword.toLowerCase()) {
+      rules.push({ id: 'h1_exact_match', severity: 'warning' })
+    }
+  }
+
+  if (props.projectRules['slug_lowercase_hyphen'] && props.slug) {
+    if (!/^[a-z0-9-]+$/.test(props.slug)) {
+      rules.push({ id: 'slug_lowercase_hyphen', severity: 'error' })
+    }
+  }
+
+  if (props.projectRules['meta_desc_includes_keyword'] && props.focusKeyword) {
+    if (!props.metaDescription.toLowerCase().includes(props.focusKeyword.toLowerCase())) {
+      rules.push({ id: 'meta_desc_includes_keyword', severity: 'warning' })
+    }
+  }
+
+  if (props.projectRules['meta_desc_required']) {
+    if (!props.metaDescription.trim()) {
+      rules.push({ id: 'meta_desc_required', severity: 'error' })
+    }
+  }
+
+  if (props.projectRules['meta_desc_length_enforced']) {
+    const len = props.metaDescription.length
+    if (len > 0 && (len > 160 || len < 120)) {
+      rules.push({ id: 'meta_desc_length_enforced', severity: 'warning' })
+    }
   }
 
   return rules
