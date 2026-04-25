@@ -402,7 +402,7 @@ export function PagePackageEditor({
       JSON.parse(schemaJsonLdVal)
       return 100
     } catch {
-      return 50
+      return 0 // Geçersiz JSON-LD tarayıcılar ve Google tarafından reddedilir
     }
   }
 
