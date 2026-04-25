@@ -92,19 +92,38 @@
 
 ### Content Studio
 
-- **CONT-01**: Sayfa paketi kilitlendikten sonra tam sayfa içeriği üretimi (tüm proje verisi, kurallar ve sayfa paketi baz alınarak)
-- **CONT-02**: İçerik versiyonları saklanır; kullanıcı versiyon karşılaştırabilir
+- [ ] **CONT-01**: Kullanıcı kilitli sayfa paketi için içerik üretimini H2/H3 heading yapısına göre bölüm bölüm başlatabilir
+- [ ] **CONT-02**: Sistem her heading bloğu için AI ile bağımsız içerik üretir (proje kuralları, sayfa paketi ve keyword context baz alınarak)
+- [ ] **CONT-03**: Kullanıcı her bölümü bağımsız olarak onaylayabilir, reddedebilir veya yeniden üretebilir
+- [ ] **CONT-04**: Kullanıcı bir bölümü onaylamadan önce inline düzenleyebilir
+- [ ] **CONT-05**: Tüm bölümler onaylandıktan sonra WordPress'e hazır HTML çıktısı oluşturulur
 
 ### Publishing
 
-- **PUBL-01**: Onaylanan sayfalar WordPress REST API ile taslak veya yayında olarak gönderilebilir (slug, title, content, excerpt, meta, schema)
-- **PUBL-02**: Publish job durumu (başarılı/başarısız/beklemede) panelde takip edilir
+- [ ] **PUBL-01**: Kullanıcı proje başına WordPress site URL ve Application Password kaydedebilir
+- [ ] **PUBL-02**: Kullanıcı onaylı içeriği WordPress REST API ile slug, title, content, meta ve schema JSON-LD dahil draft olarak gönderebilir
+- [ ] **PUBL-03**: Kullanıcı draft sayfayı WordPress'te publish veya tarihli yayınlayabilir
+- [ ] **PUBL-04**: WordPress post ID ve yayın durumu (draft/published/scheduled) page package'da görünür
 
-### Monitoring & Recovery
+### GSC & Monitoring
 
-- **MNTR-01**: Google Search Console entegrasyonu ile yayınlanan sayfaların query/impression/click verileri çekilir
-- **MNTR-02**: Ranking düşüşü veya trafik kaybı tespit edildiğinde recovery task otomatik açılır
-- **MNTR-03**: Refresh/recovery engine — düşen sayfaların güncellenmesi için neyin eksik olduğunu analiz eder
+- [ ] **GSC-01**: Kullanıcı proje başına Google Search Console property OAuth ile bağlayabilir
+- [ ] **GSC-02**: Sistem yayınlanan sayfalar için index durumunu GSC'den çeker ve gösterir
+- [ ] **GSC-03**: Sistem sayfa ve keyword bazında tıklama, gösterim, ortalama pozisyon verisini GSC'den çeker
+- [ ] **MON-01**: Kullanıcı cluster bazlı trafik özetini monitoring dashboard'da görebilir
+- [ ] **MON-02**: Kullanıcı sayfa bazlı GSC performansını (tıklama, gösterim, pozisyon) ve decay alert'lerini görebilir
+
+### Recovery Engine
+
+- [ ] **REC-01**: Sistem pozisyon düşüşü olan sayfaları eşik değere göre otomatik tespit eder
+- [ ] **REC-02**: Tespit edilen decay için ilgili sayfa paketi üzerinde güncelleme görevi otomatik açılır
+
+### Keyword Intelligence
+
+- [ ] **NICH-01**: Sistem her keyword cluster için niche selection skoru hesaplar (hacim, rekabet, ticari değer, programmatic potansiyel)
+- [ ] **NICH-02**: Kullanıcı cluster başına niche skorunu keyword strateji görünümünde görebilir
+- [ ] **RVEN-01**: Sistem cluster'ları gelir potansiyeline göre sınıflandırır (bilgi trafiği vs. ticari intent)
+- [ ] **RVEN-02**: Kullanıcı cluster-to-revenue haritasını keyword strateji görünümünde görebilir
 
 ---
 
@@ -146,30 +165,49 @@
 | KEYW-01 | Phase 5 | Complete (05-01, 05-02) |
 | KEYW-02 | Phase 5 | Complete (05-01, 05-02) |
 | KEYW-03 | Phase 5 | Complete (05-01, 05-02) |
-| KEYW-04 | Phase 6 | Pending |
-| KEYW-05 | Phase 6 | Pending |
-| KEYW-06 | Phase 6 | Pending |
-| KEYW-07 | Phase 6 | Pending |
-| BLUE-01 | Phase 7 | Pending |
-| BLUE-02 | Phase 7 | Pending |
-| BLUE-03 | Phase 7 | Pending |
+| KEYW-04 | Phase 6 | Complete |
+| KEYW-05 | Phase 6 | Complete |
+| KEYW-06 | Phase 6 | Complete |
+| KEYW-07 | Phase 6 | Complete |
+| BLUE-01 | Phase 7 | Complete |
+| BLUE-02 | Phase 7 | Complete |
+| BLUE-03 | Phase 7 | Complete |
 | BLUE-04 | Phase 8 | Complete |
 | BLUE-05 | Phase 8 | Complete |
 | PAGE-01 | Phase 9 | Complete |
 | PAGE-04 | Phase 9 | Complete |
 | PAGE-02 | Phase 10 | Complete |
 | PAGE-02b | Phase 10 | Complete |
-| PAGE-03 | Phase 11 | Pending |
-| QUAL-01 | Phase 11 | Pending |
-| QUAL-02 | Phase 11 | Pending |
+| PAGE-03 | Phase 11 | Complete |
+| QUAL-01 | Phase 11 | Complete |
+| QUAL-02 | Phase 11 | Complete |
+| CONT-01 | Phase TBD | Pending |
+| CONT-02 | Phase TBD | Pending |
+| CONT-03 | Phase TBD | Pending |
+| CONT-04 | Phase TBD | Pending |
+| CONT-05 | Phase TBD | Pending |
+| PUBL-01 | Phase TBD | Pending |
+| PUBL-02 | Phase TBD | Pending |
+| PUBL-03 | Phase TBD | Pending |
+| PUBL-04 | Phase TBD | Pending |
+| GSC-01 | Phase TBD | Pending |
+| GSC-02 | Phase TBD | Pending |
+| GSC-03 | Phase TBD | Pending |
+| MON-01 | Phase TBD | Pending |
+| MON-02 | Phase TBD | Pending |
+| REC-01 | Phase TBD | Pending |
+| REC-02 | Phase TBD | Pending |
+| NICH-01 | Phase TBD | Pending |
+| NICH-02 | Phase TBD | Pending |
+| RVEN-01 | Phase TBD | Pending |
+| RVEN-02 | Phase TBD | Pending |
 
 **Coverage:**
-- v1 requirements: 28 total
-- Mapped to phases: 28/28
-- v2 requirements (in-scope for v2.0): 5 total
-- Mapped to phases: 5/5
-- Unmapped: 0
+- v1 requirements: 28 total — 28/28 Complete ✓
+- v2 requirements: 7 total — 7/7 Complete ✓
+- v3 requirements: 20 total — 0/20 Pending (mapped by roadmapper)
+- Unmapped: 0 after roadmap creation
 
 ---
 *Requirements defined: 2026-04-22*
-*Last updated: 2026-04-24 — v2.0 roadmap finalized: PAGE-02/PAGE-02b → Phase 10; PAGE-03/QUAL-01/QUAL-02 → Phase 11*
+*Last updated: 2026-04-25 — v3.0 milestone requirements defined (Autonomous Growth Layer)*
