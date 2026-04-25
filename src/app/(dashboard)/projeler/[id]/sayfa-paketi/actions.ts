@@ -34,6 +34,8 @@ export type PagePackageData = {
   secondary_keywords?: unknown
   // FAQ
   faq?: unknown
+  // Schema JSON-LD (Phase 10)
+  schema_jsonld?: unknown
   // QA
   qa_scores?: unknown
 }
