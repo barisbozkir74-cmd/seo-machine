@@ -157,8 +157,8 @@
 | BLUE-05 | Phase 8 | Complete |
 | PAGE-01 | Phase 9 | Complete |
 | PAGE-04 | Phase 9 | Complete |
-| PAGE-02 | Phase 10 | Pending |
-| PAGE-02b | Phase 10 | Pending |
+| PAGE-02 | Phase 10 | Complete |
+| PAGE-02b | Phase 10 | Complete |
 | PAGE-03 | Phase 11 | Pending |
 | QUAL-01 | Phase 11 | Pending |
 | QUAL-02 | Phase 11 | Pending |

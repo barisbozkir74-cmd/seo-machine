@@ -194,7 +194,7 @@ v2.0 adds the quality control layer on top of the page package engine built in P
 
 ## Phases
 
-- [ ] **Phase 10: Schema Center** - page_type'a göre JSON-LD üretimi ve editörde Schema sekmesi
+- [x] **Phase 10: Schema Center** - page_type'a göre JSON-LD üretimi ve editörde Schema sekmesi (completed 2026-04-25)
 - [ ] **Phase 11: Metadata Validator & QA Scoring** - Rules engine destekli metadata kontrolü, LLM QA denetimi ve 5-boyutlu scoring
 
 ## Phase Details
@@ -211,9 +211,9 @@ v2.0 adds the quality control layer on top of the page package engine built in P
   5. Kullanıcı schema içeriğini panoya kopyalayabilir (tek tıkla kopyala butonu)
 **Plans**: 3 plans
 Plans:
-- [ ] 10-01-PLAN.md — schema_jsonld JSONB migration + supabase db push [BLOCKING]
-- [ ] 10-02-PLAN.md — actions.ts PagePackageData tip genişletmesi + page.tsx SELECT sorgusu genişletmesi
-- [ ] 10-03-PLAN.md — PagePackageEditor.tsx — Tab bar + generateSchemaJsonLd + Schema sekmesi UI (tam implementasyon)
+- [x] 10-01-PLAN.md — schema_jsonld JSONB migration + supabase db push [BLOCKING] (completed 2026-04-25)
+- [x] 10-02-PLAN.md — actions.ts PagePackageData tip genişletmesi + page.tsx SELECT sorgusu genişletmesi (completed 2026-04-25)
+- [x] 10-03-PLAN.md — PagePackageEditor.tsx — Tab bar + generateSchemaJsonLd + Schema sekmesi UI (tam implementasyon) (completed 2026-04-25)
 **UI hint**: yes
 
 ### Phase 11: Metadata Validator & QA Scoring
@@ -236,5 +236,5 @@ Phases execute in numeric order: 10 → 11
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 10. Schema Center | 0/3 | Not started | - |
+| 10. Schema Center | 3/3 | Complete | 2026-04-25 |
 | 11. Metadata Validator & QA Scoring | 0/TBD | Not started | - |
