@@ -553,6 +553,38 @@ export function PagePackageEditor({
         />
       )}
 
+      {/* Tab navigasyonu — sadece pkg mevcut iken göster */}
+      {pkg !== null && (
+        <div className="flex gap-1 border-b border-border">
+          <button
+            onClick={() => setActiveTab('paket')}
+            className={cn(
+              'px-3 py-2 text-sm',
+              activeTab === 'paket'
+                ? 'border-b-2 border-foreground font-semibold'
+                : 'text-muted-foreground'
+            )}
+          >
+            Paket
+          </button>
+          <button
+            onClick={() => setActiveTab('schema')}
+            className={cn(
+              'px-3 py-2 text-sm',
+              activeTab === 'schema'
+                ? 'border-b-2 border-foreground font-semibold'
+                : 'text-muted-foreground'
+            )}
+          >
+            Schema
+          </button>
+        </div>
+      )}
+
+      {/* Paket sekmesi içeriği */}
+      {(pkg === null || activeTab === 'paket') && (
+        <>
+
       {/* 1. Temel Bilgiler */}
       <section className="space-y-4">
         <h3 className="text-sm font-semibold border-b border-border pb-2">Temel Bilgiler</h3>
@@ -762,6 +794,79 @@ export function PagePackageEditor({
           disabled={isLocked}
         />
       </section>
+
+        </>
+      )}
+
+      {/* Schema sekmesi içeriği */}
+      {pkg !== null && activeTab === 'schema' && (
+        <section className="space-y-4">
+          <h3 className="text-sm font-semibold border-b border-border pb-2">JSON-LD Schema</h3>
+
+          {!schemaJsonLd ? (
+            /* Boş durum */
+            <div className="space-y-3 py-4">
+              <p className="text-sm text-muted-foreground">
+                Bu sayfa için henüz schema üretilmedi.
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Sayfa tipine göre otomatik JSON-LD oluşturmak için Schema Üret butonuna tıkla.
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleGenerateSchema}
+                disabled={isLocked}
+              >
+                Schema Üret
+              </Button>
+            </div>
+          ) : (
+            /* Dolu durum */
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs font-normal text-muted-foreground uppercase tracking-wide">
+                  JSON-LD
+                </Label>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCopySchema}
+                  className={cn(
+                    copyStatus === 'copied' && 'text-emerald-500',
+                    copyStatus === 'error' && 'text-red-400'
+                  )}
+                >
+                  {copyStatus === 'copied'
+                    ? 'Kopyalandı ✓'
+                    : copyStatus === 'error'
+                    ? 'Kopyalanamadı'
+                    : 'Kopyala'}
+                </Button>
+              </div>
+              <Field
+                label=""
+                id="schema_jsonld"
+                value={schemaJsonLd}
+                onChange={setSchemaJsonLd}
+                multiline
+                rows={12}
+                mono
+                placeholder="Schema Üret butonuna tıklayarak JSON-LD oluştur."
+                disabled={isLocked}
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleGenerateSchema}
+                disabled={isLocked}
+              >
+                Schema Üret
+              </Button>
+            </div>
+          )}
+        </section>
+      )}
 
       {/* Kaydet */}
       {!isLocked && (
