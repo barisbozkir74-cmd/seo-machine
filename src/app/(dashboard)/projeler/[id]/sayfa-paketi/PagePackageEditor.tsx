@@ -46,6 +46,7 @@ export type PageData = {
     schema_type: string | null
     canonical_url: string | null
     faq: unknown
+    schema_jsonld: unknown
   } | null
 }
 
@@ -152,6 +153,56 @@ type AiGeneratedFields = {
   faq?: unknown
 }
 
+function generateSchemaJsonLd(page: PageData): object | object[] {
+  const pkg = page.pkg
+  const pageType = page.page_type ?? null
+  const name = pkg?.seo_title || page.title || ''
+  const description = pkg?.meta_description || ''
+  const url = pkg?.canonical_url || ''
+
+  const baseSchema: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': (() => {
+      switch (pageType) {
+        case 'homepage': return ['Organization', 'WebSite']
+        case 'service':  return 'Service'
+        case 'product':  return 'Product'
+        case 'blog':     return 'Article'
+        case 'category':
+        case 'landing':
+        default:         return 'WebPage'
+      }
+    })(),
+    ...(name        && { name }),
+    ...(description && { description }),
+    ...(url         && { url }),
+  }
+
+  let faqItems: Array<{ soru?: string; cevap?: string }> = []
+  try {
+    const parsed = typeof pkg?.faq === 'string' ? JSON.parse(pkg.faq as string) : pkg?.faq
+    if (Array.isArray(parsed) && parsed.length > 0) faqItems = parsed
+  } catch { /* ignore */ }
+
+  if (faqItems.length > 0) {
+    const faqSchema = {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: faqItems.map((item) => ({
+        '@type': 'Question',
+        name: item.soru ?? '',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: item.cevap ?? '',
+        },
+      })),
+    }
+    return [baseSchema, faqSchema]
+  }
+
+  return baseSchema
+}
+
 export function PagePackageEditor({
   projectId,
   page,
@@ -196,6 +247,11 @@ export function PagePackageEditor({
 
   // FAQ
   const [faq, setFaq] = useState(jsonString(pkg?.faq))
+
+  // Schema (Phase 10)
+  const [schemaJsonLd, setSchemaJsonLd] = useState(jsonString(pkg?.schema_jsonld))
+  const [activeTab, setActiveTab] = useState<'paket' | 'schema'>('paket')
+  const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'error'>('idle')
 
   // Feedback
   const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle')
@@ -285,6 +341,22 @@ export function PagePackageEditor({
     })
   }
 
+  function handleGenerateSchema() {
+    const result = generateSchemaJsonLd(page)
+    setSchemaJsonLd(JSON.stringify(result, null, 2))
+  }
+
+  async function handleCopySchema() {
+    try {
+      await navigator.clipboard.writeText(schemaJsonLd)
+      setCopyStatus('copied')
+      setTimeout(() => setCopyStatus('idle'), 2000)
+    } catch {
+      setCopyStatus('error')
+      setTimeout(() => setCopyStatus('idle'), 2000)
+    }
+  }
+
   function handleSave() {
     setSaveStatus('idle')
     startTransition(async () => {
@@ -319,6 +391,7 @@ export function PagePackageEditor({
         alt_texts: parseJsonField(altTexts),
         secondary_keywords: parseJsonField(secondaryKeywords),
         faq: parseJsonField(faq),
+        schema_jsonld: parseJsonField(schemaJsonLd),
       })
 
       if (result.success) {
