@@ -96,6 +96,7 @@ export default async function SayfaPaketiPage({
       .from('page_packages')
       .select('id, page_id, status, generated_by')
       .in('page_id', pageIds)
+      .eq('user_id', user.id)
     if (data) packagesRaw.push(...(data as PackageRow[]))
   }
   const packageMap = new Map(packagesRaw.map((pkg) => [pkg.page_id, pkg]))
