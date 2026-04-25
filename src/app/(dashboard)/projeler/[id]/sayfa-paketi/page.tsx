@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import { RULE_META } from '@/lib/rules/rule-meta'
 import { ProjectNav } from '../ProjectNav'
 import { PagePackageEditor, type PageData } from './PagePackageEditor'
 import { PackageStatusBadge } from './PackageStatusBadge'
@@ -45,6 +46,38 @@ export default async function SayfaPaketiPage({
     .eq('user_id', user.id)
     .single()
   if (!project) notFound()
+
+  // Rules Engine — global + proje override'ları
+  const { data: globalRulesData } = await supabase
+    .from('rules')
+    .select('rule_key, rule_value')
+    .eq('user_id', user.id)
+    .eq('scope', 'global')
+    .is('project_id', null)
+
+  const { data: projectRulesData } = await supabase
+    .from('rules')
+    .select('rule_key, rule_value')
+    .eq('user_id', user.id)
+    .eq('project_id', id)
+    .eq('scope', 'project')
+
+  const projectOverrides = Object.fromEntries(
+    (projectRulesData ?? []).map((r) => [r.rule_key, r.rule_value])
+  )
+  const globalValues = Object.fromEntries(
+    (globalRulesData ?? []).map((r) => [r.rule_key, r.rule_value])
+  )
+
+  const resolvedRules: Record<string, boolean> = Object.fromEntries(
+    Object.keys(RULE_META).map((ruleKey) => {
+      const hasOverride = ruleKey in projectOverrides
+      const value = hasOverride
+        ? projectOverrides[ruleKey] === 'true'
+        : (globalValues[ruleKey] ?? 'true') === 'true'
+      return [ruleKey, value]
+    })
+  )
 
   const { data: pagesRaw } = await supabase
     .from('pages')
@@ -101,7 +134,7 @@ export default async function SayfaPaketiPage({
       const { data: pkgData } = await supabase
         .from('page_packages')
         .select(
-          'id, status, generated_by, seo_title, meta_description, h1, slug, search_intent, strategic_purpose, secondary_keywords, heading_hierarchy, content_blocks, cta_blocks, image_plan, alt_texts, schema_type, canonical_url, faq, schema_jsonld'
+          'id, status, generated_by, seo_title, meta_description, h1, slug, search_intent, strategic_purpose, secondary_keywords, heading_hierarchy, content_blocks, cta_blocks, image_plan, alt_texts, schema_type, canonical_url, faq, schema_jsonld, qa_scores'
         )
         .eq('page_id', selectedPage.id)
         .single()
@@ -192,7 +225,7 @@ export default async function SayfaPaketiPage({
         {/* Sağ detay paneli */}
         <div className="flex-1 min-w-0 overflow-y-auto p-8">
           {selectedPageData ? (
-            <PagePackageEditor projectId={id} page={selectedPageData} />
+            <PagePackageEditor projectId={id} page={selectedPageData} projectRules={resolvedRules} />
           ) : (
             <div className="flex items-center justify-center h-full min-h-48">
               <p className="text-sm text-muted-foreground">← Soldaki listeden bir sayfa seçin</p>
