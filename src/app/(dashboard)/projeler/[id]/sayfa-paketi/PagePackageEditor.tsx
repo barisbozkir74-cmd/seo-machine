@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 import { updatePagePackage, createPagePackage, updatePackageStatus } from './actions'
-import { QaBadge } from './QaBadge'
+import { QaBadge, computeQaRules, type QaRule } from './QaBadge'
 import { PackageStatusBadge } from './PackageStatusBadge'
 import { LockedBanner } from './LockedBanner'
 import {
@@ -47,7 +47,28 @@ export type PageData = {
     canonical_url: string | null
     faq: unknown
     schema_jsonld: unknown
+    qa_scores?: {
+      seo?: number | null
+      metadata?: number | null
+      content?: number | null
+      human?: number | null
+      schema?: number | null
+      readiness?: number | null
+      last_qa_run?: string | null
+    } | null
   } | null
+}
+
+type QaCheck = {
+  id: 'intent_drift' | 'robotic_language' | 'entity_gap' | 'duplicate_risk'
+  severity: 'ok' | 'warning' | 'critical'
+  note: string
+}
+
+type QaResult = {
+  checks: QaCheck[]
+  content_score: number
+  human_score: number
 }
 
 function jsonString(val: unknown): string {
@@ -206,9 +227,11 @@ function generateSchemaJsonLd(page: PageData): object | object[] {
 export function PagePackageEditor({
   projectId,
   page,
+  projectRules,
 }: {
   projectId: string
   page: PageData
+  projectRules: Record<string, boolean>
 }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -260,6 +283,15 @@ export function PagePackageEditor({
   // AI state
   const [aiStatus, setAiStatus] = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
   const [aiError, setAiError] = useState('')
+
+  // QA Dialog state
+  const [qaDialogOpen, setQaDialogOpen] = useState(false)
+  const [qaDialogPhase, setQaDialogPhase] = useState<'rules' | 'loading' | 'result' | 'error'>('rules')
+  const [ruleViolations, setRuleViolations] = useState<QaRule[]>([])
+  const [qaResult, setQaResult] = useState<QaResult | null>(null)
+
+  // Score row state — DB'den gelen qa_scores ile başlar
+  const [qaScores, setQaScores] = useState(pkg?.qa_scores ?? null)
 
   function applyAiFields(fields: AiGeneratedFields) {
     if (fields.strategic_purpose) setStrategicPurpose(fields.strategic_purpose)
@@ -357,6 +389,122 @@ export function PagePackageEditor({
     }
   }
 
+  function scoreColor(n: number | null | undefined): string {
+    if (n == null) return 'text-muted-foreground'
+    if (n >= 80) return 'text-emerald-400'
+    if (n >= 60) return 'text-amber-400'
+    return 'text-red-400'
+  }
+
+  function computeSchemaScore(schemaJsonLdVal: string): number {
+    if (!schemaJsonLdVal.trim()) return 0
+    try {
+      JSON.parse(schemaJsonLdVal)
+      return 100
+    } catch {
+      return 50
+    }
+  }
+
+  function computeSeoScore(violations: QaRule[]): number {
+    const errorCount = violations.filter((v) => v.severity === 'error').length
+    const warningCount = violations.filter((v) => v.severity === 'warning').length
+    return Math.max(0, 100 - errorCount * 20 - warningCount * 10)
+  }
+
+  function computeMetadataScore(
+    seoTitleVal: string,
+    metaDescVal: string,
+    h1Val: string
+  ): number {
+    let score = 100
+    if (!seoTitleVal.trim()) score -= 25
+    if (!metaDescVal.trim()) score -= 25
+    if (!h1Val.trim()) score -= 25
+    if (metaDescVal.length > 160 || (metaDescVal.length > 0 && metaDescVal.length < 120)) score -= 25
+    return Math.max(0, score)
+  }
+
+  async function proceedToQA() {
+    setQaDialogPhase('loading')
+    setQaDialogOpen(true)
+    try {
+      const res = await fetch('/api/ai/qa-audit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ packageId: pkg!.id, projectId }),
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const data = await res.json() as QaResult
+      setQaResult(data)
+
+      const currentViolations = computeQaRules({
+        seoTitle,
+        metaDescription,
+        h1,
+        focusKeyword: page.focus_keyword_text ?? null,
+        slug,
+        projectRules,
+      })
+      const seoScore = computeSeoScore(currentViolations)
+      const metadataScore = computeMetadataScore(seoTitle, metaDescription, h1)
+      const schemaScore = computeSchemaScore(schemaJsonLd)
+      const contentScore = data.content_score
+      const humanScore = data.human_score
+      const readiness = Math.round((seoScore + metadataScore + contentScore + humanScore + schemaScore) / 5)
+
+      setQaScores({
+        seo: seoScore,
+        metadata: metadataScore,
+        content: contentScore,
+        human: humanScore,
+        schema: schemaScore,
+        readiness,
+        last_qa_run: new Date().toISOString(),
+      })
+
+      setQaDialogPhase('result')
+    } catch {
+      setQaDialogPhase('error')
+    }
+  }
+
+  async function handleLockClick() {
+    if (!pkg?.id) return
+    const violations = computeQaRules({
+      seoTitle,
+      metaDescription,
+      h1,
+      focusKeyword: page.focus_keyword_text ?? null,
+      slug,
+      projectRules,
+    })
+    if (violations.length > 0) {
+      setRuleViolations(violations)
+      setQaDialogPhase('rules')
+      setQaDialogOpen(true)
+      return
+    }
+    await proceedToQA()
+  }
+
+  async function handleConfirmLock() {
+    if (!pkg?.id) return
+    startTransition(async () => {
+      if (qaResult && qaScores) {
+        await updatePagePackage(projectId, page.id, { qa_scores: qaScores })
+      }
+      const result = await updatePackageStatus(projectId, pkg.id, 'locked')
+      if (result.success) {
+        setQaDialogOpen(false)
+        router.refresh()
+      } else {
+        setSaveStatus('error')
+        setErrorMsg(result.error)
+      }
+    })
+  }
+
   function handleSave() {
     setSaveStatus('idle')
     startTransition(async () => {
@@ -427,11 +575,31 @@ export function PagePackageEditor({
                 h1={h1}
                 focusKeyword={page.focus_keyword_text ?? null}
                 slug={slug}
-                projectRules={{}}
+                projectRules={projectRules}
               />
             )}
             <PackageStatusBadge status={pkg?.status ?? null} />
           </div>
+
+          {pkg !== null && (
+            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+              <span>SEO <span className={scoreColor(qaScores?.seo)}>{qaScores?.seo ?? '—'}</span></span>
+              <span className="text-muted-foreground/40">|</span>
+              <span>İçerik <span className={scoreColor(qaScores?.content)}>{qaScores?.content ?? '—'}</span></span>
+              <span className="text-muted-foreground/40">|</span>
+              <span>İnsan <span className={scoreColor(qaScores?.human)}>{qaScores?.human ?? '—'}</span></span>
+              <span className="text-muted-foreground/40">|</span>
+              <span>Schema <span className={scoreColor(qaScores?.schema)}>{qaScores?.schema ?? '—'}</span></span>
+              <span className="text-muted-foreground/40">|</span>
+              <span>Hazırlık <span className={scoreColor(qaScores?.readiness)}>{qaScores?.readiness ?? '—'}</span></span>
+              {qaScores?.last_qa_run && (
+                <>
+                  <span className="text-muted-foreground/40">|</span>
+                  <span>Son denetim: {new Date(qaScores.last_qa_run).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}</span>
+                </>
+              )}
+            </div>
+          )}
 
           <div className="flex items-center gap-2 shrink-0">
             {/* No package state */}
@@ -481,7 +649,7 @@ export function PagePackageEditor({
               <>
                 <Button
                   size="sm"
-                  onClick={() => handleStatusChange('locked')}
+                  onClick={handleLockClick}
                   disabled={isPending}
                 >
                   Kilitle
@@ -535,6 +703,102 @@ export function PagePackageEditor({
             )}
           </div>
         </div>
+
+        {/* QA Dialog — tek dialog, phase'a göre içerik değişir */}
+        <Dialog open={qaDialogOpen} onOpenChange={setQaDialogOpen}>
+          <DialogContent showCloseButton={false} className="max-w-sm">
+
+            {/* Phase: rules — kural ihlalleri */}
+            {qaDialogPhase === 'rules' && (
+              <>
+                <DialogTitle>Kural İhlalleri Tespit Edildi</DialogTitle>
+                <DialogDescription>
+                  Aşağıdaki kural ihlalleri bulundu. Yine de kilitlemek istersen onaylayabilirsin.
+                </DialogDescription>
+                <div className="space-y-1 my-2">
+                  {ruleViolations.map((v) => (
+                    <div key={v.id} className="flex items-center gap-1.5 text-xs">
+                      <span className={v.severity === 'error' ? 'text-red-400' : 'text-amber-400'}>
+                        {v.severity === 'error' ? '✕' : '⚠'}
+                      </span>
+                      <span className="text-foreground/80">{v.id.replace(/_/g, ' ')}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex gap-2 justify-end mt-2">
+                  <DialogClose render={<Button variant="ghost" size="sm">İptal</Button>} />
+                  <Button size="sm" onClick={proceedToQA}>
+                    Anlıyorum, yine de kilitle
+                  </Button>
+                </div>
+              </>
+            )}
+
+            {/* Phase: loading — Claude analiz ediyor */}
+            {qaDialogPhase === 'loading' && (
+              <>
+                <DialogTitle>Kalite Denetimi</DialogTitle>
+                <div className="flex flex-col items-center gap-3 py-4">
+                  <div className="w-5 h-5 rounded-full border-2 border-muted border-t-foreground animate-spin" />
+                  <p className="text-sm text-muted-foreground text-center">Claude analiz ediyor...</p>
+                </div>
+              </>
+            )}
+
+            {/* Phase: result — QA sonuçları */}
+            {qaDialogPhase === 'result' && qaResult && (
+              <>
+                <DialogTitle>Kalite Denetimi Sonucu</DialogTitle>
+                <div className="space-y-2 my-2">
+                  {qaResult.checks.map((check) => {
+                    const labelMap: Record<string, string> = {
+                      intent_drift: 'Intent Uyumu',
+                      robotic_language: 'Robotik Dil Kontrolü',
+                      entity_gap: 'Entity Kapsamı',
+                      duplicate_risk: 'Duplicate Risk',
+                    }
+                    const icon = check.severity === 'ok' ? '✓' : check.severity === 'warning' ? '⚠' : '✕'
+                    const cls = check.severity === 'ok' ? 'text-emerald-400' : check.severity === 'warning' ? 'text-amber-400' : 'text-red-400'
+                    return (
+                      <div key={check.id} className="space-y-0.5">
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className={cls}>{icon}</span>
+                          <span className={cls}>{labelMap[check.id] ?? check.id}</span>
+                        </div>
+                        {check.note && (
+                          <p className="text-xs text-muted-foreground pl-5">{check.note}</p>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+                <div className="flex gap-2 justify-end mt-2">
+                  <DialogClose render={<Button variant="ghost" size="sm">İptal</Button>} />
+                  <Button size="sm" onClick={handleConfirmLock} disabled={isPending}>
+                    Anlayarak Kilitle
+                  </Button>
+                </div>
+              </>
+            )}
+
+            {/* Phase: error — denetim hatası */}
+            {qaDialogPhase === 'error' && (
+              <>
+                <DialogTitle>Kalite Denetimi</DialogTitle>
+                <p className="text-sm text-red-400 my-2">
+                  Denetim sırasında hata oluştu. Yine de kilitlemek istersen devam edebilirsin.
+                </p>
+                <div className="flex gap-2 justify-end">
+                  <DialogClose render={<Button variant="ghost" size="sm">İptal</Button>} />
+                  <Button size="sm" onClick={handleConfirmLock} disabled={isPending}>
+                    Yine de Kilitle
+                  </Button>
+                </div>
+              </>
+            )}
+
+          </DialogContent>
+        </Dialog>
 
         {/* AI feedback */}
         {aiStatus === 'done' && (
