@@ -495,9 +495,10 @@ export function PagePackageEditor({
   async function handleConfirmLock() {
     if (!pkg?.id) return
     startTransition(async () => {
-      if (qaResult && qaScores) {
-        await updatePagePackage(projectId, page.id, { qa_scores: qaScores })
-      }
+      // Mevcut skorları veya en azından denetim tarihini kaydet
+      const scoresToSave = qaScores ?? { last_qa_run: new Date().toISOString() }
+      await updatePagePackage(projectId, page.id, { qa_scores: scoresToSave })
+
       const result = await updatePackageStatus(projectId, pkg.id, 'locked')
       if (result.success) {
         setQaDialogOpen(false)
