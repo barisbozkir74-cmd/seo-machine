@@ -23,11 +23,13 @@ export type QaBadgeProps = {
 export function computeQaRules(props: QaBadgeProps): QaRule[] {
   const rules: QaRule[] = []
 
-  // QA-01: SEO Title uzunluğu
-  if (props.seoTitle.length > 70) {
-    rules.push({ id: 'QA-01', severity: 'error' })
-  } else if (props.seoTitle.length > 60) {
-    rules.push({ id: 'QA-01', severity: 'warning' })
+  // QA-01: SEO Title uzunluğu — title_max_length_enforced proje kuralı aktifse atlanır (çift ceza önlenir)
+  if (!props.projectRules['title_max_length_enforced']) {
+    if (props.seoTitle.length > 70) {
+      rules.push({ id: 'QA-01', severity: 'error' })
+    } else if (props.seoTitle.length > 60) {
+      rules.push({ id: 'QA-01', severity: 'warning' })
+    }
   }
 
   // QA-02: Meta Description uzunluğu
