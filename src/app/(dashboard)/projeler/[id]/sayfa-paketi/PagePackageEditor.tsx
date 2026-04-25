@@ -426,6 +426,8 @@ export function PagePackageEditor({
                 metaDescription={metaDescription}
                 h1={h1}
                 focusKeyword={page.focus_keyword_text ?? null}
+                slug={slug}
+                projectRules={{}}
               />
             )}
             <PackageStatusBadge status={pkg?.status ?? null} />
