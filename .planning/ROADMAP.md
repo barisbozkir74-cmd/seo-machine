@@ -209,7 +209,11 @@ v2.0 adds the quality control layer on top of the page package engine built in P
   3. PagePackageEditor'da ayrı bir "Schema" sekmesi görünür; sekme açıldığında mevcut JSON-LD önizleme olarak gösterilir
   4. Kullanıcı schema metnini editörde manuel olarak değiştirebilir ve değişiklikler kaydedilebilir
   5. Kullanıcı schema içeriğini panoya kopyalayabilir (tek tıkla kopyala butonu)
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 10-01-PLAN.md — schema_jsonld JSONB migration + supabase db push [BLOCKING]
+- [ ] 10-02-PLAN.md — actions.ts PagePackageData tip genişletmesi + page.tsx SELECT sorgusu genişletmesi
+- [ ] 10-03-PLAN.md — PagePackageEditor.tsx — Tab bar + generateSchemaJsonLd + Schema sekmesi UI (tam implementasyon)
 **UI hint**: yes
 
 ### Phase 11: Metadata Validator & QA Scoring
@@ -232,5 +236,5 @@ Phases execute in numeric order: 10 → 11
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 10. Schema Center | 0/TBD | Not started | - |
+| 10. Schema Center | 0/3 | Not started | - |
 | 11. Metadata Validator & QA Scoring | 0/TBD | Not started | - |
