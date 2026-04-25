@@ -426,13 +426,17 @@ export function PagePackageEditor({
   }
 
   async function proceedToQA() {
+    if (!pkg?.id) {
+      setQaDialogPhase('error')
+      return
+    }
     setQaDialogPhase('loading')
     setQaDialogOpen(true)
     try {
       const res = await fetch('/api/ai/qa-audit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ packageId: pkg!.id, projectId }),
+        body: JSON.stringify({ packageId: pkg.id, projectId }),
       })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const data = await res.json() as QaResult
