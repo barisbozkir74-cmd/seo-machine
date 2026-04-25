@@ -226,7 +226,10 @@ Plans:
   3. Her sayfa için SEO score, content score, human score, schema score ve readiness score hesaplanır ve editörde sayısal olarak gösterilir
   4. Readiness score 100 üzerinden hesaplanır; tüm skorlar paket kilitleme öncesinde görünürdür
   5. QA denetimi geçemeyen (kritik sorun bulunan) paket kilitlenemiyor; kullanıcı sorunları gördükten sonra manuel olarak devam etmeyi onaylayabilir
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 11-01-PLAN.md — QaBadge rules engine entegrasyonu + /api/ai/qa-audit endpoint
+- [ ] 11-02-PLAN.md — page.tsx rules sorgulama + PagePackageEditor QA dialog flow + score row
 **UI hint**: yes
 
 ## Progress
@@ -237,4 +240,4 @@ Phases execute in numeric order: 10 → 11
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 10. Schema Center | 3/3 | Complete | 2026-04-25 |
-| 11. Metadata Validator & QA Scoring | 0/TBD | Not started | - |
+| 11. Metadata Validator & QA Scoring | 0/2 | In Progress | - |
