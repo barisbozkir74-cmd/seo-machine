@@ -72,6 +72,7 @@ metrics:
 
 1. **Task 1: PageData tipi + state + handler'lar** — `34c4b41` (feat)
 2. **Task 2: Tab bar + Schema sekmesi UI** — `d962457` (feat)
+3. **Task 3: Schema sekmesi görsel ve işlevsel doğrulama** — N/A (human-verify checkpoint — kullanıcı onayladı)
 
 ## Files Created/Modified
 
