@@ -8,15 +8,26 @@ Bir web tasarım & SEO ajansının yeni gelen her website projesini uçtan uca y
 
 Her website projesi için sıfırdan açılıp kurgulanan, tüm kararları kaydeden ve stage bazlı ilerleyen **tek merkezi proje yönetim sistemi** — ajans çalışanı sistemi yönetir, sistem kendi başına rastgele akmaz.
 
-## Current Milestone: v2.0 Page Package OS — COMPLETE (2026-04-25)
-
-**Goal:** Her sayfa paketini yayına taşımadan önce schema, metadata ve SEO kuralları çerçevesinde otomatik doğrulayan ve puanlayan bir kalite kontrol katmanı kurmak.
+## Previous Milestone: v2.0 Page Package OS — COMPLETE (2026-04-25)
 
 **Shipped features:**
 - Schema Center — page_type'a göre JSON-LD üretimi (Organization, WebPage, Service, FAQPage, LocalBusiness) *(Phase 10)*
 - Metadata Validator — title/meta/H1/slug tutarlılık kontrolü, kilitleme öncesi uyarı *(Phase 11)*
 - Rules Engine — proje bazlı SEO kuralları, panelden değiştirilebilir *(Phase 3)*
 - QA Scoring — SEO score, content score, human score, schema score, readiness score — Claude QA denetimi ile *(Phase 11)*
+
+## Current Milestone: v3.0 Autonomous Growth Layer
+
+**Goal:** Kilitlenen sayfa paketlerini içerikle doldur, WordPress'e yayınla, GSC ile izle ve performans düşüşlerini otomatik tespitle devir al.
+
+**Target features:**
+- Content Studio — heading yapısına göre bölüm bölüm AI içerik üretimi, insan onay akışı
+- WordPress REST API publish — slug, title, content, meta, schema ile draft/publish gönderimi
+- Google Search Console entegrasyonu — index durumu + performans verisi çekimi
+- Recovery & Refresh Engine — ranking düşüşü tespiti, güncelleme görevi açma
+- Monitoring Dashboard — cluster bazlı trafik, sayfa bazlı izleme
+- Niche Selection Engine — volüm, rekabet, ticari değer, programmatic potansiyel skorlaması
+- Cluster-to-Revenue Mapping — bilgi trafiği vs. ticari intent ayrımı
 
 ## Requirements
 
@@ -147,4 +158,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-24 — Milestone v2.0 started (Page Package OS) — Schema Center, Metadata Validator, Rules Engine, QA Scoring*
+*Last updated: 2026-04-25 — Milestone v3.0 started (Autonomous Growth Layer)*
