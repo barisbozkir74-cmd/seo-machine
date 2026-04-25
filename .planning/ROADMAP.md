@@ -195,7 +195,7 @@ v2.0 adds the quality control layer on top of the page package engine built in P
 ## Phases
 
 - [x] **Phase 10: Schema Center** - page_type'a göre JSON-LD üretimi ve editörde Schema sekmesi (completed 2026-04-25)
-- [ ] **Phase 11: Metadata Validator & QA Scoring** - Rules engine destekli metadata kontrolü, LLM QA denetimi ve 5-boyutlu scoring
+- [x] **Phase 11: Metadata Validator & QA Scoring** - Rules engine destekli metadata kontrolü, LLM QA denetimi ve 5-boyutlu scoring (completed 2026-04-25)
 
 ## Phase Details
 
@@ -228,8 +228,8 @@ Plans:
   5. QA denetimi geçemeyen (kritik sorun bulunan) paket kilitlenemiyor; kullanıcı sorunları gördükten sonra manuel olarak devam etmeyi onaylayabilir
 **Plans**: 2 plans
 Plans:
-- [ ] 11-01-PLAN.md — QaBadge rules engine entegrasyonu + /api/ai/qa-audit endpoint
-- [ ] 11-02-PLAN.md — page.tsx rules sorgulama + PagePackageEditor QA dialog flow + score row
+- [x] 11-01-PLAN.md — QaBadge rules engine entegrasyonu + /api/ai/qa-audit endpoint (completed 2026-04-25)
+- [x] 11-02-PLAN.md — page.tsx rules sorgulama + PagePackageEditor QA dialog flow + score row (completed 2026-04-25)
 **UI hint**: yes
 
 ## Progress

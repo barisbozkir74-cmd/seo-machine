@@ -77,14 +77,14 @@
 - [x] **PAGE-01**: Her sayfa için tam SEO paketi üretilir: slug, SEO title, meta description, H1, heading yapısı (H2–H4), içerik blokları taslağı, CTA alanları, görsel isimleri, alt text önerileri, iç link giriş/çıkışları, schema tipi, canonical önerisi, FAQ *(completed in Phase 9)*
 - [ ] **PAGE-02**: Schema üretimi sayfa tipine göre otomatik seçilir (Organization/WebSite, WebPage, Service, FAQPage, LocalBusiness, Product vb.) ve JSON-LD formatında çıktılanır
 - [ ] **PAGE-02b**: Kullanıcı JSON-LD schema'yı page package editöründeki ayrı 'Schema' sekmesinden önizleyebilir, manuel düzenleyebilir ve kopyalayabilir
-- [ ] **PAGE-03**: Metadata validator, rules engine kurallarına göre title/meta/H1/slug tutarlılığını kaydetme öncesinde otomatik kontrol eder ve uyarı verir
+- [x] **PAGE-03**: Metadata validator, rules engine kurallarına göre title/meta/H1/slug tutarlılığını kaydetme öncesinde otomatik kontrol eder ve uyarı verir *(completed in Phase 11)*
 - [x] **PAGE-04**: Sayfa paketi "kilitlenme" mekanizması — paket approved olmadan locked edilemez, locked iken düzenlenemez *(completed in Phase 9)*
 - [ ] **PAGE-05**: Revision history — her sayfa paketinin geçmiş versiyonları saklanır *(deferred to v3)*
 
 ### QA Scoring
 
-- [ ] **QUAL-01**: Kullanıcı paketi kilitlemeden önce sistem ikinci LLM modeliyle denetim çalıştırır (intent drift, robotik dil, entity eksikliği, duplicate risk, iç link eksikliği) — kilit aksiyonunda tetiklenir
-- [ ] **QUAL-02**: Her sayfa için SEO score, content score, human score, schema score ve readiness score hesaplanır ve page package editöründe görüntülenir
+- [x] **QUAL-01**: Kullanıcı paketi kilitlemeden önce sistem ikinci LLM modeliyle denetim çalıştırır (intent drift, robotik dil, entity eksikliği, duplicate risk, iç link eksikliği) — kilit aksiyonunda tetiklenir *(completed in Phase 11)*
+- [x] **QUAL-02**: Her sayfa için SEO score, content score, human score, schema score ve readiness score hesaplanır ve page package editöründe görüntülenir *(completed in Phase 11)*
 
 ---
 
