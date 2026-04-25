@@ -42,23 +42,30 @@ export async function POST(req: NextRequest) {
     .single()
   if (!pkg) return new Response('Package not found', { status: 404 })
 
-  // Focus keyword için pages tablosundan page + keyword join
-  const { data: pageRow } = await supabase
-    .from('pages')
-    .select('page_type, focus_keyword_id, title')
-    .eq('project_id', projectId)
-    .eq('user_id', user.id)
-    .limit(1)
+  // Focus keyword — package'ın ait olduğu sayfa üzerinden join edilir
+  const { data: pkgPageRow } = await supabase
+    .from('page_packages')
+    .select('page_id')
+    .eq('id', packageId)
     .single()
 
   let focusKeyword = ''
-  if (pageRow?.focus_keyword_id) {
-    const { data: kw } = await supabase
-      .from('keywords')
-      .select('keyword')
-      .eq('id', pageRow.focus_keyword_id)
+  if (pkgPageRow?.page_id) {
+    const { data: pageRow } = await supabase
+      .from('pages')
+      .select('focus_keyword_id')
+      .eq('id', pkgPageRow.page_id)
+      .eq('user_id', user.id)
       .single()
-    if (kw) focusKeyword = kw.keyword
+
+    if (pageRow?.focus_keyword_id) {
+      const { data: kw } = await supabase
+        .from('keywords')
+        .select('keyword')
+        .eq('id', pageRow.focus_keyword_id)
+        .single()
+      if (kw) focusKeyword = kw.keyword
+    }
   }
 
   // Prompt oluştur — user-controlled içerik template'e gömülür (T-11-03: prompt injection azaltma)
