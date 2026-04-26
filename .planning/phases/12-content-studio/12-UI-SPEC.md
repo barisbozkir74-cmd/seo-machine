@@ -1,7 +1,7 @@
 ---
 phase: 12
 slug: content-studio
-status: draft
+status: approved
 shadcn_initialized: true
 preset: base-mira
 created: 2026-04-26
