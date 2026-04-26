@@ -214,6 +214,15 @@ export default async function SayfaPaketiPage({
                           <span className="text-xs text-muted-foreground">{page.page_type}</span>
                         )}
                         <PackageStatusBadge status={pkg?.status ?? null} />
+                        {pkg?.status === 'locked' && (
+                          <Link
+                            href={`/projeler/${id}/icerik-studio/${page.id}`}
+                            className="text-xs px-2 py-0.5 rounded bg-secondary border border-border text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            İçerik Üret
+                          </Link>
+                        )}
                       </div>
                     </Link>
                   </li>
