@@ -77,6 +77,8 @@ export function ContentStudioShell({
   const [liveTexts, setLiveTexts] = useState<Record<number, string>>({})
   // Aktif stream sayısı
   const [generatingCount, setGeneratingCount] = useState(0)
+  // Kayıt hatası bildirimi
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   const approvedCount = sections.filter((s) => s.status === 'approved').length
   const allApproved = sections.length > 0 && approvedCount === sections.length
@@ -147,7 +149,12 @@ export function ContentStudioShell({
           i === index ? { ...s, content: accumulated, status: 'draft' as const } : s
         )
         saveContentSections(projectId, pageId, latestSections).then((result) => {
-          if (result.success) router.refresh()
+          if (result.success) {
+            setSaveError(null)
+            router.refresh()
+          } else {
+            setSaveError(result.error ?? 'İçerik kaydedilemedi. Sayfayı yenilemeden önce içeriği kopyalayın.')
+          }
         })
       } catch (err) {
         console.error(`Bölüm ${index} üretilemedi:`, err)
@@ -191,6 +198,12 @@ export function ContentStudioShell({
         generatingCount={generatingCount}
         onGenerateAll={handleGenerateAll}
       />
+
+      {saveError && (
+        <div className="mx-6 mt-3 rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive" role="alert">
+          <strong>Kayıt hatası:</strong> {saveError}
+        </div>
+      )}
 
       <div className="flex flex-1 min-h-0">
         {/* İçerik alanı (scrollable) */}
