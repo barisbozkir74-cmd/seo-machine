@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { saveContentSections } from '@/app/(dashboard)/projeler/[id]/sayfa-paketi/actions'
 import type { ContentSection } from '@/app/(dashboard)/projeler/[id]/sayfa-paketi/actions'
@@ -70,6 +70,9 @@ export function ContentStudioShell({
       : parseHeadingHierarchy(pkg.heading_hierarchy)
 
   const [sections, setSections] = useState<ContentSection[]>(initialSections)
+  // sections'ın güncel değerine ref aracılığıyla erişim — stale closure'u önler
+  const sectionsRef = useRef(sections)
+  useEffect(() => { sectionsRef.current = sections }, [sections])
   // Her bölüm için canlı streaming metni: index → string
   const [liveTexts, setLiveTexts] = useState<Record<number, string>>({})
   // Aktif stream sayısı
@@ -91,15 +94,16 @@ export function ContentStudioShell({
       setLiveTexts((prev) => ({ ...prev, [index]: '' }))
       setGeneratingCount((c) => c + 1)
 
-      // Yeniden üretme için approved sections context'i hazırla
+      // Yeniden üretme için approved sections context'i hazırla (ref ile güncel state'e eriş)
+      const currentSections = sectionsRef.current
       const approvedSections = isRegenerate
-        ? sections
+        ? currentSections
             .filter((s, i) => i !== index && s.status === 'approved')
             .map((s) => ({ heading: s.heading, content: s.content }))
         : undefined
 
       // heading_hierarchy array'ini oluştur (generate-section route için)
-      const headingHierarchy = sections.map((s) => ({ level: 'H2', text: s.heading }))
+      const headingHierarchy = currentSections.map((s) => ({ level: 'H2', text: s.heading }))
 
       try {
         const res = await fetch('/api/ai/generate-section', {
@@ -131,15 +135,18 @@ export function ContentStudioShell({
           setLiveTexts((prev) => ({ ...prev, [index]: accumulated }))
         }
 
-        // Stream tamamlandı — sections'a yeni içeriği kaydet
-        const updatedSections = sections.map((s, i) =>
-          i === index ? { ...s, content: accumulated, status: 'draft' as const } : s
+        // Stream tamamlandı — sections'a yeni içeriği kaydet (functional update stale closure'u önler)
+        setSections((prev) =>
+          prev.map((s, i) =>
+            i === index ? { ...s, content: accumulated, status: 'draft' as const } : s
+          )
         )
 
-        setSections(updatedSections)
-
-        // Tüm bölümleri DB'ye kaydet (fire and forget)
-        saveContentSections(projectId, pageId, updatedSections).then((result) => {
+        // Tüm bölümleri DB'ye kaydet; sectionsRef.current en güncel state'i verir
+        const latestSections = sectionsRef.current.map((s, i) =>
+          i === index ? { ...s, content: accumulated, status: 'draft' as const } : s
+        )
+        saveContentSections(projectId, pageId, latestSections).then((result) => {
           if (result.success) router.refresh()
         })
       } catch (err) {
@@ -158,7 +165,7 @@ export function ContentStudioShell({
         })
       }
     },
-    [projectId, pageId, sections, router]
+    [projectId, pageId, router]
   )
 
   // Tümünü üret — paralel başlatır
