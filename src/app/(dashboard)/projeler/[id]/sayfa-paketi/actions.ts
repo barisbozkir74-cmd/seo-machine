@@ -506,6 +506,33 @@ export async function publishToWordPress(
   }
   const authHeader = 'Basic ' + Buffer.from(creds.appPassword).toString('base64')
 
+  // SECURITY: wpUrl'i runtime'da tekrar doğrula (Vault sonradan değişmiş olabilir)
+  function assertSafeWpUrl(raw: string): void {
+    let parsed: URL
+    try { parsed = new URL(raw) } catch {
+      throw new Error('wp_url geçersiz.')
+    }
+    if (parsed.protocol !== 'https:') throw new Error('wp_url HTTPS olmalı.')
+    // DNS çözümlemesinden önce bilinen özel/loopback aralıklarını string seviyesinde engelle
+    const h = parsed.hostname
+    if (
+      h === 'localhost' ||
+      h.startsWith('127.') ||
+      h.startsWith('10.') ||
+      h.startsWith('192.168.') ||
+      h.startsWith('169.254.') ||
+      h.endsWith('.local')
+    ) {
+      throw new Error('wp_url özel ağ adresine işaret edemez.')
+    }
+  }
+
+  try {
+    assertSafeWpUrl(creds.wpUrl)
+  } catch (e) {
+    return { success: false, error: (e as Error).message }
+  }
+
   const apiBase = creds.wpUrl.replace(/\/$/, '') + '/wp-json/wp/v2'
 
   // Plugin algıla (her gönderimde — cache yok, D-03)
