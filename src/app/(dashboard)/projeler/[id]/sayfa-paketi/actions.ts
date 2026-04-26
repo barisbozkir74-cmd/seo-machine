@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { getWordPressCredentials } from '@/lib/supabase/vault'
 
 export type ActionResult = { success: true } | { success: false; error: string }
 
@@ -418,4 +419,187 @@ export async function updatePackageStatus(
 
   revalidatePath(`/projeler/${projectId}/sayfa-paketi`)
   return { success: true }
+}
+
+export type PublishResult =
+  | { success: true; wpPostId: number; wpPostUrl: string; wpStatus: string }
+  | { success: false; error: string }
+
+// WordPress plugin tespiti için yardımcı
+type WpPlugin = { plugin: string; status: string }
+
+function detectSeoPlugin(plugins: WpPlugin[]): 'yoast' | 'rankmath' | 'none' {
+  const slugs = plugins.map((p) => p.plugin)
+  if (slugs.some((s) => s.includes('wordpress-seo'))) return 'yoast'
+  if (slugs.some((s) => s.includes('rank-math'))) return 'rankmath'
+  return 'none'
+}
+
+// Plugin tipine göre WP REST meta payload oluştur
+function buildMetaPayload(
+  plugin: 'yoast' | 'rankmath' | 'none',
+  seoTitle: string | null,
+  metaDescription: string | null,
+  schemaJsonld: unknown | null
+): Record<string, string> {
+  const meta: Record<string, string> = {}
+
+  if (plugin === 'yoast') {
+    if (seoTitle) meta['_yoast_wpseo_title'] = seoTitle
+    if (metaDescription) meta['_yoast_wpseo_metadesc'] = metaDescription
+    if (schemaJsonld) meta['_yoast_wpseo_schema'] = JSON.stringify(schemaJsonld)
+  } else if (plugin === 'rankmath') {
+    if (seoTitle) meta['rank_math_title'] = seoTitle
+    if (metaDescription) meta['rank_math_description'] = metaDescription
+    if (schemaJsonld) meta['rank_math_schema'] = JSON.stringify(schemaJsonld)
+  } else {
+    // Plugin yok — WP native meta.description
+    if (metaDescription) meta['description'] = metaDescription
+    // Schema skip (native WP desteklemez)
+  }
+
+  return meta
+}
+
+export async function publishToWordPress(
+  projectId: string,
+  pageId: string,
+  status: 'publish' | 'draft'
+): Promise<PublishResult> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Oturum bulunamadı.' }
+
+  // Proje sahipliği doğrula
+  const project = await verifyOwnership(supabase, projectId, user.id)
+  if (!project) return { success: false, error: 'Proje bulunamadı.' }
+
+  // Paket sahipliği + gerekli veri
+  const { data: pkg } = await supabase
+    .from('page_packages')
+    .select('id, status, seo_title, html_content, meta_description, schema_jsonld')
+    .eq('page_id', pageId)
+    .eq('project_id', projectId)
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  if (!pkg) return { success: false, error: 'Sayfa paketi bulunamadı.' }
+  if (pkg.status !== 'locked') return { success: false, error: 'Paket kilitli değil. Önce paketi kilitleyin.' }
+  if (!pkg.html_content) return { success: false, error: 'HTML içerik henüz oluşturulmamış. İçerik Stüdyosunu tamamlayın.' }
+
+  // Vault'tan WP credentials al
+  const creds = await getWordPressCredentials(projectId)
+  if (!creds) {
+    return { success: false, error: 'WordPress kimlik bilgileri bulunamadı. Proje ayarlarından ekleyin.' }
+  }
+
+  // Basic Auth header
+  // appPassword formatı: "kullaniciadi:uygulama_sifresi"
+  // Eğer ":" içermiyorsa formatı geçersiz say
+  if (!creds.appPassword.includes(':')) {
+    return {
+      success: false,
+      error: 'Uygulama Şifresi geçersiz format. "kullaniciadi:sifre" formatında kaydedin.',
+    }
+  }
+  const authHeader = 'Basic ' + Buffer.from(creds.appPassword).toString('base64')
+
+  const apiBase = creds.wpUrl.replace(/\/$/, '') + '/wp-json/wp/v2'
+
+  // Plugin algıla (her gönderimde — cache yok, D-03)
+  let detectedPlugin: 'yoast' | 'rankmath' | 'none' = 'none'
+  try {
+    const pluginsRes = await fetch(`${apiBase}/plugins`, {
+      headers: {
+        Authorization: authHeader,
+        'Content-Type': 'application/json',
+      },
+    })
+    if (pluginsRes.ok) {
+      const plugins: WpPlugin[] = await pluginsRes.json()
+      detectedPlugin = detectSeoPlugin(plugins)
+    }
+    // Plugin endpoint 403 dönebilir (yeterli yetki yoksa) — native'e düş
+  } catch {
+    // Ağ hatası — native'e düş
+    detectedPlugin = 'none'
+  }
+
+  // Meta payload oluştur
+  const meta = buildMetaPayload(
+    detectedPlugin,
+    pkg.seo_title,
+    pkg.meta_description,
+    pkg.schema_jsonld
+  )
+
+  // WordPress'e POST
+  let wpPostId: number
+  let wpPostUrl: string
+
+  try {
+    const postRes = await fetch(`${apiBase}/posts`, {
+      method: 'POST',
+      headers: {
+        Authorization: authHeader, // SECURITY: loglanmaz
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        title: pkg.seo_title ?? '',
+        content: pkg.html_content,
+        status,
+        meta,
+      }),
+    })
+
+    if (!postRes.ok) {
+      if (postRes.status === 401 || postRes.status === 403) {
+        return {
+          success: false,
+          error: 'WordPress bağlantısı kurulamadı. URL ve Uygulama Şifresini kontrol edin.',
+        }
+      }
+      return {
+        success: false,
+        error: 'Gönderim sırasında hata oluştu. Tekrar deneyin.',
+      }
+    }
+
+    const wpPost = await postRes.json()
+    wpPostId = wpPost.id
+    wpPostUrl = wpPost.link
+  } catch {
+    return {
+      success: false,
+      error: "WordPress'e bağlanılamadı. İnternet bağlantınızı ve site URL'sini kontrol edin.",
+    }
+  }
+
+  // page_packages güncelle
+  const { error: updateError } = await supabase
+    .from('page_packages')
+    .update({
+      wp_post_id: wpPostId,
+      wp_post_url: wpPostUrl,
+      wp_status: status,
+      wp_published_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', pkg.id)
+    .eq('user_id', user.id)
+
+  if (updateError) {
+    // WP'de başarılı ama DB'ye yazılamadı — partial success, wpPostId döndür
+    return {
+      success: false,
+      error: `WordPress'e gönderildi (Post ID: ${wpPostId}) ancak durum kaydedilemedi. Lütfen destek alın.`,
+    }
+  }
+
+  revalidatePath(`/projeler/${projectId}/icerik-studio/${pageId}`)
+  revalidatePath(`/projeler/${projectId}/sayfa-paketi`)
+
+  return { success: true, wpPostId, wpPostUrl, wpStatus: status }
 }
