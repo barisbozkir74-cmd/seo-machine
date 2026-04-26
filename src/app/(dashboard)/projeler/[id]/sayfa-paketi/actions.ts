@@ -62,14 +62,26 @@ async function verifyOwnership(supabase: Awaited<ReturnType<typeof createClient>
   return data
 }
 
+// HTML kaçış helper — XSS engellemek için tüm dinamik değerlere uygulanır
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 // HTML birleştirme helper — tüm bölümler approved olduğunda kullanılır
 function assembleHtml(sections: ContentSection[]): string {
   return sections
     .map((section) => {
-      let html = `<h2>${section.heading}</h2>\n<p>${section.content}</p>`
+      const safeHeading = escapeHtml(section.heading)
+      const safeContent = escapeHtml(section.content)
+      let html = `<h2>${safeHeading}</h2>\n<p>${safeContent}</p>`
       if (section.sub_headings && section.sub_headings.length > 0) {
-        const subHtml = section.sub_headings.map((sub) => `<h3>${sub}</h3>`).join('\n')
-        html = `<h2>${section.heading}</h2>\n${subHtml}\n<p>${section.content}</p>`
+        const subHtml = section.sub_headings.map((sub) => `<h3>${escapeHtml(sub)}</h3>`).join('\n')
+        html = `<h2>${safeHeading}</h2>\n${subHtml}\n<p>${safeContent}</p>`
       }
       return html
     })
