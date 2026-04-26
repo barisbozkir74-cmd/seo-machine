@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { saveWpCredentials } from '@/lib/supabase/vault'
 
 export type AdvanceStageResult =
   | { success: true; isLastStage: boolean }
@@ -125,6 +126,49 @@ export async function addNote(
 
   if (error) {
     return { success: false, error: 'Not kaydedilemedi. Lütfen tekrar deneyin.' }
+  }
+
+  revalidatePath(`/projeler/${projectId}`)
+  return { success: true }
+}
+
+export type SaveWpCredentialsResult =
+  | { success: true }
+  | { success: false; error: string }
+
+export async function saveWordPressCredentials(
+  projectId: string,
+  wpUrl: string,
+  appPassword: string
+): Promise<SaveWpCredentialsResult> {
+  // Client-side validation zaten yapılmış ama server'da da doğrula
+  if (!wpUrl || !wpUrl.startsWith('https://')) {
+    return { success: false, error: "Geçerli bir WordPress URL'si girin (https:// ile başlamalı)." }
+  }
+  if (!appPassword || appPassword.trim().length === 0) {
+    return { success: false, error: 'Uygulama Şifresi gereklidir.' }
+  }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Oturum bulunamadı.' }
+
+  // Proje sahipliği doğrula
+  const { data: project } = await supabase
+    .from('projects')
+    .select('id')
+    .eq('id', projectId)
+    .eq('user_id', user.id)
+    .single()
+  if (!project) return { success: false, error: 'Proje bulunamadı.' }
+
+  try {
+    // SECURITY: appPassword vault.ts'e iletilir — loglanmaz, response'ta dönmez
+    await saveWpCredentials(projectId, wpUrl, appPassword)
+  } catch {
+    return { success: false, error: 'WordPress bağlantısı kaydedilemedi. Lütfen tekrar deneyin.' }
   }
 
   revalidatePath(`/projeler/${projectId}`)
