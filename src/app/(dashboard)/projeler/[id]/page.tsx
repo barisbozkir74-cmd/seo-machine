@@ -8,6 +8,8 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import { Tick02Icon, RadioButtonIcon, CircleIcon } from '@hugeicons/core-free-icons'
 import { StageTransition } from './stage-transition'
 import { NotesSection } from './notes-section'
+import { hasWordPressCredentials } from '@/lib/supabase/vault'
+import { WordPressConnectionSection } from './wordpress-section'
 
 type Stage = {
   id: string
@@ -78,6 +80,9 @@ export default async function ProjeDetayPage({
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
     : { data: [] }
+
+  // WordPress bağlantı durumu — Vault'tan SSR kontrolü
+  const isWpConfigured = await hasWordPressCredentials(id)
 
   return (
     <div className="flex flex-col h-screen">
@@ -219,6 +224,13 @@ export default async function ProjeDetayPage({
               initialNotes={(notes ?? []) as Array<{ id: string; created_at: string; payload: { content: string } }>}
             />
           )}
+
+          <Separator className="my-8" />
+
+          <WordPressConnectionSection
+            projectId={project.id}
+            isConfigured={isWpConfigured}
+          />
 
           <Separator className="my-8" />
 
