@@ -252,7 +252,7 @@ v3.0 closes the full content-to-publish-to-monitor loop. Six phases deliver this
 
 ## Phases
 
-- [ ] **Phase 12: Content Studio** - Kilitli sayfa paketi için H2/H3 heading yapısına göre bölüm bölüm AI içerik üretimi ve insan onay akışı
+- [x] **Phase 12: Content Studio** - Kilitli sayfa paketi için H2/H3 heading yapısına göre bölüm bölüm AI içerik üretimi ve insan onay akışı (completed 2026-04-26)
 - [ ] **Phase 13: WordPress Publishing** - Proje başına WordPress kimlik bilgisi yönetimi ve REST API ile draft/publish gönderimi
 - [ ] **Phase 14: GSC Integration** - Google Search Console OAuth bağlantısı, index durumu ve sayfa/keyword bazlı performans verisi çekimi
 - [ ] **Phase 15: Monitoring Dashboard** - Cluster ve sayfa bazlı GSC trafik özeti, pozisyon takibi ve decay alert görünümü
@@ -273,11 +273,11 @@ v3.0 closes the full content-to-publish-to-monitor loop. Six phases deliver this
   5. İçerik üretim durumu (kaç bölüm onaylandı / toplam) sayfa paket editöründe görünür
 **Plans**: 5 plans
 Plans:
-- [ ] 12-01-PLAN.md — content_sections + html_content migration + supabase db push [BLOCKING]
-- [ ] 12-02-PLAN.md — /api/ai/generate-section streaming endpoint (Anthropic SDK, claude-sonnet-4-6)
-- [ ] 12-03-PLAN.md — approveSection + rejectSection + saveContentSections server actions
-- [ ] 12-04-PLAN.md — Content Studio SSR route (/icerik-studio/[pageId]) + entry point
-- [ ] 12-05-PLAN.md — ContentStudioShell + SectionCard + StreamingText + HtmlReadyBanner bileşenleri
+- [x] 12-01-PLAN.md — content_sections + html_content migration + supabase db push [BLOCKING] (completed 2026-04-26)
+- [x] 12-02-PLAN.md — /api/ai/generate-section streaming endpoint (Anthropic SDK, claude-sonnet-4-6) (completed 2026-04-26)
+- [x] 12-03-PLAN.md — approveSection + rejectSection + saveContentSections server actions (completed 2026-04-26)
+- [x] 12-04-PLAN.md — Content Studio SSR route (/icerik-studio/[pageId]) + entry point (completed 2026-04-26)
+- [x] 12-05-PLAN.md — ContentStudioShell + SectionCard + StreamingText + HtmlReadyBanner bileşenleri (completed 2026-04-26)
 **UI hint**: yes
 
 ### Phase 13: WordPress Publishing
