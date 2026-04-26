@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -55,6 +55,13 @@ export function SectionCard({
   const [localContent, setLocalContent] = useState(section.content)
   const [isPending, startTransition] = useTransition()
   const router = useRouter()
+
+  // Prop'tan gelen yeni içeriği localContent'e yansıt (yeniden üretim sonrası güncelleme)
+  useEffect(() => {
+    if (section.status === 'draft' || section.status === 'pending') {
+      setLocalContent(section.content)
+    }
+  }, [section.content, section.status])
 
   const isStreaming = section.status === 'generating'
   const isApproved = section.status === 'approved'
