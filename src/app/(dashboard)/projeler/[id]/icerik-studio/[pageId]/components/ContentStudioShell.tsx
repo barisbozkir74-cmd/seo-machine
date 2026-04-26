@@ -104,8 +104,11 @@ export function ContentStudioShell({
             .map((s) => ({ heading: s.heading, content: s.content }))
         : undefined
 
-      // heading_hierarchy array'ini oluştur (generate-section route için)
-      const headingHierarchy = currentSections.map((s) => ({ level: 'H2', text: s.heading }))
+      // heading_hierarchy array'ini oluştur — H3 alt başlıkları da dahil edilir (AI bağlamı için)
+      const headingHierarchy = currentSections.flatMap((s) => [
+        { level: `H${s.level}`, text: s.heading },
+        ...s.sub_headings.map((sub) => ({ level: 'H3', text: sub })),
+      ])
 
       try {
         const res = await fetch('/api/ai/generate-section', {
