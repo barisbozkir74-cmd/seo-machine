@@ -271,7 +271,13 @@ v3.0 closes the full content-to-publish-to-monitor loop. Six phases deliver this
   3. Kullanıcı her bölümü tek tek onaylayabilir, reddedip yeniden üretebilir veya inline olarak düzenleyebilir — bölümler birbirinden bağımsız hareket eder
   4. Tüm bölümler onaylandığında sistem birleşik WordPress-ready HTML çıktısı oluşturur; çıktı page_packages tablosuna kaydedilir
   5. İçerik üretim durumu (kaç bölüm onaylandı / toplam) sayfa paket editöründe görünür
-**Plans**: TBD
+**Plans**: 5 plans
+Plans:
+- [ ] 12-01-PLAN.md — content_sections + html_content migration + supabase db push [BLOCKING]
+- [ ] 12-02-PLAN.md — /api/ai/generate-section streaming endpoint (Anthropic SDK, claude-sonnet-4-6)
+- [ ] 12-03-PLAN.md — approveSection + rejectSection + saveContentSections server actions
+- [ ] 12-04-PLAN.md — Content Studio SSR route (/icerik-studio/[pageId]) + entry point
+- [ ] 12-05-PLAN.md — ContentStudioShell + SectionCard + StreamingText + HtmlReadyBanner bileşenleri
 **UI hint**: yes
 
 ### Phase 13: WordPress Publishing
