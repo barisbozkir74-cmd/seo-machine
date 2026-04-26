@@ -45,6 +45,8 @@ type PackageData = {
   heading_hierarchy: unknown
   content_sections: unknown
   html_content: string | null
+  wp_post_url: string | null
+  wp_status: string | null
 }
 
 export type ContentStudioShellProps = {
@@ -53,6 +55,7 @@ export type ContentStudioShellProps = {
   pageTitle: string
   pkg: PackageData
   resolvedRules: Record<string, boolean>
+  isWpConfigured: boolean
 }
 
 export function ContentStudioShell({
@@ -60,6 +63,7 @@ export function ContentStudioShell({
   pageId,
   pageTitle,
   pkg,
+  isWpConfigured,
 }: ContentStudioShellProps) {
   const router = useRouter()
 
@@ -232,7 +236,15 @@ export function ContentStudioShell({
         </div>
       </div>
 
-      {allApproved && <HtmlReadyBanner />}
+      {allApproved && (
+        <HtmlReadyBanner
+          projectId={projectId}
+          pageId={pageId}
+          wpPostUrl={pkg.wp_post_url}
+          wpStatus={pkg.wp_status}
+          isWpConfigured={isWpConfigured}
+        />
+      )}
     </div>
   )
 }

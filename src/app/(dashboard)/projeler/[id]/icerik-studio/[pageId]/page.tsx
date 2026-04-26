@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { RULE_META } from '@/lib/rules/rule-meta'
+import { hasWordPressCredentials } from '@/lib/supabase/vault'
 import { ProjectNav } from '../../ProjectNav'
 import { ContentStudioShell } from './components/ContentStudioShell'
 
@@ -19,6 +20,9 @@ type PackageData = {
   heading_hierarchy: unknown
   content_sections: unknown
   html_content: string | null
+  wp_post_url: string | null
+  wp_status: string | null
+  wp_post_id: number | null
 }
 
 export default async function IcerikStudioPage({
@@ -57,7 +61,7 @@ export default async function IcerikStudioPage({
   const { data: pkg } = await supabase
     .from('page_packages')
     .select(
-      'id, status, seo_title, meta_description, h1, focus_keyword_id, search_intent, page_type, strategic_purpose, heading_hierarchy, content_sections, html_content'
+      'id, status, seo_title, meta_description, h1, focus_keyword_id, search_intent, page_type, strategic_purpose, heading_hierarchy, content_sections, html_content, wp_post_url, wp_status, wp_post_id'
     )
     .eq('page_id', pageId)
     .eq('project_id', id)
@@ -112,6 +116,8 @@ export default async function IcerikStudioPage({
     })
   )
 
+  const isWpConfigured = await hasWordPressCredentials(id)
+
   // Kilitli olmayan paket için uyarı (notFound() değil — kullanıcı paket durumunu görür)
   if (pkg.status !== 'locked') {
     return (
@@ -148,6 +154,7 @@ export default async function IcerikStudioPage({
         pageTitle={page.title}
         pkg={pkg as PackageData}
         resolvedRules={resolvedRules}
+        isWpConfigured={isWpConfigured}
       />
     </div>
   )
