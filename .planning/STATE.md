@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Autonomous Growth Layer
-status: Defining requirements
-stopped_at: Milestone v3.0 started — defining requirements
+status: Roadmap defined — ready to plan Phase 12
+stopped_at: v3.0 roadmap created — Phases 12–17 defined, ready for /gsd-plan-phase 12
 last_updated: "2026-04-25T00:00:00Z"
-last_activity: 2026-04-25 — Milestone v3.0 started
+last_activity: 2026-04-25 — v3.0 roadmap created (6 phases, 20 requirements mapped)
 progress:
-  total_phases: 0
+  total_phases: 6
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -18,19 +18,30 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-24)
+See: .planning/PROJECT.md (updated 2026-04-25)
 
 **Core value:** Her website projesi için sıfırdan açılıp kurgulanan, tüm kararları kaydeden ve stage bazlı ilerleyen tek merkezi proje yönetim sistemi
 **Current focus:** Milestone v3.0 — Autonomous Growth Layer
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: Phase 12 — Content Studio (not started)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-04-25 — Milestone v3.0 started
+Status: Roadmap defined — ready to plan Phase 12
+Last activity: 2026-04-25 — v3.0 roadmap created; 6 phases defined (Phases 12–17)
 
-Progress: [##########] 100%
+Progress: [__________] 0% (0/6 phases complete)
+
+## v3.0 Phase Summary
+
+| Phase | Name | Requirements | Status |
+|-------|------|--------------|--------|
+| 12 | Content Studio | CONT-01 to CONT-05 | Not started |
+| 13 | WordPress Publishing | PUBL-01 to PUBL-04 | Not started |
+| 14 | GSC Integration | GSC-01 to GSC-03 | Not started |
+| 15 | Monitoring Dashboard | MON-01, MON-02 | Not started |
+| 16 | Recovery Engine | REC-01, REC-02 | Not started |
+| 17 | Keyword Intelligence | NICH-01, NICH-02, RVEN-01, RVEN-02 | Not started |
 
 ## Performance Metrics
 
@@ -160,6 +171,11 @@ Recent decisions affecting current work:
 - v2.0 Schema generation: page_packages.schema_type (text) exists; new schema_jsonld (jsonb) column needed
 - v2.0 QUAL-02 scoring: extends QaBadge pattern; can be computed client-side or server-side at lock time
 - v2.0 PAGE-03 metadata validator: hooks into updatePagePackage action (save flow) and updatePackageStatus (lock flow)
+- v3.0 WordPress credentials: stored in Supabase secrets (wp_url, wp_app_password) — never NEXT_PUBLIC_
+- v3.0 GSC OAuth tokens: stored in Supabase (gsc_tokens JSONB column on projects) — server-only access
+- v3.0 Content Studio: uses Claude claude-sonnet-4-6 (same model as QA audit) — section-by-section streaming
+- v3.0 Recovery Engine: n8n scheduled workflow (daily) — position decay detection + update task creation
+- v3.0 n8n is available from Phase 14+ for GSC sync and Phase 16 for recovery detection workflows
 
 ### Pending Todos
 
@@ -179,6 +195,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-25T15:37:43Z
-Stopped at: Phase 10 Plan 01 complete — schema_jsonld JSONB column added to page_packages, ready for Plan 02
+Last session: 2026-04-25T00:00:00Z
+Stopped at: v3.0 roadmap created — 6 phases (12–17), 20 requirements mapped, ready for /gsd-plan-phase 12
 Resume file: None

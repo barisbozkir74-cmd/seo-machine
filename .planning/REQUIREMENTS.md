@@ -181,33 +181,33 @@
 | PAGE-03 | Phase 11 | Complete |
 | QUAL-01 | Phase 11 | Complete |
 | QUAL-02 | Phase 11 | Complete |
-| CONT-01 | Phase TBD | Pending |
-| CONT-02 | Phase TBD | Pending |
-| CONT-03 | Phase TBD | Pending |
-| CONT-04 | Phase TBD | Pending |
-| CONT-05 | Phase TBD | Pending |
-| PUBL-01 | Phase TBD | Pending |
-| PUBL-02 | Phase TBD | Pending |
-| PUBL-03 | Phase TBD | Pending |
-| PUBL-04 | Phase TBD | Pending |
-| GSC-01 | Phase TBD | Pending |
-| GSC-02 | Phase TBD | Pending |
-| GSC-03 | Phase TBD | Pending |
-| MON-01 | Phase TBD | Pending |
-| MON-02 | Phase TBD | Pending |
-| REC-01 | Phase TBD | Pending |
-| REC-02 | Phase TBD | Pending |
-| NICH-01 | Phase TBD | Pending |
-| NICH-02 | Phase TBD | Pending |
-| RVEN-01 | Phase TBD | Pending |
-| RVEN-02 | Phase TBD | Pending |
+| CONT-01 | Phase 12 | Pending |
+| CONT-02 | Phase 12 | Pending |
+| CONT-03 | Phase 12 | Pending |
+| CONT-04 | Phase 12 | Pending |
+| CONT-05 | Phase 12 | Pending |
+| PUBL-01 | Phase 13 | Pending |
+| PUBL-02 | Phase 13 | Pending |
+| PUBL-03 | Phase 13 | Pending |
+| PUBL-04 | Phase 13 | Pending |
+| GSC-01 | Phase 14 | Pending |
+| GSC-02 | Phase 14 | Pending |
+| GSC-03 | Phase 14 | Pending |
+| MON-01 | Phase 15 | Pending |
+| MON-02 | Phase 15 | Pending |
+| REC-01 | Phase 16 | Pending |
+| REC-02 | Phase 16 | Pending |
+| NICH-01 | Phase 17 | Pending |
+| NICH-02 | Phase 17 | Pending |
+| RVEN-01 | Phase 17 | Pending |
+| RVEN-02 | Phase 17 | Pending |
 
 **Coverage:**
 - v1 requirements: 28 total — 28/28 Complete ✓
 - v2 requirements: 7 total — 7/7 Complete ✓
-- v3 requirements: 20 total — 0/20 Pending (mapped by roadmapper)
-- Unmapped: 0 after roadmap creation
+- v3 requirements: 20 total — 0/20 Pending (roadmap phases assigned) ✓
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-04-22*
-*Last updated: 2026-04-25 — v3.0 milestone requirements defined (Autonomous Growth Layer)*
+*Last updated: 2026-04-25 — v3.0 roadmap created; all 20 v3 requirements mapped to Phases 12–17*

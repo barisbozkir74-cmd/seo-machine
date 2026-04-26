@@ -241,3 +241,105 @@ Phases execute in numeric order: 10 → 11
 |-------|----------------|--------|-----------|
 | 10. Schema Center | 3/3 | Complete | 2026-04-25 |
 | 11. Metadata Validator & QA Scoring | 0/2 | In Progress | - |
+
+---
+
+# Roadmap: SEO Machine — v3.0 Autonomous Growth Layer
+
+## Overview
+
+v3.0 closes the full content-to-publish-to-monitor loop. Six phases deliver this: Phase 12 builds Content Studio (AI-generated body content section by section with human approval), Phase 13 adds WordPress publishing (credentials, draft/publish, status sync), Phase 14 integrates Google Search Console (OAuth, index status, performance data), Phase 15 builds the Monitoring Dashboard (cluster traffic + per-page GSC performance + decay alerts), Phase 16 adds the Recovery Engine (automated decay detection + update task creation), and Phase 17 extends the keyword strategy view with Niche Selection and Cluster-to-Revenue scoring. Together they transform the system from a planning OS into a live growth machine that detects problems and surfaces them for human action.
+
+## Phases
+
+- [ ] **Phase 12: Content Studio** - Kilitli sayfa paketi için H2/H3 heading yapısına göre bölüm bölüm AI içerik üretimi ve insan onay akışı
+- [ ] **Phase 13: WordPress Publishing** - Proje başına WordPress kimlik bilgisi yönetimi ve REST API ile draft/publish gönderimi
+- [ ] **Phase 14: GSC Integration** - Google Search Console OAuth bağlantısı, index durumu ve sayfa/keyword bazlı performans verisi çekimi
+- [ ] **Phase 15: Monitoring Dashboard** - Cluster ve sayfa bazlı GSC trafik özeti, pozisyon takibi ve decay alert görünümü
+- [ ] **Phase 16: Recovery Engine** - Pozisyon düşüşü olan sayfaların otomatik tespiti ve ilgili sayfa paketinde güncelleme görevi açma
+- [ ] **Phase 17: Keyword Intelligence** - Her cluster için niche selection skoru ve cluster-to-revenue gelir potansiyeli haritası
+
+## Phase Details
+
+### Phase 12: Content Studio
+**Goal**: Kullanıcı kilitli bir sayfa paketi için heading yapısına göre bölüm bölüm AI içerik üretebilir, her bölümü bağımsız olarak onaylayabilir/reddedebilir/düzenleyebilir ve tüm bölümler onaylandığında WordPress'e hazır HTML çıktısı alabilir
+**Depends on**: Phase 11
+**Requirements**: CONT-01, CONT-02, CONT-03, CONT-04, CONT-05
+**Success Criteria** (what must be TRUE):
+  1. Kullanıcı kilitli bir sayfa paketinde "İçerik Üret" aksiyonunu başlatabilir; sistem sayfanın H2/H3 heading yapısını bölümlere ayırır ve her bölüm için ayrı üretim kartı gösterir
+  2. Sistem her heading bloğu için sayfa paketi, focus keyword ve proje kurallarını baz alarak Claude ile bağımsız içerik üretir; üretim sırasında kullanıcı diğer bölümlere devam edebilir
+  3. Kullanıcı her bölümü tek tek onaylayabilir, reddedip yeniden üretebilir veya inline olarak düzenleyebilir — bölümler birbirinden bağımsız hareket eder
+  4. Tüm bölümler onaylandığında sistem birleşik WordPress-ready HTML çıktısı oluşturur; çıktı page_packages tablosuna kaydedilir
+  5. İçerik üretim durumu (kaç bölüm onaylandı / toplam) sayfa paket editöründe görünür
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 13: WordPress Publishing
+**Goal**: Kullanıcı proje başına WordPress kimlik bilgisi kaydedebilir, onaylı içeriği draft olarak WordPress'e gönderebilir ve ardından yayın zamanlamasını dashboard üzerinden yönetebilir; tüm yayın durumu page package'da görünür
+**Depends on**: Phase 12
+**Requirements**: PUBL-01, PUBL-02, PUBL-03, PUBL-04
+**Success Criteria** (what must be TRUE):
+  1. Kullanıcı proje ayarlarından WordPress site URL ve Application Password girebilir; sistem bağlantıyı test eder ve kimlik bilgilerini Supabase secrets'ta güvenli saklar
+  2. Kullanıcı onaylı içeriği (HTML body, SEO title, meta description, slug, schema JSON-LD dahil) tek aksiyonla WordPress REST API üzerinden draft olarak gönderebilir
+  3. Kullanıcı dashboard üzerinden draft sayfayı anında yayınlayabilir veya ileri tarih/saat seçerek zamanlamalı yayın ayarlayabilir
+  4. WordPress'e gönderim sonrası post ID ve yayın durumu (draft / published / scheduled) page package kartında görünür ve sayfa yenilemesinde korunur
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 14: GSC Integration
+**Goal**: Kullanıcı proje başına Google Search Console property'sini OAuth ile bağlayabilir; sistem yayınlanan sayfalar için index durumunu ve sayfa/keyword bazlı tıklama, gösterim, pozisyon verisini GSC'den çekebilir
+**Depends on**: Phase 13
+**Requirements**: GSC-01, GSC-02, GSC-03
+**Success Criteria** (what must be TRUE):
+  1. Kullanıcı proje ayarlarından "GSC Bağla" aksiyonunu tetikler; Google OAuth akışı tamamlandıktan sonra seçilen property proje ile ilişkilendirilir ve token Supabase'de güvenli saklanır
+  2. Sistem yayınlanan her sayfa için GSC'ye URL inspection isteği gönderir ve index durumunu (indexed / not indexed / crawled but not indexed) page package'da gösterir
+  3. Sistem n8n webhook veya schedule ile günlük olarak GSC'den sayfa ve keyword bazlı tıklama, gösterim ve ortalama pozisyon verisini çeker; veriler Supabase'e kaydedilir
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 15: Monitoring Dashboard
+**Goal**: Kullanıcı tek sayfada hem cluster bazlı trafik özetini hem de sayfa bazlı GSC performans metriklerini görebilir; pozisyon düşüşü yaşayan sayfalar decay alert ile işaretlenir
+**Depends on**: Phase 14
+**Requirements**: MON-01, MON-02
+**Success Criteria** (what must be TRUE):
+  1. Kullanıcı monitoring dashboard'da keyword cluster'larını tıklama ve gösterim toplamlarına göre sıralı listede görebilir; hangi cluster'ın GSC'de güçlü veya zayıf olduğunu bir bakışta anlayabilir
+  2. Kullanıcı herhangi bir sayfanın GSC metriklerini (tıklama, gösterim, ortalama pozisyon, tarihsel trend) sayfa bazlı görünümde inceleyebilir
+  3. Pozisyon ortalaması belirlenen eşiğin altına düşen veya son 14 günde belirgin düşüş gösteren sayfalar decay alert badge ile işaretlenir; kullanıcı bu sayfaları filtreli listede görebilir
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 16: Recovery Engine
+**Goal**: Sistem pozisyon düşüşü olan sayfaları eşik değere göre otomatik tespit eder ve ilgili sayfa paketi üzerinde güncelleme görevi açar; kullanıcı aksiyon bekleyen sayfaları tek noktadan görebilir
+**Depends on**: Phase 15
+**Requirements**: REC-01, REC-02
+**Success Criteria** (what must be TRUE):
+  1. n8n scheduled workflow günlük çalışır; önceki 7 gün ve son 7 günü karşılaştırarak belirlenen eşiğin üzerinde pozisyon kaybı olan sayfaları tespit eder ve bunları Supabase'e decay kaydı olarak yazar
+  2. Decay kaydı oluştuğunda ilgili page_package üzerinde "Güncelleme Gerekli" durumu ve açıklaması otomatik oluşturulur; kullanıcı bu paketi monitoring dashboard veya sayfa listesinden görebilir ve güncelleme akışını başlatabilir
+**Plans**: TBD
+
+### Phase 17: Keyword Intelligence
+**Goal**: Her keyword cluster için niche selection skoru ve cluster-to-revenue gelir sınıflandırması hesaplanır; kullanıcı keyword strateji görünümünde hangi cluster'ların öncelikli yatırım hedefi olduğunu görebilir
+**Depends on**: Phase 6
+**Requirements**: NICH-01, NICH-02, RVEN-01, RVEN-02
+**Success Criteria** (what must be TRUE):
+  1. Sistem her cluster için niche selection skoru hesaplar (hacim, rekabet, ticari değer ve programmatic potansiyel bileşenlerinden); skor cluster tablosunda sütun olarak görünür
+  2. Kullanıcı cluster listesini niche skoruna göre sıralayabilir ve hangi cluster'ların yüksek potansiyel niş oluşturduğunu görebilir
+  3. Sistem her cluster'ı gelir potansiyeli sınıfına atar (bilgi trafiği / mixed / ticari); bu sınıflandırma cluster başına rozet olarak gösterilir
+  4. Kullanıcı cluster-to-revenue haritasını görebilir: hangi cluster'ların doğrudan satış intent'i taşıdığı, hangilerinin bilgi trafiği ürettiği ve gelir dönüşüm potansiyelinin düşük/orta/yüksek olduğu görünür
+**Plans**: TBD
+**UI hint**: yes
+
+## Progress
+
+**Execution Order:**
+Phases execute in numeric order: 12 → 13 → 14 → 15 → 16 → 17
+Note: Phase 17 depends on Phase 6 (not Phase 16) — can be planned independently but executed after Phase 16 for convenience.
+
+| Phase | Plans Complete | Status | Completed |
+|-------|----------------|--------|-----------|
+| 12. Content Studio | 0/TBD | Not started | - |
+| 13. WordPress Publishing | 0/TBD | Not started | - |
+| 14. GSC Integration | 0/TBD | Not started | - |
+| 15. Monitoring Dashboard | 0/TBD | Not started | - |
+| 16. Recovery Engine | 0/TBD | Not started | - |
+| 17. Keyword Intelligence | 0/TBD | Not started | - |
