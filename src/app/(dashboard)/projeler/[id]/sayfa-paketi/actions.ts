@@ -5,6 +5,14 @@ import { createClient } from '@/lib/supabase/server'
 
 export type ActionResult = { success: true } | { success: false; error: string }
 
+export type ContentSection = {
+  heading: string
+  level: number
+  sub_headings: string[]
+  content: string
+  status: 'pending' | 'generating' | 'draft' | 'approved' | 'rejected'
+}
+
 export type CreatePackageResult =
   | { success: true; id: string }
   | { success: false; error: string }
@@ -38,6 +46,9 @@ export type PagePackageData = {
   schema_jsonld?: unknown
   // QA
   qa_scores?: unknown
+  // Content Studio (Phase 12)
+  content_sections?: unknown
+  html_content?: string
 }
 
 // Proje sahipliğini doğrulayan yardımcı fonksiyon
@@ -49,6 +60,177 @@ async function verifyOwnership(supabase: Awaited<ReturnType<typeof createClient>
     .eq('user_id', userId)
     .single()
   return data
+}
+
+// HTML birleştirme helper — tüm bölümler approved olduğunda kullanılır
+function assembleHtml(sections: ContentSection[]): string {
+  return sections
+    .map((section) => {
+      let html = `<h2>${section.heading}</h2>\n<p>${section.content}</p>`
+      if (section.sub_headings && section.sub_headings.length > 0) {
+        const subHtml = section.sub_headings.map((sub) => `<h3>${sub}</h3>`).join('\n')
+        html = `<h2>${section.heading}</h2>\n${subHtml}\n<p>${section.content}</p>`
+      }
+      return html
+    })
+    .join('\n\n')
+}
+
+/**
+ * saveContentSections: Streaming tamamlandıktan sonra tüm bölümleri bulk yazar.
+ * Client, stream bittikten sonra sections[] dizisini (status='draft') bu action'a gönderir.
+ */
+export async function saveContentSections(
+  projectId: string,
+  pageId: string,
+  sections: ContentSection[]
+): Promise<ActionResult> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Oturum bulunamadı.' }
+
+  const project = await verifyOwnership(supabase, projectId, user.id)
+  if (!project) return { success: false, error: 'Proje bulunamadı.' }
+
+  // Ownership: page_packages'ı page_id + project_id + user_id üçlüsüyle doğrula
+  const { data: pkg } = await supabase
+    .from('page_packages')
+    .select('id, status')
+    .eq('page_id', pageId)
+    .eq('project_id', projectId)
+    .eq('user_id', user.id)
+    .single()
+  if (!pkg) return { success: false, error: 'Paket bulunamadı.' }
+  if (pkg.status !== 'locked') return { success: false, error: 'Paket kilitli değil.' }
+
+  const { error } = await supabase
+    .from('page_packages')
+    .update({ content_sections: sections, updated_at: new Date().toISOString() })
+    .eq('id', pkg.id)
+    .eq('user_id', user.id)
+
+  if (error) return { success: false, error: 'Bölümler kaydedilemedi: ' + error.message }
+
+  revalidatePath(`/projeler/${projectId}/icerik-studio/${pageId}`)
+  revalidatePath(`/projeler/${projectId}/sayfa-paketi`)
+  return { success: true }
+}
+
+/**
+ * approveSection: Belirtilen bölümü approved yapar, içeriği kaydeder.
+ * Tüm bölümler approved ise html_content otomatik birleştirilir.
+ */
+export async function approveSection(
+  projectId: string,
+  pageId: string,
+  sectionIndex: number,
+  content: string
+): Promise<ActionResult> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Oturum bulunamadı.' }
+
+  const project = await verifyOwnership(supabase, projectId, user.id)
+  if (!project) return { success: false, error: 'Proje bulunamadı.' }
+
+  const { data: pkg } = await supabase
+    .from('page_packages')
+    .select('id, status, content_sections')
+    .eq('page_id', pageId)
+    .eq('project_id', projectId)
+    .eq('user_id', user.id)
+    .single()
+  if (!pkg) return { success: false, error: 'Paket bulunamadı.' }
+  if (pkg.status !== 'locked') return { success: false, error: 'Paket kilitli değil.' }
+
+  const sections: ContentSection[] = Array.isArray(pkg.content_sections)
+    ? (pkg.content_sections as ContentSection[])
+    : []
+
+  if (sectionIndex < 0 || sectionIndex >= sections.length) {
+    return { success: false, error: 'Geçersiz bölüm indeksi.' }
+  }
+
+  sections[sectionIndex] = { ...sections[sectionIndex], content, status: 'approved' }
+
+  // Tüm bölümler approved ise HTML birleştir
+  const allApproved = sections.every((s) => s.status === 'approved')
+  const htmlContent = allApproved ? assembleHtml(sections) : undefined
+
+  const updatePayload: Record<string, unknown> = {
+    content_sections: sections,
+    updated_at: new Date().toISOString(),
+  }
+  if (htmlContent !== undefined) {
+    updatePayload.html_content = htmlContent
+  }
+
+  const { error } = await supabase
+    .from('page_packages')
+    .update(updatePayload)
+    .eq('id', pkg.id)
+    .eq('user_id', user.id)
+
+  if (error) return { success: false, error: 'Bölüm onaylanamadı: ' + error.message }
+
+  revalidatePath(`/projeler/${projectId}/icerik-studio/${pageId}`)
+  revalidatePath(`/projeler/${projectId}/sayfa-paketi`)
+  return { success: true }
+}
+
+/**
+ * rejectSection: Belirtilen bölümü rejected yapar.
+ * Client bölümü pending'e döndürür ve yeniden üretebilir.
+ */
+export async function rejectSection(
+  projectId: string,
+  pageId: string,
+  sectionIndex: number
+): Promise<ActionResult> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Oturum bulunamadı.' }
+
+  const project = await verifyOwnership(supabase, projectId, user.id)
+  if (!project) return { success: false, error: 'Proje bulunamadı.' }
+
+  const { data: pkg } = await supabase
+    .from('page_packages')
+    .select('id, status, content_sections')
+    .eq('page_id', pageId)
+    .eq('project_id', projectId)
+    .eq('user_id', user.id)
+    .single()
+  if (!pkg) return { success: false, error: 'Paket bulunamadı.' }
+  if (pkg.status !== 'locked') return { success: false, error: 'Paket kilitli değil.' }
+
+  const sections: ContentSection[] = Array.isArray(pkg.content_sections)
+    ? (pkg.content_sections as ContentSection[])
+    : []
+
+  if (sectionIndex < 0 || sectionIndex >= sections.length) {
+    return { success: false, error: 'Geçersiz bölüm indeksi.' }
+  }
+
+  sections[sectionIndex] = { ...sections[sectionIndex], status: 'rejected' }
+
+  const { error } = await supabase
+    .from('page_packages')
+    .update({ content_sections: sections, updated_at: new Date().toISOString() })
+    .eq('id', pkg.id)
+    .eq('user_id', user.id)
+
+  if (error) return { success: false, error: 'Bölüm reddedilemedi: ' + error.message }
+
+  revalidatePath(`/projeler/${projectId}/icerik-studio/${pageId}`)
+  revalidatePath(`/projeler/${projectId}/sayfa-paketi`)
+  return { success: true }
 }
 
 /**
