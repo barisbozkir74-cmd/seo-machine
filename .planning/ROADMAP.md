@@ -289,7 +289,13 @@ Plans:
   2. Kullanıcı onaylı içeriği (HTML body, SEO title, meta description, slug, schema JSON-LD dahil) tek aksiyonla WordPress REST API üzerinden draft olarak gönderebilir
   3. Kullanıcı dashboard üzerinden draft sayfayı anında yayınlayabilir veya ileri tarih/saat seçerek zamanlamalı yayın ayarlayabilir
   4. WordPress'e gönderim sonrası post ID ve yayın durumu (draft / published / scheduled) page package kartında görünür ve sayfa yenilemesinde korunur
-**Plans**: TBD
+**Plans**: 5 plans
+Plans:
+- [ ] 13-01-PLAN.md — page_packages wp_* kolonları migration + supabase db push [BLOCKING]
+- [ ] 13-02-PLAN.md — vault.ts WP credential fonksiyonları + saveWordPressCredentials server action
+- [ ] 13-03-PLAN.md — WordPressConnectionSection component + proje detay sayfası entegrasyonu
+- [ ] 13-04-PLAN.md — publishToWordPress server action (plugin tespiti + WP REST POST + DB güncelleme)
+- [ ] 13-05-PLAN.md — PublishDialog + HtmlReadyBanner genişletme + ContentStudioShell wiring
 **UI hint**: yes
 
 ### Phase 14: GSC Integration
