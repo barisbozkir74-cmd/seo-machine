@@ -1,7 +1,8 @@
 ---
 phase: 13
 slug: wordpress-publishing
-status: draft
+status: approved
+reviewed_at: 2026-04-26T00:00:00Z
 shadcn_initialized: true
 preset: base-mira
 created: 2026-04-26
