@@ -51,6 +51,25 @@ export type PagePackageData = {
   html_content?: string
 }
 
+// ContentSection runtime tipi koruma — JSONB'den gelen veriyi doğrular
+function isContentSection(item: unknown): item is ContentSection {
+  if (typeof item !== 'object' || item === null) return false
+  const s = item as Record<string, unknown>
+  return (
+    typeof s.heading === 'string' &&
+    typeof s.level === 'number' &&
+    Array.isArray(s.sub_headings) &&
+    typeof s.content === 'string' &&
+    ['pending', 'generating', 'draft', 'approved', 'rejected'].includes(s.status as string)
+  )
+}
+
+function parseContentSections(raw: unknown): ContentSection[] {
+  return Array.isArray(raw) && (raw as unknown[]).every(isContentSection)
+    ? (raw as ContentSection[])
+    : []
+}
+
 // Proje sahipliğini doğrulayan yardımcı fonksiyon
 async function verifyOwnership(supabase: Awaited<ReturnType<typeof createClient>>, projectId: string, userId: string) {
   const { data } = await supabase
@@ -159,9 +178,7 @@ export async function approveSection(
   if (!pkg) return { success: false, error: 'Paket bulunamadı.' }
   if (pkg.status !== 'locked') return { success: false, error: 'Paket kilitli değil.' }
 
-  const sections: ContentSection[] = Array.isArray(pkg.content_sections)
-    ? (pkg.content_sections as ContentSection[])
-    : []
+  const sections: ContentSection[] = parseContentSections(pkg.content_sections)
 
   if (sectionIndex < 0 || sectionIndex >= sections.length) {
     return { success: false, error: 'Geçersiz bölüm indeksi.' }
@@ -222,9 +239,7 @@ export async function rejectSection(
   if (!pkg) return { success: false, error: 'Paket bulunamadı.' }
   if (pkg.status !== 'locked') return { success: false, error: 'Paket kilitli değil.' }
 
-  const sections: ContentSection[] = Array.isArray(pkg.content_sections)
-    ? (pkg.content_sections as ContentSection[])
-    : []
+  const sections: ContentSection[] = parseContentSections(pkg.content_sections)
 
   if (sectionIndex < 0 || sectionIndex >= sections.length) {
     return { success: false, error: 'Geçersiz bölüm indeksi.' }
