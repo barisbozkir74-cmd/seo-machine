@@ -1,6 +1,8 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { saveWpCredentials } from '@/lib/supabase/vault'
 
@@ -172,5 +174,69 @@ export async function saveWordPressCredentials(
   }
 
   revalidatePath(`/projeler/${projectId}`)
+  return { success: true }
+}
+
+// ─── GSC Integration Actions ───────────────────────────────────────────────
+
+// D-01: OAuth flow başlatma — state HttpOnly cookie'ye, redirect Google'a
+// D-02: HttpOnly cookie ile CSRF koruması
+// D-03: Scopes: webmasters.readonly + webmasters (URL Inspection için)
+export async function initiateGscOAuth(projectId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  // Ownership doğrula
+  const { data: project } = await supabase
+    .from('projects')
+    .select('id')
+    .eq('id', projectId)
+    .eq('user_id', user.id)
+    .single()
+  if (!project) redirect('/projeler')
+
+  // State: "projectId:uuid" formatı — callback'te projectId çözülür
+  const state = `${projectId}:${crypto.randomUUID()}`
+  const cookieStore = await cookies()
+  cookieStore.set('gsc_oauth_state', state, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 60 * 10, // 10 dakika
+    path: '/',
+  })
+
+  const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth')
+  authUrl.searchParams.set('client_id', process.env.GOOGLE_CLIENT_ID!)
+  authUrl.searchParams.set('redirect_uri', `${process.env.NEXT_PUBLIC_APP_URL}/api/gsc/callback`)
+  authUrl.searchParams.set('response_type', 'code')
+  authUrl.searchParams.set('scope', [
+    'https://www.googleapis.com/auth/webmasters.readonly',
+    'https://www.googleapis.com/auth/webmasters',
+  ].join(' '))
+  authUrl.searchParams.set('access_type', 'offline')
+  authUrl.searchParams.set('prompt', 'consent') // RESEARCH.md Pitfall 1: prompt=consent refresh_token garantisi
+  authUrl.searchParams.set('state', state)
+
+  redirect(authUrl.toString())
+}
+
+// D-04: Seçilen property'yi projects.gsc_property_url'e yaz
+export async function saveGscProperty(
+  projectId: string,
+  propertyUrl: string
+): Promise<{ success: true } | { success: false; error: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Oturum bulunamadı.' }
+
+  const { error } = await supabase
+    .from('projects')
+    .update({ gsc_property_url: propertyUrl })
+    .eq('id', projectId)
+    .eq('user_id', user.id) // T-14-02: ownership garantisi
+
+  if (error) return { success: false, error: 'Property kaydedilemedi.' }
   return { success: true }
 }
