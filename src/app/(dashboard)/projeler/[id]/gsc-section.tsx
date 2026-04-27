@@ -16,11 +16,12 @@ type GscProperty = { siteUrl: string; permissionLevel: string }
 
 type Props = {
   projectId: string
+  userId: string
   isConnected: boolean
   gscPropertyUrl: string | null
 }
 
-export function GscConnectionSection({ projectId, isConnected, gscPropertyUrl }: Props) {
+export function GscConnectionSection({ projectId, userId, isConnected, gscPropertyUrl }: Props) {
   const [connecting, setConnecting] = useState(false)
   const [properties, setProperties] = useState<GscProperty[]>([])
   const [propertiesLoading, setPropertiesLoading] = useState(false)
@@ -92,7 +93,7 @@ export function GscConnectionSection({ projectId, isConnected, gscPropertyUrl }:
       const res = await fetch('/api/gsc/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ projectId }),
+        body: JSON.stringify({ projectId, userId }),
       })
       if (!res.ok) throw new Error('sync failed')
       setSyncSuccess(true)

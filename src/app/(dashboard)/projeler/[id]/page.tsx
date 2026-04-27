@@ -96,6 +96,7 @@ export default async function ProjeDetayPage({
 
           <GscConnectionSection
             projectId={project.id}
+            userId={user.id}
             isConnected={isGscConnected}
             gscPropertyUrl={project.gsc_property_url ?? null}
           />

@@ -2,6 +2,13 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl
+
+  // Bypass auth for n8n server-to-server calls — route handler does its own bearer token check
+  if (pathname.startsWith('/api/gsc/sync')) {
+    return NextResponse.next({ request })
+  }
+
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
@@ -25,20 +32,27 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // IMPORTANT: Do not run any code between createServerClient and supabase.auth.getUser().
-  // A simple mistake could make it very hard to debug session issues.
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
 
-  const { pathname } = request.nextUrl
+  // Stale refresh token — clear session and redirect to login
+  if (authError?.message?.includes('Invalid Refresh Token') || authError?.message?.includes('Already Used')) {
+    await supabase.auth.signOut()
+    const redirectUrl = request.nextUrl.clone()
+    redirectUrl.pathname = '/login'
+    const response = NextResponse.redirect(redirectUrl)
+    // Clear auth cookies
+    supabaseResponse.cookies.getAll().forEach(({ name }) => {
+      if (name.startsWith('sb-')) response.cookies.delete(name)
+    })
+    return response
+  }
 
-  // Redirect unauthenticated users away from protected routes
-  if (!user && pathname.startsWith('/dashboard')) {
+  if (!user && !pathname.startsWith('/login') && !pathname.startsWith('/signup') && pathname !== '/') {
     const redirectUrl = request.nextUrl.clone()
     redirectUrl.pathname = '/login'
     return NextResponse.redirect(redirectUrl)
   }
 
-  // Redirect authenticated users away from auth pages
   if (user && (pathname === '/login' || pathname === '/signup')) {
     const redirectUrl = request.nextUrl.clone()
     redirectUrl.pathname = '/dashboard'
