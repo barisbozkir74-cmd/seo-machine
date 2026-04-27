@@ -125,7 +125,7 @@ export function GscConnectionSection({ projectId, isConnected, gscPropertyUrl }:
           {propertiesLoading ? (
             <p className="text-sm text-muted-foreground">Property listesi yükleniyor...</p>
           ) : (
-            <Select value={selectedProperty} onValueChange={setSelectedProperty}>
+            <Select value={selectedProperty} onValueChange={(v) => setSelectedProperty(v ?? '')}>
               <SelectTrigger className="h-9">
                 <SelectValue placeholder="Bir property seçin" />
               </SelectTrigger>
