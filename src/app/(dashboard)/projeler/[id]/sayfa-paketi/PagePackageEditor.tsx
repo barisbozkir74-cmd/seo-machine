@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils'
 import { updatePagePackage, createPagePackage, updatePackageStatus } from './actions'
 import { QaBadge, computeQaRules, type QaRule } from './QaBadge'
 import { PackageStatusBadge } from './PackageStatusBadge'
+import { GscIndexBadge } from './GscIndexBadge'
 import { LockedBanner } from './LockedBanner'
 import {
   Dialog,
@@ -60,6 +61,8 @@ export type PageData = {
     wp_post_url?: string | null
     wp_status?: string | null
     wp_published_at?: string | null
+    gsc_index_status?: string | null
+    gsc_index_checked_at?: string | null
   } | null
 }
 
@@ -608,6 +611,8 @@ export function PagePackageEditor({
                 WP Taslak ↗
               </a>
             )}
+            {/* GSC index badge — D-07 */}
+            <GscIndexBadge status={pkg?.gsc_index_status ?? null} />
           </div>
 
           {pkg !== null && (
