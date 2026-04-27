@@ -143,7 +143,6 @@ export async function saveWordPressCredentials(
   wpUrl: string,
   appPassword: string
 ): Promise<SaveWpCredentialsResult> {
-  // Client-side validation zaten yapılmış ama server'da da doğrula
   if (!wpUrl || !wpUrl.startsWith('https://')) {
     return { success: false, error: "Geçerli bir WordPress URL'si girin (https:// ile başlamalı)." }
   }
@@ -157,7 +156,6 @@ export async function saveWordPressCredentials(
   } = await supabase.auth.getUser()
   if (!user) return { success: false, error: 'Oturum bulunamadı.' }
 
-  // Proje sahipliği doğrula
   const { data: project } = await supabase
     .from('projects')
     .select('id')
@@ -238,5 +236,67 @@ export async function saveGscProperty(
     .eq('user_id', user.id) // T-14-02: ownership garantisi
 
   if (error) return { success: false, error: 'Property kaydedilemedi.' }
+  return { success: true }
+}
+
+// ─── Notes Actions ─────────────────────────────────────────────────────────
+
+export type NoteActionResult =
+  | { success: true }
+  | { success: false; error: string }
+
+export async function deleteNote(
+  noteId: string,
+  projectId: string
+): Promise<NoteActionResult> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Oturum bulunamadı.' }
+
+  const { error } = await supabase
+    .from('audits')
+    .delete()
+    .eq('id', noteId)
+    .eq('project_id', projectId)
+    .eq('user_id', user.id)
+    .eq('event_type', 'note')
+
+  if (error) return { success: false, error: 'Not silinemedi.' }
+
+  revalidatePath(`/projeler/${projectId}`)
+  return { success: true }
+}
+
+export async function updateNote(
+  noteId: string,
+  projectId: string,
+  content: string
+): Promise<NoteActionResult> {
+  if (!content || content.trim().length === 0) {
+    return { success: false, error: 'Not içeriği boş olamaz.' }
+  }
+  if (content.length > 5000) {
+    return { success: false, error: 'Not en fazla 5000 karakter olabilir.' }
+  }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Oturum bulunamadı.' }
+
+  const { error } = await supabase
+    .from('audits')
+    .update({ payload: { content: content.trim() } })
+    .eq('id', noteId)
+    .eq('project_id', projectId)
+    .eq('user_id', user.id)
+    .eq('event_type', 'note')
+
+  if (error) return { success: false, error: 'Not güncellenemedi.' }
+
+  revalidatePath(`/projeler/${projectId}`)
   return { success: true }
 }
