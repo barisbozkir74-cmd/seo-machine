@@ -46,7 +46,7 @@ Declared values (multiples of 4, consistent with existing codebase):
 
 **Exceptions:**
 - Touch target minimum: 44px yükseklik (`min-h-[44px]`) — OAuth bağlantı butonu ve primary CTA butonları. WordPressConnectionSection'daki mevcut pattern ile tutarlı.
-- Badge padding: `px-1.5 py-0.5` (6px / 2px) — GscIndexBadge için RESEARCH.md Pattern 6'dan alınmış.
+- Badge padding: `px-2 py-1` (8px / 4px) — GscIndexBadge için RESEARCH.md Pattern 6'dan alınmış.
 - Input yüksekliği: `h-9` (36px) — mevcut WordPressConnectionSection pattern ile tutarlı.
 
 ---
@@ -79,7 +79,7 @@ Mevcut globals.css dark mode token'larından türetilmiştir:
 
 **Accent (primary) yalnızca şu elemanlarda kullanılır:**
 - "GSC Bağla" butonu (OAuth flow başlatma)
-- "Kaydet" butonu (property seçimi sonrası)
+- "Seçimi Kaydet" butonu (property seçimi sonrası)
 - "Senkronize Et" butonu (n8n sync tetikleme)
 
 **Semantic renkler (accent dışı, hardcoded className ile):**
@@ -131,8 +131,8 @@ npx shadcn add select
 | Bağlı değil | Badge: gri "Yapılandırılmadı" + "GSC Bağla" butonu | Tıklama → `initiateGscOAuth()` server action → Google consent screen |
 | OAuth yükleniyor | Buton disabled + "Bağlanıyor..." text | Redirect beklenirken — Next.js `redirect()` ile anında tetiklenir |
 | Bağlı, property seçilmedi | Badge: yeşil "Bağlı" + property Select dropdown açık | Sites.list sonuçları Select options olarak gösterilir |
-| Property seçildi, kaydedilmedi | "Kaydet" butonu aktif | Kullanıcı seçim yaptı ama henüz kaydetmedi |
-| Kaydediliyor | "Kaydet" butonu disabled + "Kaydediliyor..." | `saveGscProperty()` server action sürüyor |
+| Property seçildi, kaydedilmedi | "Seçimi Kaydet" butonu aktif | Kullanıcı seçim yaptı ama henüz kaydetmedi |
+| Kaydediliyor | "Seçimi Kaydet" butonu disabled + "Kaydediliyor..." | `saveGscProperty()` server action sürüyor |
 | Tam yapılandırılmış | Badge: yeşil "Bağlı" + seçili property URL gösterilir + "Senkronize Et" butonu | Aktif durum |
 | OAuth hatası (CSRF/iptal) | Hata mesajı banner (`text-xs text-destructive`) | URL'den `?error=gsc_denied` veya `?error=gsc_csrf` okunur |
 
@@ -186,7 +186,7 @@ proje detay sayfası (page.tsx)
 2. Property dropdown (bağlıysa): `<Select>` — Sites.list sonuçları
 3. "Senkronize Et" butonu + son sync tarihi (property seçiliyse)
 4. Hata mesajı (varsa): `text-xs text-destructive`
-5. CTA buton alanı: `flex justify-end` → "GSC Bağla" veya "Kaydet"
+5. CTA buton alanı: `flex justify-end` → "GSC Bağla" veya "Seçimi Kaydet"
 
 ### GscIndexBadge Yerleşimi
 
@@ -204,7 +204,7 @@ proje detay sayfası (page.tsx)
 | **Bağlı badge** | Bağlı | WordPressConnectionSection ile tutarlı |
 | **Primary CTA (bağlı değil)** | GSC Bağla | Tek eylem, kısa, net |
 | **Property dropdown placeholder** | Bir property seçin | `<Select>` placeholder |
-| **Property kaydet CTA** | Kaydet | WordPressConnectionSection pattern |
+| **Property kaydet CTA** | Seçimi Kaydet | Verb + noun — WordPressConnectionSection pattern |
 | **Senkronize CTA** | Senkronize Et | n8n webhook tetikleyen buton |
 | **Index kontrol CTA** | Index Durumunu Kontrol Et | HtmlReadyBanner'a eklenir |
 | **Kontrol ediliyor state** | Kontrol Ediliyor... | Buton disabled text |
