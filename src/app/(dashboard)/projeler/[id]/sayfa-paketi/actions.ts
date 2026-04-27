@@ -117,6 +117,10 @@ export async function saveContentSections(
   pageId: string,
   sections: ContentSection[]
 ): Promise<ActionResult> {
+  // WR-04: validate client-supplied array before writing to JSONB
+  if (!Array.isArray(sections) || !sections.every(isContentSection)) {
+    return { success: false, error: 'Geçersiz bölüm verisi.' }
+  }
   const supabase = await createClient()
   const {
     data: { user },
@@ -594,7 +598,13 @@ export async function publishToWordPress(
       }
     }
 
-    const wpPost = await postRes.json()
+    const wpPost = await postRes.json() as Record<string, unknown>
+    if (typeof wpPost.id !== 'number' || typeof wpPost.link !== 'string' || !wpPost.link) {
+      return {
+        success: false,
+        error: 'WordPress geçersiz yanıt döndürdü. Lütfen tekrar deneyin.',
+      }
+    }
     wpPostId = wpPost.id
     wpPostUrl = wpPost.link
   } catch {

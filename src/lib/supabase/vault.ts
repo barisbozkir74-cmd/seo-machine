@@ -57,9 +57,12 @@ export async function saveWpCredentials(
       .maybeSingle()
 
     if (existing?.id) {
-      const { error } = await serviceClient.rpc('vault.update_secret', {
-        secret_id: existing.id,
-        new_secret: value,
+      // CR-03: vault.update_secret may fail if vault schema not on search_path;
+      // delete-then-create is schema-agnostic and always reliable.
+      await serviceClient.from('vault.secrets').delete().eq('id', existing.id)
+      const { error } = await serviceClient.rpc('vault.create_secret', {
+        secret: value,
+        name: keyName,
       })
       if (error) throw new Error(`Vault güncellenemedi: ${keyName}`)
     } else {
