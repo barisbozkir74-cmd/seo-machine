@@ -75,12 +75,12 @@ Her website projesi için sıfırdan açılıp kurgulanan, tüm kararları kayde
 - [x] Kurallar panelden değiştirilebilir, sistem buna göre davranır *(Validated in Phase 3)*
 
 #### Content & QA
-- [ ] Content Studio — sayfa paketi kilitlendikten sonra içerik üretimi
+- [x] Content Studio — sayfa paketi kilitlendikten sonra içerik üretimi *(Validated in Phase 12 — 2026-04-26)*
 - [x] İkinci model ile QA — intent drift, robotik dil, entity eksikliği, duplicate risk kontrolü *(Validated in Phase 11 — 2026-04-25)*
 - [x] SEO score, content score, human score, schema score, readiness score *(Validated in Phase 11 — 2026-04-25)*
 
 #### Publishing & Monitoring
-- [ ] WordPress REST API ile draft/publish gönderimi (slug, title, content, meta, schema)
+- [x] WordPress REST API ile draft/publish gönderimi (slug, title, content, meta, schema) *(Validated in Phase 13 — 2026-04-27)*
 - [ ] Google Search Console entegrasyonu — performans takibi, index durumu
 - [ ] Recovery & refresh engine — ranking düşüşü tespiti ve güncelleme görevi açma
 - [ ] Monitoring dashboard — cluster bazlı trafik, sayfa bazlı dönüşüm desteği
