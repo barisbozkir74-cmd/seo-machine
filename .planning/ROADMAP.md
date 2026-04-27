@@ -253,7 +253,7 @@ v3.0 closes the full content-to-publish-to-monitor loop. Six phases deliver this
 ## Phases
 
 - [x] **Phase 12: Content Studio** - Kilitli sayfa paketi için H2/H3 heading yapısına göre bölüm bölüm AI içerik üretimi ve insan onay akışı (completed 2026-04-26)
-- [ ] **Phase 13: WordPress Publishing** - Proje başına WordPress kimlik bilgisi yönetimi ve REST API ile draft/publish gönderimi
+- [x] **Phase 13: WordPress Publishing** - Proje başına WordPress kimlik bilgisi yönetimi ve REST API ile draft/publish gönderimi (completed 2026-04-27)
 - [ ] **Phase 14: GSC Integration** - Google Search Console OAuth bağlantısı, index durumu ve sayfa/keyword bazlı performans verisi çekimi
 - [ ] **Phase 15: Monitoring Dashboard** - Cluster ve sayfa bazlı GSC trafik özeti, pozisyon takibi ve decay alert görünümü
 - [ ] **Phase 16: Recovery Engine** - Pozisyon düşüşü olan sayfaların otomatik tespiti ve ilgili sayfa paketinde güncelleme görevi açma
@@ -291,11 +291,11 @@ Plans:
   4. WordPress'e gönderim sonrası post ID ve yayın durumu (draft / published / scheduled) page package kartında görünür ve sayfa yenilemesinde korunur
 **Plans**: 5 plans
 Plans:
-- [ ] 13-01-PLAN.md — page_packages wp_* kolonları migration + supabase db push [BLOCKING]
-- [ ] 13-02-PLAN.md — vault.ts WP credential fonksiyonları + saveWordPressCredentials server action
-- [ ] 13-03-PLAN.md — WordPressConnectionSection component + proje detay sayfası entegrasyonu
-- [ ] 13-04-PLAN.md — publishToWordPress server action (plugin tespiti + WP REST POST + DB güncelleme)
-- [ ] 13-05-PLAN.md — PublishDialog + HtmlReadyBanner genişletme + ContentStudioShell wiring
+- [x] 13-01-PLAN.md — page_packages wp_* kolonları migration + supabase db push [BLOCKING] (completed 2026-04-27)
+- [x] 13-02-PLAN.md — vault.ts WP credential fonksiyonları + saveWordPressCredentials server action (completed 2026-04-27)
+- [x] 13-03-PLAN.md — WordPressConnectionSection component + proje detay sayfası entegrasyonu (completed 2026-04-27)
+- [x] 13-04-PLAN.md — publishToWordPress server action (plugin tespiti + WP REST POST + DB güncelleme) (completed 2026-04-27)
+- [x] 13-05-PLAN.md — PublishDialog + HtmlReadyBanner genişletme + ContentStudioShell wiring (completed 2026-04-27)
 **UI hint**: yes
 
 ### Phase 14: GSC Integration
@@ -349,8 +349,8 @@ Note: Phase 17 depends on Phase 6 (not Phase 16) — can be planned independentl
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 12. Content Studio | 0/TBD | Not started | - |
-| 13. WordPress Publishing | 0/TBD | Not started | - |
+| 12. Content Studio | 5/5 | Complete | 2026-04-26 |
+| 13. WordPress Publishing | 5/5 | Complete | 2026-04-27 |
 | 14. GSC Integration | 0/TBD | Not started | - |
 | 15. Monitoring Dashboard | 0/TBD | Not started | - |
 | 16. Recovery Engine | 0/TBD | Not started | - |
