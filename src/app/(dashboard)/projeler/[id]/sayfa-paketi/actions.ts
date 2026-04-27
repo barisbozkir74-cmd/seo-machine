@@ -3,6 +3,8 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { getWordPressCredentials } from '@/lib/supabase/vault'
+import { getValidGscToken } from '@/lib/gsc/auth'
+import { checkUrlIndexStatus } from '@/lib/gsc/index-check'
 
 export type ActionResult = { success: true } | { success: false; error: string }
 
@@ -639,4 +641,61 @@ export async function publishToWordPress(
   revalidatePath(`/projeler/${projectId}/sayfa-paketi`)
 
   return { success: true, wpPostId, wpPostUrl, wpStatus: status }
+}
+
+// ─── GSC Index Status Actions ──────────────────────────────────────────────
+
+// D-06: Manuel index kontrolü — URL Inspection API → page_packages güncelleme
+// T-14-03: Ownership triple-check (user + project + page_package)
+export async function checkIndexStatus(
+  pagePackageId: string,
+  projectId: string,
+  inspectionUrl: string // page_packages.wp_post_url
+): Promise<{ success: boolean; status?: string; error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Oturum bulunamadı.' }
+
+  // Triple ownership: user → project → page_package
+  const { data: project } = await supabase
+    .from('projects')
+    .select('id, gsc_property_url')
+    .eq('id', projectId)
+    .eq('user_id', user.id)
+    .single()
+  if (!project) return { success: false, error: 'Proje bulunamadı.' }
+  if (!project.gsc_property_url) return { success: false, error: 'GSC property seçilmemiş.' }
+
+  const { data: pkg } = await supabase
+    .from('page_packages')
+    .select('id')
+    .eq('id', pagePackageId)
+    .eq('project_id', projectId)
+    .single()
+  if (!pkg) return { success: false, error: 'Sayfa paketi bulunamadı.' }
+
+  // Token al
+  const accessToken = await getValidGscToken(projectId, user.id)
+  if (!accessToken) return { success: false, error: 'GSC bağlantısı geçersiz. Yeniden bağlanın.' }
+
+  // URL Inspection API
+  const status = await checkUrlIndexStatus(accessToken, inspectionUrl, project.gsc_property_url)
+
+  if (status === 'unknown') {
+    return { success: false, error: 'Index durumu alınamadı. Tekrar deneyin.' }
+  }
+
+  // Sonucu kaydet
+  const { error: updateError } = await supabase
+    .from('page_packages')
+    .update({
+      gsc_index_status: status,
+      gsc_index_checked_at: new Date().toISOString(),
+    })
+    .eq('id', pagePackageId)
+    .eq('project_id', projectId) // ek güvenlik filtresi
+
+  if (updateError) return { success: false, error: 'Sonuç kaydedilemedi.' }
+
+  return { success: true, status }
 }
