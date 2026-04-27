@@ -21,7 +21,9 @@ const mockSupabase = {
 beforeEach(() => {
   vi.mocked(createClient).mockResolvedValue(mockSupabase as never)
   mockSupabase.single.mockReset()
-  mockSupabase.update.mockReturnValue({ eq: vi.fn().mockResolvedValue({}) })
+  const mockUpdateEq2 = vi.fn().mockResolvedValue({})
+  const mockUpdateEq1 = vi.fn().mockReturnValue({ eq: mockUpdateEq2 })
+  mockSupabase.update.mockReturnValue({ eq: mockUpdateEq1 })
 })
 
 describe('getValidGscToken', () => {
