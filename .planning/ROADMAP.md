@@ -306,7 +306,13 @@ Plans:
   1. Kullanıcı proje ayarlarından "GSC Bağla" aksiyonunu tetikler; Google OAuth akışı tamamlandıktan sonra seçilen property proje ile ilişkilendirilir ve token Supabase'de güvenli saklanır
   2. Sistem yayınlanan her sayfa için GSC'ye URL inspection isteği gönderir ve index durumunu (indexed / not indexed / crawled but not indexed) page package'da gösterir
   3. Sistem n8n webhook veya schedule ile günlük olarak GSC'den sayfa ve keyword bazlı tıklama, gösterim ve ortalama pozisyon verisini çeker; veriler Supabase'e kaydedilir
-**Plans**: TBD
+**Plans**: 5 plans
+Plans:
+- [ ] 14-01-PLAN.md — GSC schema migration (gsc_tokens, gsc_property_url, gsc_index_status, gsc_metrics) + supabase db push [BLOCKING]
+- [ ] 14-02-PLAN.md — GSC lib katmanı (auth.ts, properties.ts, index-check.ts, search-analytics.ts) + birim testleri
+- [ ] 14-03-PLAN.md — OAuth flow: initiateGscOAuth + saveGscProperty server actions + /api/gsc/callback route handler
+- [ ] 14-04-PLAN.md — GscConnectionSection UI + page.tsx entegrasyonu + /api/gsc/sync endpoint
+- [ ] 14-05-PLAN.md — GscIndexBadge + checkIndexStatus action + HtmlReadyBanner ve PagePackageEditor entegrasyonu
 **UI hint**: yes
 
 ### Phase 15: Monitoring Dashboard
@@ -351,7 +357,7 @@ Note: Phase 17 depends on Phase 6 (not Phase 16) — can be planned independentl
 |-------|----------------|--------|-----------|
 | 12. Content Studio | 5/5 | Complete | 2026-04-26 |
 | 13. WordPress Publishing | 5/5 | Complete | 2026-04-27 |
-| 14. GSC Integration | 0/TBD | Not started | - |
+| 14. GSC Integration | 0/5 | Ready to execute | - |
 | 15. Monitoring Dashboard | 0/TBD | Not started | - |
 | 16. Recovery Engine | 0/TBD | Not started | - |
 | 17. Keyword Intelligence | 0/TBD | Not started | - |
