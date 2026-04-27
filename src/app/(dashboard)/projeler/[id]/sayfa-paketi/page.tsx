@@ -135,7 +135,7 @@ export default async function SayfaPaketiPage({
       const { data: pkgData } = await supabase
         .from('page_packages')
         .select(
-          'id, status, generated_by, seo_title, meta_description, h1, slug, search_intent, strategic_purpose, secondary_keywords, heading_hierarchy, content_blocks, cta_blocks, image_plan, alt_texts, schema_type, canonical_url, faq, schema_jsonld, qa_scores'
+          'id, status, generated_by, seo_title, meta_description, h1, slug, search_intent, strategic_purpose, secondary_keywords, heading_hierarchy, content_blocks, cta_blocks, image_plan, alt_texts, schema_type, canonical_url, faq, schema_jsonld, qa_scores, wp_post_id, wp_post_url, wp_status, wp_published_at'
         )
         .eq('page_id', selectedPage.id)
         .single()

@@ -56,6 +56,10 @@ export type PageData = {
       readiness?: number | null
       last_qa_run?: string | null
     } | null
+    wp_post_id?: number | null
+    wp_post_url?: string | null
+    wp_status?: string | null
+    wp_published_at?: string | null
   } | null
 }
 
@@ -584,6 +588,26 @@ export function PagePackageEditor({
               />
             )}
             <PackageStatusBadge status={pkg?.status ?? null} />
+            {pkg?.wp_status === 'publish' && pkg.wp_post_url && (
+              <a
+                href={pkg.wp_post_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30"
+              >
+                WordPress'te Yayında ↗
+              </a>
+            )}
+            {pkg?.wp_status === 'draft' && pkg.wp_post_url && (
+              <a
+                href={pkg.wp_post_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-slate-500/20 text-slate-400 border border-slate-500/30 hover:bg-slate-500/30"
+              >
+                WP Taslak ↗
+              </a>
+            )}
           </div>
 
           {pkg !== null && (
