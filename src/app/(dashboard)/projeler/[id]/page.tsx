@@ -10,6 +10,7 @@ import { StageTransition } from './stage-transition'
 import { NotesSection } from './notes-section'
 import { hasWordPressCredentials } from '@/lib/supabase/vault'
 import { WordPressConnectionSection } from './wordpress-section'
+import { GscConnectionSection } from './gsc-section'
 
 type Stage = {
   id: string
@@ -31,6 +32,7 @@ type Project = {
   brand_tone: string | null
   notes: string | null
   created_at: string
+  gsc_property_url: string | null
 }
 
 export default async function ProjeDetayPage({
@@ -50,7 +52,7 @@ export default async function ProjeDetayPage({
   const { data: project } = await supabase
     .from('projects')
     .select(
-      'id, name, domain, sector, target_country, target_language, business_model, site_type, brand_tone, notes, created_at'
+      'id, name, domain, sector, target_country, target_language, business_model, site_type, brand_tone, notes, created_at, gsc_property_url'
     )
     .eq('id', id)
     .eq('user_id', user.id)
@@ -83,6 +85,15 @@ export default async function ProjeDetayPage({
 
   // WordPress bağlantı durumu — Vault'tan SSR kontrolü
   const isWpConfigured = await hasWordPressCredentials(id)
+
+  // GSC bağlantı durumu — gsc_tokens null check (Pitfall 5: gsc_tokens SELECT'e dahil edilmez)
+  const { data: gscCheck } = await supabase
+    .from('projects')
+    .select('gsc_tokens')
+    .eq('id', id)
+    .eq('user_id', user.id)
+    .single()
+  const isGscConnected = gscCheck?.gsc_tokens !== null && gscCheck?.gsc_tokens !== undefined
 
   return (
     <div className="flex flex-col h-screen">
@@ -230,6 +241,14 @@ export default async function ProjeDetayPage({
           <WordPressConnectionSection
             projectId={project.id}
             isConfigured={isWpConfigured}
+          />
+
+          <Separator className="my-8" />
+
+          <GscConnectionSection
+            projectId={project.id}
+            isConnected={isGscConnected}
+            gscPropertyUrl={project.gsc_property_url ?? null}
           />
 
           <Separator className="my-8" />
