@@ -729,22 +729,19 @@ ALTER TABLE public.page_packages
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **n8n Üretim Adresi**
+1. **n8n Üretim Adresi** — RESOLVED
    - What we know: n8n "Phase 14+'dan itibaren mevcut" (STATE.md); dev'de localhost:5678 erişilemiyor
-   - What's unclear: n8n'in production URL'si ve API key'i nerede saklanıyor; n8n cron/schedule time zone
-   - Recommendation: Planner `N8N_WEBHOOK_URL` env var eklemeli; Wave 0'da kullanıcının doğrulaması gerekir
+   - Resolution: Plan 05'te `NEXT_PUBLIC_N8N_WEBHOOK_URL` env var olarak çözüldü. GscConnectionSection "Senkronize Et" butonu bu env var'ı okuyarak n8n webhook'unu çağırır. Kullanıcı setup gereksinimi olarak Plan 05 user_setup frontmatter'ına belgelenmiştir.
 
-2. **Google Cloud Project ve OAuth Consent Screen**
+2. **Google Cloud Project ve OAuth Consent Screen** — RESOLVED
    - What we know: GOOGLE_CLIENT_ID + GOOGLE_CLIENT_SECRET gerekli; henüz `.env.local`'de yok
-   - What's unclear: Google Cloud project mevcut mu; OAuth consent screen konfigüre mi
-   - Recommendation: Wave 0 prereq olarak "Google Cloud Console'da OAuth2 credentials oluştur" adımı ekle; Planner bunu görev olarak belgelemeli (uygulamanın yapabileceği bir şey değil)
+   - Resolution: Plan 02'de `user_setup` frontmatter bloğu ile belgelenmiştir. Google Cloud Console'da OAuth2 client oluşturma, consent screen konfigürasyonu ve `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` / `NEXT_PUBLIC_APP_URL` env var'larının ayarlanması kullanıcı kurulum gereksinimleri olarak listelenmiştir. Execute-plan bu adımları kullanıcıya sunar.
 
-3. **gsc_metrics için page_id Çözümü**
+3. **gsc_metrics için page_id Çözümü** — RESOLVED
    - What we know: GSC Search Analytics `page` dimension URL döner; `page_id` UUID gerekli
-   - What's unclear: URL → page_id eşleşmesi slug karşılaştırması veya wp_post_url karşılaştırması ile mi yapılacak
-   - Recommendation: n8n sync sırasında `wp_post_url` üzerinden `page_packages` tablosunda match yap; eşleşme yoksa o satırı atla (Phase 15'te orphan handling)
+   - Resolution: Plan 04 Task 2'deki `/api/gsc/sync` endpoint'inde wp_post_url üzerinden eşleştirme yapılır: `page_packages.wp_post_url IN (gsc_page_urls)` sorgusu ile URL → page_id map oluşturulur; eşleşmeyen satırlar atlanır (Phase 15'te orphan handling). Bu yaklaşım Plan 04'te implement edilmiştir.
 
 ---
 
