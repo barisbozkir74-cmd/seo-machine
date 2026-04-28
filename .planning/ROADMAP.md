@@ -329,7 +329,7 @@ Plans:
 **Plans**: 2 plans
 Plans:
 - [x] 15-01-PLAN.md — Monitoring aggregation lib + /api/monitoring/clusters & /api/monitoring/pages routes (auth + ownership + decay calc) (completed 2026-04-28)
-- [ ] 15-02-PLAN.md — ProjectNav 'İzleme' item + /projeler/[id]/izleme SSR page + PeriodTabBar + ClusterSummaryTable + PageMetricsTable
+- [x] 15-02-PLAN.md — ProjectNav 'İzleme' item + /projeler/[id]/izleme SSR page + PeriodTabBar + ClusterSummaryTable + PageMetricsTable (completed 2026-04-28)
 **UI hint**: yes
 
 ### Phase 15.5: WordPress Site Import Engine *(INSERTED)*
