@@ -255,7 +255,8 @@ v3.0 transforms the system from a planning OS into a full SEO Operating System �
 - [x] **Phase 12: Content Studio** - Kilitli sayfa paketi için H2/H3 heading yapısına göre bölüm bölüm AI içerik üretimi ve insan onay akışı (completed 2026-04-26)
 - [x] **Phase 13: WordPress Publishing** - Proje başına WordPress kimlik bilgisi yönetimi ve REST API ile draft/publish gönderimi (completed 2026-04-27)
 - [x] **Phase 14: GSC Integration** - Google Search Console OAuth bağlantısı, index durumu ve sayfa/keyword bazlı performans verisi çekimi (completed 2026-04-28)
-- [x] **Phase 15: Monitoring Dashboard** - Cluster ve sayfa bazlı GSC trafik özeti, pozisyon takibi ve decay alert görünümü (completed 2026-04-28)
+- [x] **Phase 15: Monitoring Dashboard** - Cluster ve sayfa bazlı GSC trafik özeti, pozisyon takibi ve decay alert görünümü
+ (completed 2026-04-28)
 - [ ] **Phase 15.5: WordPress Site Import Engine** *(INSERTED)* - Mevcut WordPress sitesini içeri alma, normalize etme, site tree oluşturma ve GSC verisiyle birleştirerek SEO audit-ready hale getirme
 - [ ] **Phase 16: Recovery Engine** - Pozisyon düşüşü olan sayfaların otomatik tespiti (GSC + imported site data) ve ilgili sayfa paketinde güncelleme görevi açma
 - [ ] **Phase 17: Keyword Intelligence** - Her cluster için niche selection skoru ve cluster-to-revenue gelir potansiyeli haritası
@@ -344,7 +345,16 @@ Plans:
   4. Sistem her sayfa için AI ile content_summary (200 char) ve primary_intent (informational/commercial/transactional/navigational) üretir
   5. Sistem her sayfa için audit flag'leri hesaplar: orphan page, duplicate intent, weak page (düşük trafik + düşük GSC pozisyonu), missing metadata, missing target keyword, outdated content candidate; bu flag'ler site analizi görünümünde filtrelenebilir
 **New table**: project_imported_pages (ayrı tablo — page_packages ile karışmaz; imported vs generated ayrımı nettir)
-**Plans**: TBD
+**Plans**: 8 plans
+Plans:
+- [ ] 15.5-01-PLAN.md — project_imported_pages migration + supabase db push [BLOCKING]
+- [ ] 15.5-02-PLAN.md — Wave 0 test scaffold (import, normalize, url-normalize, audit-flags testleri)
+- [ ] 15.5-03-PLAN.md — WP lib katmanı (import.ts, normalize.ts, url-normalize.ts)
+- [ ] 15.5-04-PLAN.md — Audit flags lib + GSC match lib (audit-flags.ts, gsc-match.ts)
+- [ ] 15.5-05-PLAN.md — AI enrichment lib (enrichment.ts — claude-haiku-4-5)
+- [ ] 15.5-06-PLAN.md — Route Handler'lar (POST /api/wp/import, GET /api/wp/import-status)
+- [ ] 15.5-07-PLAN.md — startSiteImport Server Action + SiteImportSection UI + page.tsx entegrasyonu
+- [ ] 15.5-08-PLAN.md — site-analizi page + AuditFlagChips + ImportedPageTree + ProjectNav
 **UI hint**: yes
 
 ### Phase 16: Recovery Engine
@@ -382,6 +392,6 @@ Note: Phase 17 depends on Phase 6 (not Phase 16) — can be planned independentl
 | 13. WordPress Publishing | 5/5 | Complete | 2026-04-27 |
 | 14. GSC Integration | 6/6 | Complete | 2026-04-28 |
 | 15. Monitoring Dashboard | 2/2 | Complete    | 2026-04-28 |
-| 15.5. WordPress Site Import Engine | 0/TBD | Not started | - |
+| 15.5. WordPress Site Import Engine | 0/8 | Not started | - |
 | 16. Recovery Engine | 0/TBD | Not started | - |
 | 17. Keyword Intelligence | 0/TBD | Not started | - |
