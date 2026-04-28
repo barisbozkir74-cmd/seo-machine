@@ -7,6 +7,7 @@ import { ProjectNav } from './ProjectNav'
 import { hasWordPressCredentials } from '@/lib/supabase/vault'
 import { WordPressConnectionSection } from './wordpress-section'
 import { GscConnectionSection } from './gsc-section'
+import { SiteImportSection } from './site-import-section'
 
 export default async function ProjeDetayPage({
   params,
@@ -22,7 +23,7 @@ export default async function ProjeDetayPage({
   const { data: project } = await supabase
     .from('projects')
     .select(
-      'id, name, domain, sector, target_country, target_language, business_model, site_type, brand_tone, target_customer, main_goal, initial_competitors, notes, custom_rules, target_keywords, created_at, gsc_property_url'
+      'id, name, domain, sector, target_country, target_language, business_model, site_type, brand_tone, target_customer, main_goal, initial_competitors, notes, custom_rules, target_keywords, created_at, gsc_property_url, import_status, import_current, import_total, import_completed_at'
     )
     .eq('id', id)
     .eq('user_id', user.id)
@@ -99,6 +100,17 @@ export default async function ProjeDetayPage({
             userId={user.id}
             isConnected={isGscConnected}
             gscPropertyUrl={project.gsc_property_url ?? null}
+          />
+
+          <Separator className="my-8" />
+
+          <SiteImportSection
+            projectId={project.id}
+            hasWpCredentials={isWpConfigured}
+            initialImportStatus={project.import_status ?? null}
+            initialImportCurrent={project.import_current ?? 0}
+            initialImportTotal={project.import_total ?? 0}
+            importCompletedAt={project.import_completed_at ?? null}
           />
         </div>
       </div>
