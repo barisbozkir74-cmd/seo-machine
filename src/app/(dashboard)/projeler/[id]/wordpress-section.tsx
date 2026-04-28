@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { Eye01Icon, EyeOff01Icon } from '@hugeicons/core-free-icons'
+import { EyeIcon, ViewOffIcon } from '@hugeicons/core-free-icons'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -15,13 +15,14 @@ type Props = {
 
 export function WordPressConnectionSection({ projectId, isConfigured }: Props) {
   const [wpUrl, setWpUrl] = useState('')
+  const [username, setUsername] = useState('')
   const [appPassword, setAppPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState(isConfigured)
 
-  const isDirty = wpUrl.trim().length > 0 || appPassword.trim().length > 0
+  const isDirty = wpUrl.trim().length > 0 || appPassword.trim().length > 0 || username.trim().length > 0
 
   const handleSave = async () => {
     setError(null)
@@ -31,6 +32,10 @@ export function WordPressConnectionSection({ projectId, isConfigured }: Props) {
       setError('Geçerli bir WordPress URL\'si girin (https:// ile başlamalı).')
       return
     }
+    if (!username.trim()) {
+      setError('WordPress kullanıcı adı gereklidir.')
+      return
+    }
     if (!appPassword.trim()) {
       setError('Uygulama Şifresi gereklidir.')
       return
@@ -38,13 +43,14 @@ export function WordPressConnectionSection({ projectId, isConfigured }: Props) {
 
     setSaving(true)
     try {
-      const result = await saveWordPressCredentials(projectId, wpUrl, appPassword)
+      const result = await saveWordPressCredentials(projectId, wpUrl, appPassword, username)
       if (!result.success) {
         setError(result.error)
         return
       }
       setSaved(true)
       setWpUrl('')
+      setUsername('')
       setAppPassword('')
     } catch {
       setError('İşlem başarısız. Lütfen tekrar deneyin.')
@@ -86,6 +92,26 @@ export function WordPressConnectionSection({ projectId, isConfigured }: Props) {
         />
       </div>
 
+      {/* Kullanıcı Adı */}
+      <div className="space-y-1.5">
+        <label htmlFor="wp-username" className="text-sm text-muted-foreground">
+          WordPress Kullanıcı Adı
+        </label>
+        <Input
+          id="wp-username"
+          type="text"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          placeholder="admin"
+          className="text-sm h-9"
+          disabled={saving}
+          autoComplete="username"
+        />
+        <p className="text-xs text-muted-foreground">
+          WordPress'e giriş yaparken kullandığınız kullanıcı adı.
+        </p>
+      </div>
+
       {/* Uygulama Şifresi */}
       <div className="space-y-1.5">
         <label htmlFor="wp-app-password" className="text-sm text-muted-foreground">
@@ -114,7 +140,7 @@ export function WordPressConnectionSection({ projectId, isConfigured }: Props) {
             }}
           >
             <HugeiconsIcon
-              icon={showPassword ? EyeOff01Icon : Eye01Icon}
+              icon={showPassword ? ViewOffIcon : EyeIcon}
               size={16}
               className="text-muted-foreground"
             />

@@ -141,10 +141,14 @@ export type SaveWpCredentialsResult =
 export async function saveWordPressCredentials(
   projectId: string,
   wpUrl: string,
-  appPassword: string
+  appPassword: string,
+  username: string
 ): Promise<SaveWpCredentialsResult> {
   if (!wpUrl || !wpUrl.startsWith('https://')) {
     return { success: false, error: "Geçerli bir WordPress URL'si girin (https:// ile başlamalı)." }
+  }
+  if (!username || username.trim().length === 0) {
+    return { success: false, error: 'WordPress kullanıcı adı gereklidir.' }
   }
   if (!appPassword || appPassword.trim().length === 0) {
     return { success: false, error: 'Uygulama Şifresi gereklidir.' }
@@ -166,7 +170,7 @@ export async function saveWordPressCredentials(
 
   try {
     // SECURITY: appPassword vault.ts'e iletilir — loglanmaz, response'ta dönmez
-    await saveWpCredentials(projectId, wpUrl, appPassword)
+    await saveWpCredentials(projectId, wpUrl, appPassword, username)
   } catch {
     return { success: false, error: 'WordPress bağlantısı kaydedilemedi. Lütfen tekrar deneyin.' }
   }

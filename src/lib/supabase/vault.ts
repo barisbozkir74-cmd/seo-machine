@@ -43,10 +43,12 @@ export async function getDataForSeoCredentials(): Promise<{ login: string; passw
 export async function saveWpCredentials(
   projectId: string,
   wpUrl: string,
-  appPassword: string
+  appPassword: string,
+  username: string
 ): Promise<void> {
   const urlKey = `wp_url_${projectId}`
   const passKey = `wp_app_password_${projectId}`
+  const userKey = `wp_username_${projectId}`
 
   // Her iki key için upsert: önce mevcut secret ID'yi ara
   async function upsertSecret(keyName: string, value: string): Promise<void> {
@@ -76,28 +78,35 @@ export async function saveWpCredentials(
 
   await upsertSecret(urlKey, wpUrl)
   await upsertSecret(passKey, appPassword) // appPassword loglanmaz
+  await upsertSecret(userKey, username)
 }
 
 // wp_url ve wp_app_password'u Vault'tan okur
 // Her iki key de mevcutsa { wpUrl, appPassword } döner; biri eksikse null döner
 export async function getWordPressCredentials(
   projectId: string
-): Promise<{ wpUrl: string; appPassword: string } | null> {
+): Promise<{ wpUrl: string; appPassword: string; username: string } | null> {
   const urlKey = `wp_url_${projectId}`
   const passKey = `wp_app_password_${projectId}`
+  const userKey = `wp_username_${projectId}`
 
   const { data, error } = await serviceClient
     .from('vault.decrypted_secrets')
     .select('name, decrypted_secret')
-    .in('name', [urlKey, passKey])
+    .in('name', [urlKey, passKey, userKey])
 
   if (error || !data?.length) return null
 
   const urlRow = data.find((s: { name: string; decrypted_secret: string }) => s.name === urlKey)
   const passRow = data.find((s: { name: string; decrypted_secret: string }) => s.name === passKey)
+  const userRow = data.find((s: { name: string; decrypted_secret: string }) => s.name === userKey)
   if (!urlRow || !passRow) return null
 
-  return { wpUrl: urlRow.decrypted_secret, appPassword: passRow.decrypted_secret }
+  return {
+    wpUrl: urlRow.decrypted_secret,
+    appPassword: passRow.decrypted_secret,
+    username: userRow?.decrypted_secret ?? 'admin',
+  }
 }
 
 // Her iki WP key de Vault'ta mevcutsa true döner (bağlantı durumu badge'i için)

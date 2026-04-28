@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'WordPress credentials bulunamadı' }, { status: 400 })
   }
   // T-15.5-06-02: appPassword ASLA console.log/error'a yazılmaz
-  const authHeader = 'Basic ' + Buffer.from(`admin:${creds.appPassword}`).toString('base64')
+  const authHeader = 'Basic ' + Buffer.from(`${creds.username}:${creds.appPassword}`).toString('base64')
 
   // Pipeline başladı — import_status = 'running'
   await serviceClient
