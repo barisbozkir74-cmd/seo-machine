@@ -326,7 +326,10 @@ Plans:
   2. Kullanıcı herhangi bir sayfanın GSC metriklerini (tıklama, gösterim, ortalama pozisyon, tarihsel trend) sayfa bazlı görünümde inceleyebilir
   3. Pozisyon ortalaması belirlenen eşiğin altına düşen veya son 14 günde belirgin düşüş gösteren sayfalar decay alert badge ile işaretlenir; kullanıcı bu sayfaları filtreli listede görebilir
   4. Eğer Phase 15.5 tamamlandıysa: imported page verileri GSC metrikleriyle birleştirilir; her satırda imported sayfa başlığı, URL, GSC pozisyonu ve decay durumu bir arada görünür
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [x] 15-01-PLAN.md — Monitoring aggregation lib + /api/monitoring/clusters & /api/monitoring/pages routes (auth + ownership + decay calc) (completed 2026-04-28)
+- [ ] 15-02-PLAN.md — ProjectNav 'İzleme' item + /projeler/[id]/izleme SSR page + PeriodTabBar + ClusterSummaryTable + PageMetricsTable
 **UI hint**: yes
 
 ### Phase 15.5: WordPress Site Import Engine *(INSERTED)*
@@ -378,7 +381,7 @@ Note: Phase 17 depends on Phase 6 (not Phase 16) — can be planned independentl
 | 12. Content Studio | 5/5 | Complete | 2026-04-26 |
 | 13. WordPress Publishing | 5/5 | Complete | 2026-04-27 |
 | 14. GSC Integration | 6/6 | Complete | 2026-04-28 |
-| 15. Monitoring Dashboard | 0/TBD | Not started | - |
+| 15. Monitoring Dashboard | 0/2 | Planned | - |
 | 15.5. WordPress Site Import Engine | 0/TBD | Not started | - |
 | 16. Recovery Engine | 0/TBD | Not started | - |
 | 17. Keyword Intelligence | 0/TBD | Not started | - |
