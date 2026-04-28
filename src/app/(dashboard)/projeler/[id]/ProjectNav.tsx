@@ -20,6 +20,7 @@ function getNavItems(projectId: string): NavItem[] {
     { label: 'Rakipler',          href: `/projeler/${projectId}/rakipler`,                 built: true  },
     { label: 'Proje Kuralları',   href: `/projeler/${projectId}/kurallar`,                 built: true  },
     { label: 'İzleme',            href: `/projeler/${projectId}/izleme`,                   built: true  },
+    { label: 'Site Analizi',      href: `/projeler/${projectId}/site-analizi`,              built: true  },
   ]
 }
 
