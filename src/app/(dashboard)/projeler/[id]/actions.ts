@@ -300,3 +300,41 @@ export async function updateNote(
   revalidatePath(`/projeler/${projectId}`)
   return { success: true }
 }
+
+// ─── WordPress Site Import Actions ────────────────────────────────────────────
+
+// T-15.5-07-01: startSiteImport — kullanıcı kendi projesini tetikleyebilir
+// T-15.5-07-02: userId server-side session'dan alınır — client'tan gelmez
+export async function startSiteImport(
+  projectId: string
+): Promise<{ jobStarted: boolean; error?: string }> {
+  'use server'
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { jobStarted: false, error: 'Oturum bulunamadı.' }
+
+  // T-15.5-07-01: Ownership check — başkasının projesini tetikleyemez
+  const { data: project } = await supabase
+    .from('projects')
+    .select('id')
+    .eq('id', projectId)
+    .eq('user_id', user.id)
+    .single()
+  if (!project) return { jobStarted: false, error: 'Proje bulunamadı.' }
+
+  // T-15.5-07-02: userId server-side session'dan alınır — RESEARCH.md Pitfall 1:
+  // Uzun import loop Route Handler'da çalışmalı, Server Action burada fire & forget yapar
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL
+    ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
+
+  // Fire & forget — await etmiyoruz; loop Route Handler'da asenkron çalışır
+  fetch(`${siteUrl}/api/wp/import`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ projectId, userId: user.id }),
+  }).catch((err) => console.error('[startSiteImport] fire&forget failed:', err))
+
+  return { jobStarted: true }
+}
