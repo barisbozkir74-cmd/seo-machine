@@ -107,16 +107,26 @@
 
 ### GSC & Monitoring
 
-- [ ] **GSC-01**: Kullanıcı proje başına Google Search Console property OAuth ile bağlayabilir
-- [ ] **GSC-02**: Sistem yayınlanan sayfalar için index durumunu GSC'den çeker ve gösterir
-- [ ] **GSC-03**: Sistem sayfa ve keyword bazında tıklama, gösterim, ortalama pozisyon verisini GSC'den çeker
+- [x] **GSC-01**: Kullanıcı proje başına Google Search Console property OAuth ile bağlayabilir *(Phase 14)*
+- [x] **GSC-02**: Sistem yayınlanan sayfalar için index durumunu GSC'den çeker ve gösterir *(Phase 14)*
+- [x] **GSC-03**: Sistem sayfa ve keyword bazında tıklama, gösterim, ortalama pozisyon verisini GSC'den çeker *(Phase 14)*
 - [ ] **MON-01**: Kullanıcı cluster bazlı trafik özetini monitoring dashboard'da görebilir
 - [ ] **MON-02**: Kullanıcı sayfa bazlı GSC performansını (tıklama, gösterim, pozisyon) ve decay alert'lerini görebilir
+- [ ] **MON-03**: Monitoring dashboard imported page verilerini GSC metrikleriyle birleştirilmiş gösterebilir (Phase 15.5 bağımlı)
+
+### WordPress Site Import Engine
+
+- [ ] **IMP-01**: Sistem mevcut WP credentials'ı kullanarak /wp/v2/pages + /wp/v2/posts + /wp/v2/categories + /wp/v2/tags endpoint'lerini çeker ve tüm içeriği project_imported_pages tablosuna normalize ederek yazar
+- [ ] **IMP-02**: Import sonrası sistem parent/child ilişkilerini çözerek hiyerarşik site tree oluşturur; kullanıcı /projeler/[id]/site-analizi sayfasında görebilir
+- [ ] **IMP-03**: GSC bağlıysa sistem her imported page'i URL eşleşmesiyle gsc_metrics tablosuyla birleştirir; clicks, impressions, avg_position ve gsc_index_status görünür
+- [ ] **IMP-04**: Sistem her sayfa için AI ile content_summary ve primary_intent (informational/commercial/transactional/navigational) üretir
+- [ ] **IMP-05**: Sistem her sayfa için audit flag'leri hesaplar: orphan, duplicate_intent, weak_page, missing_metadata, missing_target_keyword, outdated_candidate
 
 ### Recovery Engine
 
 - [ ] **REC-01**: Sistem pozisyon düşüşü olan sayfaları eşik değere göre otomatik tespit eder
 - [ ] **REC-02**: Tespit edilen decay için ilgili sayfa paketi üzerinde güncelleme görevi otomatik açılır
+- [ ] **REC-03**: Phase 15.5 tamamlandıysa imported pages'deki weak_page + düşük GSC pozisyonu kombinasyonu da recovery kandidatı olarak işaretlenir
 
 ### Keyword Intelligence
 
@@ -190,13 +200,20 @@
 | PUBL-02 | Phase 13 | Pending |
 | PUBL-03 | Phase 13 | Pending |
 | PUBL-04 | Phase 13 | Pending |
-| GSC-01 | Phase 14 | Pending |
-| GSC-02 | Phase 14 | Pending |
-| GSC-03 | Phase 14 | Pending |
+| GSC-01 | Phase 14 | Complete |
+| GSC-02 | Phase 14 | Complete |
+| GSC-03 | Phase 14 | Complete |
 | MON-01 | Phase 15 | Pending |
 | MON-02 | Phase 15 | Pending |
+| MON-03 | Phase 15 | Pending |
+| IMP-01 | Phase 15.5 | Pending |
+| IMP-02 | Phase 15.5 | Pending |
+| IMP-03 | Phase 15.5 | Pending |
+| IMP-04 | Phase 15.5 | Pending |
+| IMP-05 | Phase 15.5 | Pending |
 | REC-01 | Phase 16 | Pending |
 | REC-02 | Phase 16 | Pending |
+| REC-03 | Phase 16 | Pending |
 | NICH-01 | Phase 17 | Pending |
 | NICH-02 | Phase 17 | Pending |
 | RVEN-01 | Phase 17 | Pending |

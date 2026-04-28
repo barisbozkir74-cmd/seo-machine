@@ -248,15 +248,16 @@ Phases execute in numeric order: 10 → 11
 
 ## Overview
 
-v3.0 closes the full content-to-publish-to-monitor loop. Six phases deliver this: Phase 12 builds Content Studio (AI-generated body content section by section with human approval), Phase 13 adds WordPress publishing (credentials, draft/publish, status sync), Phase 14 integrates Google Search Console (OAuth, index status, performance data), Phase 15 builds the Monitoring Dashboard (cluster traffic + per-page GSC performance + decay alerts), Phase 16 adds the Recovery Engine (automated decay detection + update task creation), and Phase 17 extends the keyword strategy view with Niche Selection and Cluster-to-Revenue scoring. Together they transform the system from a planning OS into a live growth machine that detects problems and surfaces them for human action.
+v3.0 transforms the system from a planning OS into a full SEO Operating System — a live control layer that sits on top of WordPress and Google Search Console. The system does not replace WordPress; it becomes the analysis and decision engine for it. Seven phases deliver this: Phase 12 builds Content Studio (AI-generated body content section by section with human approval), Phase 13 adds WordPress publishing (credentials, draft/publish, status sync), Phase 14 integrates Google Search Console (OAuth, index status, performance data), Phase 15 builds the Monitoring Dashboard (cluster traffic + per-page GSC performance + decay alerts), Phase 15.5 adds the WordPress Site Import Engine (CONNECT → IMPORT → NORMALIZE → MAP → AUDIT READY — pulling existing WP content into a normalized DB, building a site tree, and enriching with GSC data for audit-readiness), Phase 16 adds the Recovery Engine (automated decay detection + update task creation, powered by both GSC metrics and imported site data), and Phase 17 extends the keyword strategy view with Niche Selection and Cluster-to-Revenue scoring. Together they transform the system into a live SEO control layer: content lives in WordPress, analysis and decisions live here.
 
 ## Phases
 
 - [x] **Phase 12: Content Studio** - Kilitli sayfa paketi için H2/H3 heading yapısına göre bölüm bölüm AI içerik üretimi ve insan onay akışı (completed 2026-04-26)
 - [x] **Phase 13: WordPress Publishing** - Proje başına WordPress kimlik bilgisi yönetimi ve REST API ile draft/publish gönderimi (completed 2026-04-27)
-- [ ] **Phase 14: GSC Integration** - Google Search Console OAuth bağlantısı, index durumu ve sayfa/keyword bazlı performans verisi çekimi
+- [x] **Phase 14: GSC Integration** - Google Search Console OAuth bağlantısı, index durumu ve sayfa/keyword bazlı performans verisi çekimi (completed 2026-04-28)
 - [ ] **Phase 15: Monitoring Dashboard** - Cluster ve sayfa bazlı GSC trafik özeti, pozisyon takibi ve decay alert görünümü
-- [ ] **Phase 16: Recovery Engine** - Pozisyon düşüşü olan sayfaların otomatik tespiti ve ilgili sayfa paketinde güncelleme görevi açma
+- [ ] **Phase 15.5: WordPress Site Import Engine** *(INSERTED)* - Mevcut WordPress sitesini içeri alma, normalize etme, site tree oluşturma ve GSC verisiyle birleştirerek SEO audit-ready hale getirme
+- [ ] **Phase 16: Recovery Engine** - Pozisyon düşüşü olan sayfaların otomatik tespiti (GSC + imported site data) ve ilgili sayfa paketinde güncelleme görevi açma
 - [ ] **Phase 17: Keyword Intelligence** - Her cluster için niche selection skoru ve cluster-to-revenue gelir potansiyeli haritası
 
 ## Phase Details
@@ -306,33 +307,51 @@ Plans:
   1. Kullanıcı proje ayarlarından "GSC Bağla" aksiyonunu tetikler; Google OAuth akışı tamamlandıktan sonra seçilen property proje ile ilişkilendirilir ve token Supabase'de güvenli saklanır
   2. Sistem yayınlanan her sayfa için GSC'ye URL inspection isteği gönderir ve index durumunu (indexed / not indexed / crawled but not indexed) page package'da gösterir
   3. Sistem n8n webhook veya schedule ile günlük olarak GSC'den sayfa ve keyword bazlı tıklama, gösterim ve ortalama pozisyon verisini çeker; veriler Supabase'e kaydedilir
-**Plans**: 5 plans
+**Plans**: 6 plans
 Plans:
-- [ ] 14-01-PLAN.md — GSC schema migration (gsc_tokens, gsc_property_url, gsc_index_status, gsc_metrics) + supabase db push [BLOCKING]
-- [ ] 14-02-PLAN.md — GSC lib katmanı (auth.ts, properties.ts, index-check.ts, search-analytics.ts) + birim testleri
-- [ ] 14-03-PLAN.md — OAuth flow: initiateGscOAuth + saveGscProperty server actions + /api/gsc/callback route handler
-- [ ] 14-04-PLAN.md — GscConnectionSection UI + page.tsx entegrasyonu + /api/gsc/sync endpoint
-- [ ] 14-05-PLAN.md — GscIndexBadge + checkIndexStatus action + HtmlReadyBanner ve PagePackageEditor entegrasyonu
+- [x] 14-01-PLAN.md — GSC schema migration (gsc_tokens, gsc_property_url, gsc_index_status, gsc_metrics) + supabase db push [BLOCKING] (completed 2026-04-28)
+- [x] 14-02-PLAN.md — GSC lib katmanı (auth.ts, properties.ts, index-check.ts, search-analytics.ts) + birim testleri (completed 2026-04-28)
+- [x] 14-03-PLAN.md — OAuth flow: initiateGscOAuth + saveGscProperty server actions + /api/gsc/callback route handler (completed 2026-04-28)
+- [x] 14-04-PLAN.md — GscConnectionSection UI + page.tsx entegrasyonu + /api/gsc/sync endpoint (completed 2026-04-28)
+- [x] 14-05-PLAN.md — GscIndexBadge + checkIndexStatus action + HtmlReadyBanner ve PagePackageEditor entegrasyonu (completed 2026-04-28)
+- [x] 14-06-PLAN.md — Gap closure: middleware /api/gsc/sync bypass + GscConnectionSection userId prop (completed 2026-04-28)
 **UI hint**: yes
 
 ### Phase 15: Monitoring Dashboard
 **Goal**: Kullanıcı tek sayfada hem cluster bazlı trafik özetini hem de sayfa bazlı GSC performans metriklerini görebilir; pozisyon düşüşü yaşayan sayfalar decay alert ile işaretlenir
 **Depends on**: Phase 14
-**Requirements**: MON-01, MON-02
+**Requirements**: MON-01, MON-02, MON-03
 **Success Criteria** (what must be TRUE):
   1. Kullanıcı monitoring dashboard'da keyword cluster'larını tıklama ve gösterim toplamlarına göre sıralı listede görebilir; hangi cluster'ın GSC'de güçlü veya zayıf olduğunu bir bakışta anlayabilir
   2. Kullanıcı herhangi bir sayfanın GSC metriklerini (tıklama, gösterim, ortalama pozisyon, tarihsel trend) sayfa bazlı görünümde inceleyebilir
   3. Pozisyon ortalaması belirlenen eşiğin altına düşen veya son 14 günde belirgin düşüş gösteren sayfalar decay alert badge ile işaretlenir; kullanıcı bu sayfaları filtreli listede görebilir
+  4. Eğer Phase 15.5 tamamlandıysa: imported page verileri GSC metrikleriyle birleştirilir; her satırda imported sayfa başlığı, URL, GSC pozisyonu ve decay durumu bir arada görünür
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 15.5: WordPress Site Import Engine *(INSERTED)*
+**Goal**: Sistem mevcut bir WordPress sitesindeki tüm pages/posts içeriklerini REST API üzerinden çeker, normalize ederek project_imported_pages tablosuna yazar, parent/child ilişkilerinden site tree oluşturur, GSC verisiyle url eşleştirir ve her sayfa için SEO audit flag'leri hesaplar — CONNECT → IMPORT → NORMALIZE → MAP → AUDIT READY
+**Depends on**: Phase 13 (WP credentials), Phase 14 (GSC data)
+**Architectural decision**: Sistem WordPress'i replace etmez. WordPress içerik kaynağı olmaya devam eder; bu sistem analiz ve karar katmanıdır. İçerik WP'de kalır, SEO control layer burada çalışır.
+**Requirements**: IMP-01, IMP-02, IMP-03, IMP-04, IMP-05
+**Success Criteria** (what must be TRUE):
+  1. Kullanıcı proje detay sayfasındaki "WordPress Sitemi İçeri Al" butonuna tıklar; sistem mevcut WP Application Password credentials'ını kullanarak /wp/v2/pages + /wp/v2/posts + /wp/v2/categories + /wp/v2/tags endpoint'lerini çeker ve tüm içeriği project_imported_pages tablosuna normalize ederek yazar
+  2. Import sonrası sistem parent_wp_id ilişkilerini çözerek site tree oluşturur; kullanıcı /projeler/[id]/site-analizi sayfasında hiyerarşik ağaç görünümünde imported sayfaları görebilir
+  3. GSC bağlıysa sistem her imported page'i URL eşleşmesiyle gsc_metrics tablosuyla birleştirir; her sayfa için clicks, impressions, avg_position ve gsc_index_status görünür
+  4. Sistem her sayfa için AI ile content_summary (200 char) ve primary_intent (informational/commercial/transactional/navigational) üretir
+  5. Sistem her sayfa için audit flag'leri hesaplar: orphan page, duplicate intent, weak page (düşük trafik + düşük GSC pozisyonu), missing metadata, missing target keyword, outdated content candidate; bu flag'ler site analizi görünümünde filtrelenebilir
+**New table**: project_imported_pages (ayrı tablo — page_packages ile karışmaz; imported vs generated ayrımı nettir)
 **Plans**: TBD
 **UI hint**: yes
 
 ### Phase 16: Recovery Engine
-**Goal**: Sistem pozisyon düşüşü olan sayfaları eşik değere göre otomatik tespit eder ve ilgili sayfa paketi üzerinde güncelleme görevi açar; kullanıcı aksiyon bekleyen sayfaları tek noktadan görebilir
-**Depends on**: Phase 15
-**Requirements**: REC-01, REC-02
+**Goal**: Sistem pozisyon düşüşü olan sayfaları eşik değere göre otomatik tespit eder ve ilgili sayfa paketi üzerinde güncelleme görevi açar; kullanıcı aksiyon bekleyen sayfaları tek noktadan görebilir. Phase 15.5 tamamlandıysa imported pages üzerinden de çalışır.
+**Depends on**: Phase 15, Phase 15.5
+**Requirements**: REC-01, REC-02, REC-03
 **Success Criteria** (what must be TRUE):
   1. n8n scheduled workflow günlük çalışır; önceki 7 gün ve son 7 günü karşılaştırarak belirlenen eşiğin üzerinde pozisyon kaybı olan sayfaları tespit eder ve bunları Supabase'e decay kaydı olarak yazar
   2. Decay kaydı oluştuğunda ilgili page_package üzerinde "Güncelleme Gerekli" durumu ve açıklaması otomatik oluşturulur; kullanıcı bu paketi monitoring dashboard veya sayfa listesinden görebilir ve güncelleme akışını başlatabilir
+  3. Eğer Phase 15.5 tamamlandıysa: sistem imported pages içindeki weak_page + düşük GSC pozisyonu kombinasyonunu da recovery kandidatı olarak işaretler; kullanıcı "İçerik Güncelleme" önerisi alır
 **Plans**: TBD
 
 ### Phase 17: Keyword Intelligence
@@ -350,14 +369,16 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 12 → 13 → 14 → 15 → 16 → 17
+Phases execute in numeric order: 12 → 13 → 14 → 15 → 15.5 → 16 → 17
+Note: Phase 15.5 can be planned in parallel with Phase 15 but must execute after Phase 15 to feed Phase 16.
 Note: Phase 17 depends on Phase 6 (not Phase 16) — can be planned independently but executed after Phase 16 for convenience.
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 12. Content Studio | 5/5 | Complete | 2026-04-26 |
 | 13. WordPress Publishing | 5/5 | Complete | 2026-04-27 |
-| 14. GSC Integration | 0/5 | Ready to execute | - |
+| 14. GSC Integration | 6/6 | Complete | 2026-04-28 |
 | 15. Monitoring Dashboard | 0/TBD | Not started | - |
+| 15.5. WordPress Site Import Engine | 0/TBD | Not started | - |
 | 16. Recovery Engine | 0/TBD | Not started | - |
 | 17. Keyword Intelligence | 0/TBD | Not started | - |
