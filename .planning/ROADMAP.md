@@ -255,7 +255,7 @@ v3.0 transforms the system from a planning OS into a full SEO Operating System �
 - [x] **Phase 12: Content Studio** - Kilitli sayfa paketi için H2/H3 heading yapısına göre bölüm bölüm AI içerik üretimi ve insan onay akışı (completed 2026-04-26)
 - [x] **Phase 13: WordPress Publishing** - Proje başına WordPress kimlik bilgisi yönetimi ve REST API ile draft/publish gönderimi (completed 2026-04-27)
 - [x] **Phase 14: GSC Integration** - Google Search Console OAuth bağlantısı, index durumu ve sayfa/keyword bazlı performans verisi çekimi (completed 2026-04-28)
-- [ ] **Phase 15: Monitoring Dashboard** - Cluster ve sayfa bazlı GSC trafik özeti, pozisyon takibi ve decay alert görünümü
+- [x] **Phase 15: Monitoring Dashboard** - Cluster ve sayfa bazlı GSC trafik özeti, pozisyon takibi ve decay alert görünümü (completed 2026-04-28)
 - [ ] **Phase 15.5: WordPress Site Import Engine** *(INSERTED)* - Mevcut WordPress sitesini içeri alma, normalize etme, site tree oluşturma ve GSC verisiyle birleştirerek SEO audit-ready hale getirme
 - [ ] **Phase 16: Recovery Engine** - Pozisyon düşüşü olan sayfaların otomatik tespiti (GSC + imported site data) ve ilgili sayfa paketinde güncelleme görevi açma
 - [ ] **Phase 17: Keyword Intelligence** - Her cluster için niche selection skoru ve cluster-to-revenue gelir potansiyeli haritası
@@ -381,7 +381,7 @@ Note: Phase 17 depends on Phase 6 (not Phase 16) — can be planned independentl
 | 12. Content Studio | 5/5 | Complete | 2026-04-26 |
 | 13. WordPress Publishing | 5/5 | Complete | 2026-04-27 |
 | 14. GSC Integration | 6/6 | Complete | 2026-04-28 |
-| 15. Monitoring Dashboard | 0/2 | Planned | - |
+| 15. Monitoring Dashboard | 2/2 | Complete    | 2026-04-28 |
 | 15.5. WordPress Site Import Engine | 0/TBD | Not started | - |
 | 16. Recovery Engine | 0/TBD | Not started | - |
 | 17. Keyword Intelligence | 0/TBD | Not started | - |

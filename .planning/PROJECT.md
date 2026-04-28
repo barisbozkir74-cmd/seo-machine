@@ -81,9 +81,9 @@ Her website projesi için sıfırdan açılıp kurgulanan, tüm kararları kayde
 
 #### Publishing & Monitoring
 - [x] WordPress REST API ile draft/publish gönderimi (slug, title, content, meta, schema) *(Validated in Phase 13 — 2026-04-27)*
-- [ ] Google Search Console entegrasyonu — performans takibi, index durumu
+- [x] Google Search Console entegrasyonu — OAuth, index durumu, performans verisi çekimi *(Validated in Phase 14 — 2026-04-27)*
 - [ ] Recovery & refresh engine — ranking düşüşü tespiti ve güncelleme görevi açma
-- [ ] Monitoring dashboard — cluster bazlı trafik, sayfa bazlı dönüşüm desteği
+- [x] Monitoring dashboard — cluster bazlı trafik, sayfa bazlı performans + decay alert *(Validated in Phase 15 — 2026-04-28)*
 
 ### Out of Scope
 
