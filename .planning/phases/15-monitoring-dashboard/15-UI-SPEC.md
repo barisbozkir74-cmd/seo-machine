@@ -1,7 +1,8 @@
 ---
 phase: 15
 slug: monitoring-dashboard
-status: draft
+status: approved
+reviewed_at: 2026-04-28
 shadcn_initialized: true
 preset: base-mira
 created: 2026-04-28
