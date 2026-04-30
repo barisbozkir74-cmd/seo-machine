@@ -4,8 +4,11 @@ import { NextResponse, type NextRequest } from 'next/server'
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Bypass auth for n8n server-to-server calls — route handler does its own bearer token check
-  if (pathname.startsWith('/api/gsc/sync')) {
+  // Bypass auth for n8n server-to-server calls — each route handler does its own webhook-secret check
+  if (
+    pathname.startsWith('/api/gsc/sync') ||
+    pathname.startsWith('/api/recovery/detect')
+  ) {
     return NextResponse.next({ request })
   }
 
