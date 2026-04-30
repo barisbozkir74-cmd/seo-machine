@@ -637,8 +637,48 @@ export async function publishToWordPress(
     }
   }
 
+  // ─── Phase 16 D-04: Recovery task auto-resolve ─────────────────────────────
+  // After a successful WP publish (wp_published_at updated), mark any open/in_progress
+  // recovery_task pointing at this page_packages.id as resolved.
+  //
+  // NON-FATAL: a failure here is logged and ignored. The publish itself already succeeded
+  // in WordPress AND in our DB; the user should not see an error because of a bookkeeping
+  // hiccup. Worst case: the recovery row stays open and the user can dismiss it manually.
+  //
+  // Filter rationale:
+  //   .eq('source_id', pkg.id)       — pkg.id IS page_packages.id (polymorphic FK convention)
+  //   .eq('source', 'page_package')  — defence: prevents accidental match on imported_page rows
+  //                                    that happened to share an id (unlikely, but explicit)
+  //   .in('status', ['open', 'in_progress']) — never overwrite resolved/dismissed
+  try {
+    const { error: recoveryUpdateError } = await supabase
+      .from('recovery_tasks')
+      .update({
+        status: 'resolved',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('source_id', pkg.id)
+      .eq('source', 'page_package')
+      .in('status', ['open', 'in_progress'])
+
+    if (recoveryUpdateError) {
+      // non-fatal — log and continue
+      console.warn(
+        '[publishToWordPress] recovery auto-resolve failed:',
+        recoveryUpdateError.message,
+      )
+    }
+  } catch (e) {
+    // non-fatal — log and continue
+    console.warn(
+      '[publishToWordPress] recovery auto-resolve threw:',
+      e instanceof Error ? e.message : String(e),
+    )
+  }
+
   revalidatePath(`/projeler/${projectId}/icerik-studio/${pageId}`)
   revalidatePath(`/projeler/${projectId}/sayfa-paketi`)
+  revalidatePath(`/projeler/${projectId}/izleme`)
 
   return { success: true, wpPostId, wpPostUrl, wpStatus: status }
 }
