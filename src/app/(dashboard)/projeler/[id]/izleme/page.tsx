@@ -2,21 +2,35 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { getClusterMetrics, getPageMetrics, type MonitoringPeriod } from '@/lib/monitoring/aggregation'
+import { getRecoveryTasks } from '@/lib/monitoring/recovery-tasks'
 import { ProjectNav } from '../ProjectNav'
 import { PeriodTabBar } from './period-tab-bar'
+import { ContentTabBar, type ContentTab } from './content-tab-bar'
 import { ClusterSummaryTable } from './cluster-summary-table'
 import { PageMetricsTable } from './page-metrics-table'
+import { RecoveryTaskTable } from './recovery-task-table'
 
 export default async function IzlemePage({
   params,
   searchParams,
 }: {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ period?: string }>
+  searchParams: Promise<{ period?: string; tab?: string }>
 }) {
   const { id } = await params
-  const { period: periodRaw } = await searchParams
-  const period: MonitoringPeriod = periodRaw === '7' ? 7 : periodRaw === '90' ? 90 : 28
+  const { period: periodRaw, tab: tabRaw } = await searchParams
+
+  const period: MonitoringPeriod =
+    periodRaw === '7' ? 7 : periodRaw === '90' ? 90 : 28
+
+  // UI-SPEC §URL State Machine: default tab=clusters when missing/invalid (was the original
+  // single-section default). Wave 16-04 introduces the tab param — backward compat preserved.
+  const activeTab: ContentTab =
+    tabRaw === 'pages'
+      ? 'pages'
+      : tabRaw === 'recovery'
+      ? 'recovery'
+      : 'clusters'
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -30,15 +44,22 @@ export default async function IzlemePage({
     .single()
   if (!project) notFound()
 
-  const gscConnected = project.gsc_property_url !== null && project.gsc_property_url !== ''
+  const gscConnected =
+    project.gsc_property_url !== null && project.gsc_property_url !== ''
 
-  // Fetch metrics in parallel only when GSC connected
-  const [clusters, pages] = gscConnected
+  // Parallel fetch: only when GSC connected (recovery tasks may exist independently —
+  // imported_page source does not require GSC, but page_package source does — we still
+  // gate on gscConnected because the izleme page itself is GSC-centered. Recovery tab
+  // shows empty state if list is [].)
+  // includesDismissed=true: loads open + in_progress + dismissed in one query so the
+  // "Dismissed görevleri göster" toggle in RecoveryTaskTable has data to reveal (D-13).
+  const [clusters, pages, recoveryTasks] = gscConnected
     ? await Promise.all([
         getClusterMetrics(supabase, id, period),
         getPageMetrics(supabase, id, period),
+        getRecoveryTasks(supabase, id, true),
       ])
-    : [[], []]
+    : [[], [], []]
 
   return (
     <div className="flex flex-col h-screen">
@@ -74,16 +95,28 @@ export default async function IzlemePage({
           ) : (
             <div className="space-y-8">
               <PeriodTabBar projectId={id} active={period} />
+              <ContentTabBar projectId={id} active={activeTab} period={period} />
 
-              <section>
-                <h2 className="text-base font-semibold mb-4">Cluster Performansı</h2>
-                <ClusterSummaryTable clusters={clusters} />
-              </section>
+              {activeTab === 'clusters' && (
+                <section>
+                  <h2 className="text-base font-semibold mb-4">Cluster Performansı</h2>
+                  <ClusterSummaryTable clusters={clusters} />
+                </section>
+              )}
 
-              <section>
-                <h2 className="text-base font-semibold mb-4">Sayfa Performansı</h2>
-                <PageMetricsTable pages={pages} />
-              </section>
+              {activeTab === 'pages' && (
+                <section>
+                  <h2 className="text-base font-semibold mb-4">Sayfa Performansı</h2>
+                  <PageMetricsTable pages={pages} />
+                </section>
+              )}
+
+              {activeTab === 'recovery' && (
+                <section>
+                  <h2 className="text-base font-semibold mb-4">Recovery</h2>
+                  <RecoveryTaskTable tasks={recoveryTasks} projectId={id} />
+                </section>
+              )}
             </div>
           )}
         </div>
