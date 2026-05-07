@@ -7,6 +7,7 @@ import { fetchKeywordData } from '@/lib/dataforseo/client'
 import { parseKeywordText } from '@/lib/keywords/parser'
 import { clusterKeywords, clusterEnrichedKeywords } from '@/lib/keywords/clustering'
 import { calculateOpportunityScore, buildScoringContext } from '@/lib/keywords/scoring'
+import { calculateNicheScore, classifyRevenueType } from '@/lib/keywords/niche-scoring'
 
 export type ImportKeywordsResult =
   | { success: true; clusterCount: number; keywordCount: number; enrichedCount: number }
@@ -164,6 +165,23 @@ export async function deleteKeyword(
 
   if (error) return { success: false, error: 'Keyword silinemedi.' }
 
+  // Phase 17: Keyword silindi ama cluster hâlâ varsa niche skorunu güncelle
+  if (kw.cluster_id) {
+    const { count: remaining } = await supabase
+      .from('keywords')
+      .select('id', { count: 'exact', head: true })
+      .eq('cluster_id', kw.cluster_id)
+    if ((remaining ?? 0) > 0) {
+      const { data: allClusters } = await supabase
+        .from('keyword_clusters')
+        .select('id, total_volume')
+        .eq('project_id', projectId)
+        .eq('user_id', user.id)
+      const allClusterVolumes = (allClusters ?? []).map((c) => c.total_volume ?? 0)
+      await recalculateClusterNicheScore(kw.cluster_id, user.id, supabase, allClusterVolumes)
+    }
+  }
+
   // Kümedeki son keyword ise kümeyi de sil (D-12 interaction contract)
   if (kw.cluster_id) {
     const { count } = await supabase
@@ -283,6 +301,21 @@ export async function clusterAndScoreKeywords(
     }
   }
 
+  // Phase 17: Tüm cluster'lar için niche skoru batch hesaplama
+  // Pitfall 3: Her cluster kendi max değerine göre normalize edilmemeli — proje geneli max kullanılır
+  const { data: allClusterRows } = await supabase
+    .from('keyword_clusters')
+    .select('id, total_volume')
+    .eq('project_id', projectId)
+    .eq('user_id', user.id)
+  const allClusterVolumes = (allClusterRows ?? []).map((c) => c.total_volume ?? 0)
+
+  await Promise.all(
+    (allClusterRows ?? []).map((cluster) =>
+      recalculateClusterNicheScore(cluster.id, user.id, supabase, allClusterVolumes)
+    )
+  )
+
   revalidatePath(`/projeler/${projectId}/keyword-stratejisi`)
   return { success: true, clusterCount }
 }
@@ -343,6 +376,22 @@ export async function moveKeywordToCluster(
 
   if (error) return { success: false, error: 'Küme ataması başarısız.' }
 
+  // Phase 17: Hem eski hem yeni cluster'ın niche skorunu güncelle
+  // Normalizasyon için proje cluster volume'larını çek
+  const { data: allClusters } = await supabase
+    .from('keyword_clusters')
+    .select('id, total_volume')
+    .eq('project_id', projectId)
+    .eq('user_id', user.id)
+  const allClusterVolumes = (allClusters ?? []).map((c) => c.total_volume ?? 0)
+
+  // Eski cluster (keyword çıktı — Pitfall 2)
+  if (kw.cluster_id && kw.cluster_id !== newClusterId) {
+    await recalculateClusterNicheScore(kw.cluster_id, user.id, supabase, allClusterVolumes)
+  }
+  // Yeni cluster
+  await recalculateClusterNicheScore(newClusterId, user.id, supabase, allClusterVolumes)
+
   revalidatePath(`/projeler/${projectId}/keyword-stratejisi`)
   return { success: true }
 }
@@ -387,6 +436,85 @@ export async function setPrimaryKeyword(
     .eq('user_id', user.id)
 
   if (error) return { success: false, error: 'Primary atama başarısız.' }
+
+  revalidatePath(`/projeler/${projectId}/keyword-stratejisi`)
+  return { success: true }
+}
+
+// ─── Phase 17: Niche Score Recalculation Helper ──────────────────────────────
+
+async function recalculateClusterNicheScore(
+  clusterId: string,
+  userId: string,
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  allClusterVolumes: number[]
+): Promise<void> {
+  const { data: keywords } = await supabase
+    .from('keywords')
+    .select('volume, cpc, difficulty, search_intent')
+    .eq('cluster_id', clusterId)
+    .eq('user_id', userId)
+
+  if (!keywords || keywords.length === 0) return
+
+  const maxClusterVolume = Math.max(...allClusterVolumes, 0)
+  const maxCpc = Math.max(...keywords.map((k) => k.cpc ?? 0), 0)
+
+  const nicheScore = calculateNicheScore(keywords, { maxClusterVolume, maxCpc })
+  const revenueType = classifyRevenueType(keywords)
+
+  await supabase
+    .from('keyword_clusters')
+    .update({ opportunity_score: nicheScore, revenue_type: revenueType })
+    .eq('id', clusterId)
+    .eq('user_id', userId)
+}
+
+// ─── Phase 17: Revenue Override Action ───────────────────────────────────────
+
+export type UpdateClusterRevenueResult =
+  | { success: true }
+  | { success: false; error: string }
+
+const VALID_REVENUE_TYPES = ['bilgi', 'mixed', 'ticari'] as const
+
+export async function updateClusterRevenue(
+  clusterId: string,
+  revenueType: string,
+  projectId: string
+): Promise<UpdateClusterRevenueResult> {
+  // Whitelist kontrolü — T-17-02 (Tampering: geçersiz değer enjeksiyonu)
+  if (!VALID_REVENUE_TYPES.includes(revenueType as typeof VALID_REVENUE_TYPES[number])) {
+    return { success: false, error: 'Geçersiz gelir tipi.' }
+  }
+
+  // UUID format validation
+  const uuidRegex = /^[0-9a-f-]{36}$/i
+  if (!uuidRegex.test(clusterId) || !uuidRegex.test(projectId)) {
+    return { success: false, error: 'Geçersiz ID formatı.' }
+  }
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Oturum bulunamadı.' }
+
+  // Ownership doğrula — T-17-01 (Tampering: başka projenin cluster'ına yazma)
+  const { data: cluster } = await supabase
+    .from('keyword_clusters')
+    .select('id')
+    .eq('id', clusterId)
+    .eq('project_id', projectId)
+    .eq('user_id', user.id)
+    .single()
+  if (!cluster) return { success: false, error: 'Küme bulunamadı.' }
+
+  const { error } = await supabase
+    .from('keyword_clusters')
+    .update({ revenue_type: revenueType })
+    .eq('id', clusterId)
+    .eq('user_id', user.id)
+
+  if (error) return { success: false, error: 'Güncelleme başarısız.' }
 
   revalidatePath(`/projeler/${projectId}/keyword-stratejisi`)
   return { success: true }
