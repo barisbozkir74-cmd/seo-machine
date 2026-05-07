@@ -469,3 +469,53 @@ async function recalculateClusterNicheScore(
     .eq('id', clusterId)
     .eq('user_id', userId)
 }
+
+// ─── Phase 17: Revenue Override Action ───────────────────────────────────────
+
+export type UpdateClusterRevenueResult =
+  | { success: true }
+  | { success: false; error: string }
+
+const VALID_REVENUE_TYPES = ['bilgi', 'mixed', 'ticari'] as const
+
+export async function updateClusterRevenue(
+  clusterId: string,
+  revenueType: string,
+  projectId: string
+): Promise<UpdateClusterRevenueResult> {
+  // Whitelist kontrolü — T-17-02 (Tampering: geçersiz değer enjeksiyonu)
+  if (!VALID_REVENUE_TYPES.includes(revenueType as typeof VALID_REVENUE_TYPES[number])) {
+    return { success: false, error: 'Geçersiz gelir tipi.' }
+  }
+
+  // UUID format validation
+  const uuidRegex = /^[0-9a-f-]{36}$/i
+  if (!uuidRegex.test(clusterId) || !uuidRegex.test(projectId)) {
+    return { success: false, error: 'Geçersiz ID formatı.' }
+  }
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Oturum bulunamadı.' }
+
+  // Ownership doğrula — T-17-01 (Tampering: başka projenin cluster'ına yazma)
+  const { data: cluster } = await supabase
+    .from('keyword_clusters')
+    .select('id')
+    .eq('id', clusterId)
+    .eq('project_id', projectId)
+    .eq('user_id', user.id)
+    .single()
+  if (!cluster) return { success: false, error: 'Küme bulunamadı.' }
+
+  const { error } = await supabase
+    .from('keyword_clusters')
+    .update({ revenue_type: revenueType })
+    .eq('id', clusterId)
+    .eq('user_id', user.id)
+
+  if (error) return { success: false, error: 'Güncelleme başarısız.' }
+
+  revalidatePath(`/projeler/${projectId}/keyword-stratejisi`)
+  return { success: true }
+}
