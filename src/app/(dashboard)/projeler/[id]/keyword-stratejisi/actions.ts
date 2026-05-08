@@ -166,29 +166,35 @@ export async function deleteKeyword(
   if (error) return { success: false, error: 'Keyword silinemedi.' }
 
   // Phase 17: Keyword silindi ama cluster hâlâ varsa niche skorunu güncelle
+  // WR-03: count bir kez sorgulanır, hem niche-score hem cluster-silme kararında reuse edilir
   if (kw.cluster_id) {
     const { count: remaining } = await supabase
       .from('keywords')
       .select('id', { count: 'exact', head: true })
       .eq('cluster_id', kw.cluster_id)
-    if ((remaining ?? 0) > 0) {
-      const { data: allClusters } = await supabase
-        .from('keyword_clusters')
-        .select('id, total_volume')
+    const remainingCount = remaining ?? 0
+
+    if (remainingCount > 0) {
+      // WR-02: allClusterVolumes, total_volume snapshot'ına değil live keyword volume toplamlarına dayanır
+      const { data: allKwLive } = await supabase
+        .from('keywords')
+        .select('cluster_id, volume, cpc')
         .eq('project_id', projectId)
         .eq('user_id', user.id)
-      const allClusterVolumes = (allClusters ?? []).map((c) => c.total_volume ?? 0)
-      await recalculateClusterNicheScore(kw.cluster_id, user.id, supabase, allClusterVolumes)
-    }
-  }
+      // Cluster başına volume toplamı
+      const volumeByCluster = new Map<string, number>()
+      for (const row of allKwLive ?? []) {
+        if (!row.cluster_id) continue
+        volumeByCluster.set(row.cluster_id, (volumeByCluster.get(row.cluster_id) ?? 0) + (row.volume ?? 0))
+      }
+      const allClusterVolumes = Array.from(volumeByCluster.values())
 
-  // Kümedeki son keyword ise kümeyi de sil (D-12 interaction contract)
-  if (kw.cluster_id) {
-    const { count } = await supabase
-      .from('keywords')
-      .select('id', { count: 'exact', head: true })
-      .eq('cluster_id', kw.cluster_id)
-    if ((count ?? 0) === 0) {
+      // WR-01: maxCpc proje genelinden hesaplanmalı
+      const maxProjectCpcDelete = Math.max(...(allKwLive ?? []).map((k) => k.cpc ?? 0), 0)
+
+      await recalculateClusterNicheScore(kw.cluster_id, user.id, supabase, allClusterVolumes, maxProjectCpcDelete)
+    } else {
+      // Kümedeki son keyword silindi — kümeyi de kaldır (D-12 interaction contract)
       await supabase
         .from('keyword_clusters')
         .delete()
@@ -310,9 +316,17 @@ export async function clusterAndScoreKeywords(
     .eq('user_id', user.id)
   const allClusterVolumes = (allClusterRows ?? []).map((c) => c.total_volume ?? 0)
 
+  // WR-01: maxCpc proje genelinden hesaplanmalı, cluster'a özel değil
+  const { data: allKwForCpc } = await supabase
+    .from('keywords')
+    .select('cpc')
+    .eq('project_id', projectId)
+    .eq('user_id', user.id)
+  const maxProjectCpc = Math.max(...(allKwForCpc ?? []).map((k) => k.cpc ?? 0), 0)
+
   await Promise.all(
     (allClusterRows ?? []).map((cluster) =>
-      recalculateClusterNicheScore(cluster.id, user.id, supabase, allClusterVolumes)
+      recalculateClusterNicheScore(cluster.id, user.id, supabase, allClusterVolumes, maxProjectCpc)
     )
   )
 
@@ -385,12 +399,20 @@ export async function moveKeywordToCluster(
     .eq('user_id', user.id)
   const allClusterVolumes = (allClusters ?? []).map((c) => c.total_volume ?? 0)
 
+  // WR-01: maxCpc proje genelinden hesaplanmalı
+  const { data: allKwForCpcMove } = await supabase
+    .from('keywords')
+    .select('cpc')
+    .eq('project_id', projectId)
+    .eq('user_id', user.id)
+  const maxProjectCpcMove = Math.max(...(allKwForCpcMove ?? []).map((k) => k.cpc ?? 0), 0)
+
   // Eski cluster (keyword çıktı — Pitfall 2)
   if (kw.cluster_id && kw.cluster_id !== newClusterId) {
-    await recalculateClusterNicheScore(kw.cluster_id, user.id, supabase, allClusterVolumes)
+    await recalculateClusterNicheScore(kw.cluster_id, user.id, supabase, allClusterVolumes, maxProjectCpcMove)
   }
   // Yeni cluster
-  await recalculateClusterNicheScore(newClusterId, user.id, supabase, allClusterVolumes)
+  await recalculateClusterNicheScore(newClusterId, user.id, supabase, allClusterVolumes, maxProjectCpcMove)
 
   revalidatePath(`/projeler/${projectId}/keyword-stratejisi`)
   return { success: true }
@@ -447,7 +469,8 @@ async function recalculateClusterNicheScore(
   clusterId: string,
   userId: string,
   supabase: Awaited<ReturnType<typeof createClient>>,
-  allClusterVolumes: number[]
+  allClusterVolumes: number[],
+  maxProjectCpc: number
 ): Promise<void> {
   const { data: keywords } = await supabase
     .from('keywords')
@@ -458,7 +481,7 @@ async function recalculateClusterNicheScore(
   if (!keywords || keywords.length === 0) return
 
   const maxClusterVolume = Math.max(...allClusterVolumes, 0)
-  const maxCpc = Math.max(...keywords.map((k) => k.cpc ?? 0), 0)
+  const maxCpc = maxProjectCpc
 
   const nicheScore = calculateNicheScore(keywords, { maxClusterVolume, maxCpc })
   const revenueType = classifyRevenueType(keywords)
