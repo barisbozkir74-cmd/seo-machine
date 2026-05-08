@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Separator } from '@/components/ui/separator'
 import { Loader2 } from 'lucide-react'
-import { toast } from 'sonner'
 import Link from 'next/link'
 import {
   AlertDialog,
@@ -123,7 +122,7 @@ function EditableField({
           {error && <p className="text-xs text-destructive">{error}</p>}
           <div className="flex items-center gap-2">
             {field.critical ? (
-              <AlertDialog open={pendingConfirm} onOpenChange={(open) => { if (!open) onCancelConfirm() }}>
+              <AlertDialog open={pendingConfirm} onOpenChange={(open: boolean) => { if (!open) onCancelConfirm() }}>
                 <AlertDialogTrigger
                   render={
                     <Button size="sm" disabled={saving} className="h-7 text-xs" onClick={onSaveClick} />
@@ -182,6 +181,7 @@ export function ProjectInfoSection({ projectId, userId, hasResearch: initialHasR
   const [error, setError] = useState<string | null>(null)
   const [isResearching, setIsResearching] = useState(false)
   const [researchDone, setResearchDone] = useState(initialHasResearch)
+  const [launchError, setLaunchError] = useState<string | null>(null)
 
   const startEdit = (key: string) => {
     setEditingField(key)
@@ -256,6 +256,7 @@ export function ProjectInfoSection({ projectId, userId, hasResearch: initialHasR
   const handleLaunch = async () => {
     if (!canLaunch || isResearching) return
     setIsResearching(true)
+    setLaunchError(null)
     try {
       const res = await fetch('/api/research/trigger', {
         method: 'POST',
@@ -265,16 +266,15 @@ export function ProjectInfoSection({ projectId, userId, hasResearch: initialHasR
       const json = await res.json()
       if (!res.ok) {
         if (json.code === 'SERPAPI_NOT_CONFIGURED') {
-          toast.error('SerpAPI anahtarı yapılandırılmamış. Lütfen sistem ayarlarını kontrol edin.')
+          setLaunchError('SerpAPI anahtarı yapılandırılmamış. Lütfen sistem ayarlarını kontrol edin.')
         } else {
-          toast.error('Araştırma başarısız oldu. Lütfen tekrar deneyin.')
+          setLaunchError('Araştırma başarısız oldu. Lütfen tekrar deneyin.')
         }
         return
       }
       setResearchDone(true)
-      toast.success('Araştırma tamamlandı. Araştırma sayfasında sonuçları görebilirsiniz.')
     } catch {
-      toast.error('Araştırma başarısız oldu. Lütfen tekrar deneyin.')
+      setLaunchError('Araştırma başarısız oldu. Lütfen tekrar deneyin.')
     } finally {
       setIsResearching(false)
     }
@@ -351,6 +351,11 @@ export function ProjectInfoSection({ projectId, userId, hasResearch: initialHasR
           {!canLaunch && missingFields.length > 0 && (
             <p className="text-xs text-muted-foreground mt-1">
               Eksik: {missingFields.join(', ')}
+            </p>
+          )}
+          {launchError && (
+            <p role="alert" className="text-xs text-destructive mt-1">
+              {launchError}
             </p>
           )}
         </div>
