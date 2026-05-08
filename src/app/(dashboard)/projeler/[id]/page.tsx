@@ -31,6 +31,15 @@ export default async function ProjeDetayPage({
 
   if (!project) notFound()
 
+  // Araştırma tamamlanmış mı? research_reports tablosunda en az 1 row varsa tamamlanmış
+  const { data: researchCheck } = await supabase
+    .from('research_reports')
+    .select('section')
+    .eq('project_id', id)
+    .eq('user_id', user.id)
+    .limit(1)
+  const hasResearch = (researchCheck?.length ?? 0) > 0
+
   // WordPress bağlantı durumu — Vault'tan SSR kontrolü
   const isWpConfigured = await hasWordPressCredentials(id)
 
@@ -67,6 +76,8 @@ export default async function ProjeDetayPage({
           <h2 className="text-base font-semibold mb-6">Proje Bilgileri</h2>
           <ProjectInfoSection
             projectId={project.id}
+            userId={user.id}
+            hasResearch={hasResearch}
             initialData={{
               name: project.name,
               domain: project.domain,
