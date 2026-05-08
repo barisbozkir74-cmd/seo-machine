@@ -57,9 +57,11 @@ Existing codebase scale (extracted from `arastirma/page.tsx`, `ProjectInfoSectio
 | Body | 14px (text-sm) | 400 (normal) | 1.5 |
 | Label / Field label | 12px (text-xs) | 400 (normal) | relaxed |
 | Heading | 20px (text-xl) | 600 (semibold) | 1.2 |
-| Button text | 12px (text-xs) | 500 (medium) | relaxed |
+| Button text | 12px (text-xs) | 400 (normal) | relaxed |
 
 Phase 18 adds no new type roles. All new UI elements use the existing 4-size scale above.
+
+Font weight scale: **2 weights only** — 400 (body, label, button) + 600 (heading). No 500 (medium) weight used.
 
 Validation hint text: 12px (text-xs), color `text-muted-foreground` when informational, `text-destructive` when blocking.
 
@@ -122,8 +124,8 @@ Placement: Bottom of `ProjectInfoSection`, below all editable fields. Separated 
 Eksik: {comma-separated list of missing field labels}
 ```
 
-- Typography: 12px (text-xs), color `text-muted-foreground`
-- Placement: Directly below the button, `mt-1.5`
+- Typography: 12px (text-xs), weight 400 (normal), color `text-muted-foreground`
+- Placement: Directly below the button, `mt-2` (8px)
 - Field label mapping: `sector` → "sektör", `initial_competitors` → "rakipler", `target_keywords` → "hedef kelimeler"
 - Example: "Eksik: sektör, rakipler"
 - Do NOT show the hint when button is enabled.
@@ -133,7 +135,7 @@ Eksik: {comma-separated list of missing field labels}
 ```
 [rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3]
   Araştırma tamamlandı  ✓
-  [text-xs text-muted-foreground mt-0.5]
+  [text-xs text-muted-foreground mt-2]
   Sonuçları görüntülemek için → Araştırma sayfasına git  [link]
 ```
 
@@ -214,15 +216,13 @@ No destructive actions in Phase 18. "Yeniden Araştır" overwrites existing rese
   ↓
 <Separator className="my-4" />
 [launch gate block]
-  <Button variant="default" size="default" className="w-full h-9"> Projeyi Başlat </Button>
-  <p className="text-xs text-muted-foreground mt-1.5"> Eksik: sektör, rakipler </p>  {/* only when disabled */}
+  <Button variant="default" size="default" className="w-full"> Projeyi Başlat </Button>
+  <p className="text-xs text-muted-foreground mt-2"> Eksik: sektör, rakipler </p>  {/* only when disabled */}
 ```
 
 - Button is full-width (`w-full`) within the `ProjectInfoSection` container.
-- Use `size="default"` (h-7 per button.tsx) — override height to `h-9` via className for slightly more presence as a primary action.
-- Actually: re-check existing `StageTransition` uses `h-11`; for `ProjectInfoSection` which is a compact inline section, use `size="default"` with no height override. Keep it compact.
-
-**Correction (canonical):** Use `<Button variant="default" size="default" className="w-full">` with no height override. The default height (h-7, 28px) is consistent with other buttons in this component.
+- Use `size="default"` with no height override. The default height is consistent with other buttons in this component.
+- Button text uses `font-normal` (weight 400) — consistent with the 2-weight scale.
 
 ### /arastirma Page — Header Addition
 
