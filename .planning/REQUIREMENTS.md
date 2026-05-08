@@ -1,0 +1,71 @@
+# Requirements — v4.0 AI-Powered Project Intelligence Layer
+
+## Milestone Goal
+
+Proje bilgilerinden otomatik başlayan, sektör araştırması yapan ve keyword stratejisi kuran AI-driven akış — site blueprint'e kadar uçtan uca.
+
+---
+
+## v4.0 Requirements
+
+### Proje Başlatma Gate
+
+- [ ] **PROJ-06**: Kullanıcı, tüm zorunlu proje alanları doldurulduğunda "Projeyi Başlat" butonunu aktif görür
+- [ ] **PROJ-07**: "Projeyi Başlat" tetiklenince sektör araştırması otomatik başlar (yeni proje + WP import)
+
+### Sektör Araştırması
+
+- [ ] **SRCH-01**: Sistem proje bilgilerindeki sektör + rakipler + ana keywordlerden Google arama sorguları otomatik oluşturur
+- [ ] **SRCH-02**: Arama sonuçları parse edilerek pazar özeti, rakip konumları, sektör açıkları ve fırsatlar raporu üretilir
+- [ ] **SRCH-03**: Kullanıcı araştırma raporunu projeye ait dedicated bölümde görüntüler ve notlar ekleyebilir
+
+### AI Keyword Stratejisi
+
+- [ ] **KWST-01**: Proje rakiplerinin kullandığı keywordler DataForSEO ile otomatik çekilir
+- [ ] **KWST-02**: Ana keywordler + rakip keywordler + ilişkili genişletmelerden birleşik keyword havuzu oluşturulur
+- [ ] **KWST-03**: AI keyword havuzunu gruplar ve kullanıcıya gruplama önerileri sunar
+- [ ] **KWST-04**: Kullanıcı önerilen grupları kabul/red/düzenleyebilir; onaylananlar keyword tablosuna işlenir
+- [ ] **KWST-05**: Mevcut CSV import akışı korunur ve AI keyword akışıyla birlikte çalışır
+
+### Site Blueprint Gate
+
+- [ ] **BLUE-06**: Onaylanan keyword stratejisinden "Sistemi Kur" tetiklenince site blueprint otomatik oluşturulur
+
+### Carry-overlar (v3.0'dan devir)
+
+- [ ] **MON-03**: Monitoring dashboard + imported pages entegrasyonu
+- [ ] **PAGE-05**: Revision history — her sayfa paketinin geçmiş versiyonları
+
+---
+
+## Future Requirements (Deferred)
+
+- AI chat copilot panel — her sayfada bağlam-duyarlı AI asistan (v5.0+)
+- Multi-tenant SaaS dönüşümü — çok ajans desteği (kapsam dışı, Out of Scope)
+
+---
+
+## Out of Scope
+
+- **Chatbot / serbest konuşma arayüzü** — Bu milestone'da yok; structured AI workflow tercih edildi
+- **Multi-tenant SaaS** — Başlangıçta tek ajans kullanımı
+
+---
+
+## Traceability
+
+| REQ-ID | Phase | Status |
+|--------|-------|--------|
+| PROJ-06 | TBD | Pending |
+| PROJ-07 | TBD | Pending |
+| SRCH-01 | TBD | Pending |
+| SRCH-02 | TBD | Pending |
+| SRCH-03 | TBD | Pending |
+| KWST-01 | TBD | Pending |
+| KWST-02 | TBD | Pending |
+| KWST-03 | TBD | Pending |
+| KWST-04 | TBD | Pending |
+| KWST-05 | TBD | Pending |
+| BLUE-06 | TBD | Pending |
+| MON-03 | TBD | Pending |
+| PAGE-05 | TBD | Pending |
