@@ -48,6 +48,8 @@ type ClusterWithKeywords = {
   cluster_name: string
   intent: string | null
   primary_keyword_id: string | null
+  opportunity_score: number | null  // Phase 17
+  revenue_type: string | null       // Phase 17
   keywords: KeywordRow[]
 }
 
@@ -56,10 +58,10 @@ export default async function KeywordStratejisiPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ view?: string }>
+  searchParams: Promise<{ view?: string; sort?: string; dir?: string }>
 }) {
   const { id } = await params
-  const { view } = await searchParams
+  const { view, sort, dir } = await searchParams
   const isClusterView = view === 'cluster'
 
   const supabase = await createClient()
@@ -85,13 +87,17 @@ export default async function KeywordStratejisiPage({
 
   const keywords: KeywordRow[] = (keywordsRaw ?? []) as KeywordRow[]
 
-  // Cluster adları + küme bilgisi
+  // Sıralama mantığı (D-04: niche skoruna göre sıralanabilir) — T-17-05: whitelist ile SQL injection önlenir
+  const sortColumn = sort === 'niche_score' ? 'opportunity_score' : 'total_volume'
+  const ascending = dir === 'asc'
+
+  // Cluster adları + küme bilgisi (opportunity_score, revenue_type Phase 17'de eklendi)
   const { data: clustersRaw } = await supabase
     .from('keyword_clusters')
-    .select('id, cluster_name, intent, primary_keyword_id')
+    .select('id, cluster_name, intent, primary_keyword_id, opportunity_score, revenue_type')
     .eq('project_id', id)
     .eq('user_id', user.id)
-    .order('total_volume', { ascending: false, nullsFirst: false })
+    .order(sortColumn, { ascending, nullsFirst: false })
 
   const clusters = clustersRaw ?? []
 
@@ -198,11 +204,37 @@ export default async function KeywordStratejisiPage({
               </div>
             ) : isClusterView ? (
               /* Küme Görünümü */
-              <ClusterPanel
-                clusters={clustersWithKeywords}
-                allClusters={allClusters}
-                projectId={id}
-              />
+              <>
+                {clustersWithKeywords.length > 0 && (
+                  <div className="flex items-center justify-end gap-3 px-3 pb-1">
+                    <span className="text-xs text-muted-foreground w-28 text-left">Revenue</span>
+                    {/* Niche Skoru sıralama başlığı — URL searchParam ile SSR sıralama */}
+                    {(() => {
+                      const isActive = sort === 'niche_score'
+                      const nextDir = isActive && dir === 'desc' ? 'asc'
+                        : isActive && dir === 'asc' ? undefined
+                        : 'desc'
+                      const href = nextDir
+                        ? `/projeler/${id}/keyword-stratejisi?view=cluster&sort=niche_score&dir=${nextDir}`
+                        : `/projeler/${id}/keyword-stratejisi?view=cluster`
+                      return (
+                        <Link
+                          href={href}
+                          className="text-xs text-muted-foreground hover:text-foreground w-24 text-right transition-colors"
+                        >
+                          Niche Skoru{isActive && dir === 'desc' ? ' ↓' : isActive && dir === 'asc' ? ' ↑' : ''}
+                        </Link>
+                      )
+                    })()}
+                    <div className="w-8" />
+                  </div>
+                )}
+                <ClusterPanel
+                  clusters={clustersWithKeywords}
+                  allClusters={allClusters}
+                  projectId={id}
+                />
+              </>
             ) : (
               /* Düz Liste — 8 sütun (Skor eklendi) */
               <div className="rounded-md border border-border overflow-hidden">
