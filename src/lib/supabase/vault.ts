@@ -114,3 +114,22 @@ export async function hasWordPressCredentials(projectId: string): Promise<boolea
   const creds = await getWordPressCredentials(projectId)
   return creds !== null
 }
+
+// SerpAPI anahtarını döner — env var önce, vault fallback
+// SECURITY: key asla loglanmaz; dosya import 'server-only' ile korunur (T-18-01, T-18-02)
+export async function getSerpApiKey(): Promise<string> {
+  if (process.env.SERPAPI_KEY) return process.env.SERPAPI_KEY
+
+  const { data, error } = await serviceClient
+    .from('vault.decrypted_secrets')
+    .select('name, decrypted_secret')
+    .in('name', ['serpapi_key'])
+
+  if (error || !data?.length) {
+    throw new Error('SERPAPI_KEY env var olarak .env.local dosyasına ekleyin.')
+  }
+
+  const row = data.find((s: { name: string; decrypted_secret: string }) => s.name === 'serpapi_key')
+  if (!row) throw new Error('SerpAPI key bulunamadı.')
+  return row.decrypted_secret
+}
