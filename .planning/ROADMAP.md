@@ -67,7 +67,11 @@ Archive: `.planning/milestones/v3.0-ROADMAP.md`
   3. Sistem, proje bilgilerindeki sektör + rakipler + ana keywordlerden otomatik arama sorguları üretir
   4. Araştırma tamamlandığında pazar özeti, rakip konumları, sektör açıkları ve fırsatlar içeren bir rapor oluşur
   5. Kullanıcı araştırma raporunu projeye ait dedicated bölümde görüntüler ve notlar ekleyebilir
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 18-01-PLAN.md — vault.ts getSerpApiKey() + src/lib/research/sector-research.ts servis katmanı
+- [ ] 18-02-PLAN.md — POST /api/research/trigger API route (IDOR korumalı)
+- [ ] 18-03-PLAN.md — ProjectInfoSection launch gate UI + ResearchRerunButton + arastirma/page.tsx güncellemesi
 **UI hint**: yes
 
 ### Phase 19: AI Keyword Data Acquisition
@@ -137,7 +141,7 @@ Archive: `.planning/milestones/v3.0-ROADMAP.md`
 | 15.5. WP Site Import Engine | v3.0 | 8/8 | Complete | 2026-05-02 |
 | 16. Recovery Engine | v3.0 | 6/6 | Complete | 2026-05-06 |
 | 17. Keyword Intelligence | v3.0 | 3/3 | Complete | 2026-05-08 |
-| 18. Project Launch Gate & Sector Research | v4.0 | 0/TBD | Not started | - |
+| 18. Project Launch Gate & Sector Research | v4.0 | 0/3 | Not started | - |
 | 19. AI Keyword Data Acquisition | v4.0 | 0/TBD | Not started | - |
 | 20. AI Keyword Clustering & Approval | v4.0 | 0/TBD | Not started | - |
 | 21. Site Blueprint Auto-Generation Gate | v4.0 | 0/TBD | Not started | - |
