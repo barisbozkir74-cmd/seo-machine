@@ -19,14 +19,17 @@ Her website projesi için sıfırdan açılıp kurgulanan, tüm kararları kayde
 - Recovery Engine — n8n webhook daily decay tespiti + recovery task açma *(Phase 16)*
 - Keyword Intelligence — Niche score + cluster-to-revenue sınıflandırması *(Phase 17)*
 
-## Current Milestone: v4.0 (Planning)
+## Current Milestone: v4.0 — AI-Powered Project Intelligence Layer
 
-**Goal:** Sonraki milestone `/gsd-new-milestone` ile tanımlanacak.
+**Goal:** Proje bilgilerinden otomatik başlayan, sektör araştırması yapan ve keyword stratejisi kuran AI-driven akış — site blueprint'e kadar uçtan uca.
 
-**Known carry-overs from v3.0:**
-- MON-03: Monitoring dashboard + imported pages entegrasyonu
-- PAGE-05: Revision history
-- 30 deferred audit items (UAT, verification, context questions)
+**Target features:**
+- "Projeyi Başlat" gate — Tüm bilgiler eksiksiz girildikten sonra aktif; araştırmayı otomatik tetikler (yeni proje + WP import)
+- Otomatik Sektör Araştırması — Google arama tabanlı; pazar büyüklüğü, rakip konumları, sektör açıkları, hazır rapor
+- AI Keyword Stratejisi — CSV import korunur + DataForSEO rakip keyword genişletme + AI gruplama önerileri + kullanıcı onay akışı
+- "Sistemi Kur" gate — Onaylanan keyword stratejisinden site blueprint otomatik oluşturulması
+- MON-03: Monitoring dashboard + imported pages entegrasyonu (carry-over)
+- PAGE-05: Revision history (carry-over)
 
 ## Requirements
 
