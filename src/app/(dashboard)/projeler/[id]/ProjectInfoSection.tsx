@@ -4,6 +4,10 @@ import { useState, useRef, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { Separator } from '@/components/ui/separator'
+import { Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
+import Link from 'next/link'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -48,6 +52,8 @@ type ProjectData = Record<string, string | null>
 
 type Props = {
   projectId: string
+  userId: string
+  hasResearch: boolean
   initialData: ProjectData
 }
 
@@ -167,13 +173,15 @@ function EditableField({
   )
 }
 
-export function ProjectInfoSection({ projectId, initialData }: Props) {
+export function ProjectInfoSection({ projectId, userId, hasResearch: initialHasResearch, initialData }: Props) {
   const [data, setData] = useState<ProjectData>(initialData)
   const [editingField, setEditingField] = useState<string | null>(null)
   const [editValue, setEditValue] = useState('')
   const [pendingField, setPendingField] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isResearching, setIsResearching] = useState(false)
+  const [researchDone, setResearchDone] = useState(initialHasResearch)
 
   const startEdit = (key: string) => {
     setEditingField(key)
@@ -232,43 +240,121 @@ export function ProjectInfoSection({ projectId, initialData }: Props) {
     }
   }
 
+  // Gate logic — D-07 per CONTEXT.md
+  const canLaunch = Boolean(
+    data['sector']?.trim() &&
+    data['initial_competitors']?.trim() &&
+    data['target_keywords']?.trim()
+  )
+
+  const missingFields = [
+    !data['sector']?.trim() && 'sektör',
+    !data['initial_competitors']?.trim() && 'rakipler',
+    !data['target_keywords']?.trim() && 'hedef kelimeler',
+  ].filter(Boolean) as string[]
+
+  const handleLaunch = async () => {
+    if (!canLaunch || isResearching) return
+    setIsResearching(true)
+    try {
+      const res = await fetch('/api/research/trigger', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ projectId, userId }),
+      })
+      const json = await res.json()
+      if (!res.ok) {
+        if (json.code === 'SERPAPI_NOT_CONFIGURED') {
+          toast.error('SerpAPI anahtarı yapılandırılmamış. Lütfen sistem ayarlarını kontrol edin.')
+        } else {
+          toast.error('Araştırma başarısız oldu. Lütfen tekrar deneyin.')
+        }
+        return
+      }
+      setResearchDone(true)
+      toast.success('Araştırma tamamlandı. Araştırma sayfasında sonuçları görebilirsiniz.')
+    } catch {
+      toast.error('Araştırma başarısız oldu. Lütfen tekrar deneyin.')
+    } finally {
+      setIsResearching(false)
+    }
+  }
+
   return (
-    <div className="space-y-1">
-      {rows.map((row, ri) => (
-        <div
-          key={ri}
-          className={row.length === 2 ? 'grid grid-cols-2 gap-x-2' : 'grid grid-cols-1'}
-        >
-          {row.map((field) =>
-            field.custom === 'competitors' ? (
-              <div key={field.key} className="px-3 py-2.5">
-                <CompetitorsTagInput projectId={projectId} initialValue={data[field.key] ?? null} />
-              </div>
-            ) : field.custom === 'keywords' ? (
-              <div key={field.key} className="px-3 py-2.5">
-                <KeywordsTagInput projectId={projectId} initialValue={data[field.key] ?? null} />
-              </div>
+    <div>
+      <div className="space-y-1">
+        {rows.map((row, ri) => (
+          <div
+            key={ri}
+            className={row.length === 2 ? 'grid grid-cols-2 gap-x-2' : 'grid grid-cols-1'}
+          >
+            {row.map((field) =>
+              field.custom === 'competitors' ? (
+                <div key={field.key} className="px-3 py-2.5">
+                  <CompetitorsTagInput projectId={projectId} initialValue={data[field.key] ?? null} />
+                </div>
+              ) : field.custom === 'keywords' ? (
+                <div key={field.key} className="px-3 py-2.5">
+                  <KeywordsTagInput projectId={projectId} initialValue={data[field.key] ?? null} />
+                </div>
+              ) : (
+                <EditableField
+                  key={field.key}
+                  field={field}
+                  value={data[field.key] ?? null}
+                  isEditing={editingField === field.key}
+                  editValue={editingField === field.key ? editValue : ''}
+                  saving={saving && editingField === field.key}
+                  error={editingField === field.key ? error : null}
+                  onStartEdit={() => startEdit(field.key)}
+                  onEditChange={setEditValue}
+                  onSaveClick={() => handleSaveClick(field)}
+                  onCancel={cancelEdit}
+                  pendingConfirm={pendingField === field.key}
+                  onConfirm={() => save(field.key, editValue)}
+                  onCancelConfirm={() => setPendingField(null)}
+                />
+              )
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Launch Gate — D-07 per CONTEXT.md */}
+      <Separator className="my-4" />
+      {researchDone ? (
+        <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3">
+          <p className="text-sm text-emerald-400">Araştırma tamamlandı ✓</p>
+          <Link
+            href={`/projeler/${projectId}/arastirma`}
+            className="text-xs text-muted-foreground mt-2 block hover:text-foreground"
+          >
+            Araştırma sayfasına git →
+          </Link>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-1">
+          <Button
+            onClick={handleLaunch}
+            disabled={!canLaunch || isResearching}
+            className="w-full"
+          >
+            {isResearching ? (
+              <span className="flex items-center gap-2">
+                <Loader2 className="animate-spin h-4 w-4" />
+                Araştırılıyor...
+              </span>
             ) : (
-              <EditableField
-                key={field.key}
-                field={field}
-                value={data[field.key] ?? null}
-                isEditing={editingField === field.key}
-                editValue={editingField === field.key ? editValue : ''}
-                saving={saving && editingField === field.key}
-                error={editingField === field.key ? error : null}
-                onStartEdit={() => startEdit(field.key)}
-                onEditChange={setEditValue}
-                onSaveClick={() => handleSaveClick(field)}
-                onCancel={cancelEdit}
-                pendingConfirm={pendingField === field.key}
-                onConfirm={() => save(field.key, editValue)}
-                onCancelConfirm={() => setPendingField(null)}
-              />
-            )
+              'Projeyi Başlat'
+            )}
+          </Button>
+          {!canLaunch && missingFields.length > 0 && (
+            <p className="text-xs text-muted-foreground mt-1">
+              Eksik: {missingFields.join(', ')}
+            </p>
           )}
         </div>
-      ))}
+      )}
     </div>
   )
 }
