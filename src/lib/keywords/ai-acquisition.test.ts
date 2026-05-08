@@ -114,7 +114,7 @@ describe('ai-acquisition (Plan 03 implementation)', () => {
     })
     vi.mocked(createClient).mockReturnValue({ from } as unknown as ReturnType<typeof createClient>)
     vi.mocked(fetchRankedKeywords).mockResolvedValue([
-      { keyword: 'test keyword', keyword_data: { keyword_info: { search_volume: 100, cpc: 0.5 } } },
+      { keyword: 'test keyword', location_code: 2792, keyword_data: { keyword_info: { search_volume: 100, cpc: 0.5 } } },
     ])
 
     await runKeywordAcquisition({
@@ -162,7 +162,7 @@ describe('ai-acquisition (Plan 03 implementation)', () => {
     })
     vi.mocked(createClient).mockReturnValue({ from } as unknown as ReturnType<typeof createClient>)
     vi.mocked(fetchRankedKeywords).mockResolvedValue([
-      { keyword: 'competitor kw', keyword_data: { keyword_info: { search_volume: 100 } } },
+      { keyword: 'competitor kw', location_code: 2792, keyword_data: { keyword_info: { search_volume: 100 } } },
     ])
     vi.mocked(fetchRelatedKeywords).mockRejectedValue(new Error('API timeout'))
 
@@ -185,7 +185,7 @@ describe('ai-acquisition (Plan 03 implementation)', () => {
     })
     vi.mocked(createClient).mockReturnValue({ from } as unknown as ReturnType<typeof createClient>)
     vi.mocked(fetchRankedKeywords).mockResolvedValue([
-      { keyword: 'test kw', keyword_data: { keyword_info: { search_volume: 200 } } },
+      { keyword: 'test kw', location_code: 2792, keyword_data: { keyword_info: { search_volume: 200 } } },
     ])
     vi.mocked(fetchKeywordData).mockRejectedValue(new Error('Enrichment API error'))
 
