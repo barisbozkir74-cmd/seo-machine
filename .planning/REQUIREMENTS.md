@@ -10,14 +10,14 @@ Proje bilgilerinden otomatik başlayan, sektör araştırması yapan ve keyword 
 
 ### Proje Başlatma Gate
 
-- [ ] **PROJ-06**: Kullanıcı, tüm zorunlu proje alanları doldurulduğunda "Projeyi Başlat" butonunu aktif görür
-- [ ] **PROJ-07**: "Projeyi Başlat" tetiklenince sektör araştırması otomatik başlar (yeni proje + WP import)
+- [x] **PROJ-06**: Kullanıcı, tüm zorunlu proje alanları doldurulduğunda "Projeyi Başlat" butonunu aktif görür
+- [x] **PROJ-07**: "Projeyi Başlat" tetiklenince sektör araştırması otomatik başlar (yeni proje + WP import)
 
 ### Sektör Araştırması
 
-- [ ] **SRCH-01**: Sistem proje bilgilerindeki sektör + rakipler + ana keywordlerden Google arama sorguları otomatik oluşturur
-- [ ] **SRCH-02**: Arama sonuçları parse edilerek pazar özeti, rakip konumları, sektör açıkları ve fırsatlar raporu üretilir
-- [ ] **SRCH-03**: Kullanıcı araştırma raporunu projeye ait dedicated bölümde görüntüler ve notlar ekleyebilir
+- [x] **SRCH-01**: Sistem proje bilgilerindeki sektör + rakipler + ana keywordlerden Google arama sorguları otomatik oluşturur
+- [x] **SRCH-02**: Arama sonuçları parse edilerek pazar özeti, rakip konumları, sektör açıkları ve fırsatlar raporu üretilir
+- [x] **SRCH-03**: Kullanıcı araştırma raporunu projeye ait dedicated bölümde görüntüler ve notlar ekleyebilir
 
 ### AI Keyword Stratejisi
 
@@ -56,11 +56,11 @@ Proje bilgilerinden otomatik başlayan, sektör araştırması yapan ve keyword 
 
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
-| PROJ-06 | Phase 18 | Pending |
-| PROJ-07 | Phase 18 | Pending |
-| SRCH-01 | Phase 18 | Pending |
-| SRCH-02 | Phase 18 | Pending |
-| SRCH-03 | Phase 18 | Pending |
+| PROJ-06 | Phase 18 | Complete |
+| PROJ-07 | Phase 18 | Complete |
+| SRCH-01 | Phase 18 | Complete |
+| SRCH-02 | Phase 18 | Complete |
+| SRCH-03 | Phase 18 | Complete |
 | KWST-01 | Phase 19 | Pending |
 | KWST-02 | Phase 19 | Pending |
 | KWST-05 | Phase 19 | Pending |

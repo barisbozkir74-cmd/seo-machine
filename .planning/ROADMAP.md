@@ -49,7 +49,7 @@ Archive: `.planning/milestones/v3.0-ROADMAP.md`
 
 **Milestone Goal:** Proje bilgilerinden otomatik başlayan, sektör araştırması yapan ve keyword stratejisi kuran AI-driven akış — site blueprint'e kadar uçtan uca.
 
-- [ ] **Phase 18: Project Launch Gate & Sector Research** - Proje bilgileri tamamlanınca "Projeyi Başlat" aktifleşir ve sektör araştırmasını otomatik tetikler
+- [x] **Phase 18: Project Launch Gate & Sector Research** - Proje bilgileri tamamlanınca "Projeyi Başlat" aktifleşir ve sektör araştırmasını otomatik tetikler (completed 2026-05-08)
 - [ ] **Phase 19: AI Keyword Data Acquisition** - DataForSEO ile rakip keywordleri çekme, CSV akışıyla birleştirme, birleşik keyword havuzu oluşturma
 - [ ] **Phase 20: AI Keyword Clustering & Approval** - Keyword havuzunu AI ile gruplama, kullanıcı onay/red/düzenleme akışı, onaylananları sisteme işleme
 - [ ] **Phase 21: Site Blueprint Auto-Generation Gate** - Onaylanan keyword stratejisinden "Sistemi Kur" tetiklenince site blueprint otomatik oluşturulması
@@ -69,9 +69,9 @@ Archive: `.planning/milestones/v3.0-ROADMAP.md`
   5. Kullanıcı araştırma raporunu projeye ait dedicated bölümde görüntüler ve notlar ekleyebilir
 **Plans**: 3 plans
 Plans:
-- [ ] 18-01-PLAN.md — vault.ts getSerpApiKey() + src/lib/research/sector-research.ts servis katmanı
-- [ ] 18-02-PLAN.md — POST /api/research/trigger API route (IDOR korumalı)
-- [ ] 18-03-PLAN.md — ProjectInfoSection launch gate UI + ResearchRerunButton + arastirma/page.tsx güncellemesi
+- [x] 18-01-PLAN.md — vault.ts getSerpApiKey() + src/lib/research/sector-research.ts servis katmanı
+- [x] 18-02-PLAN.md — POST /api/research/trigger API route (IDOR korumalı)
+- [x] 18-03-PLAN.md — ProjectInfoSection launch gate UI + ResearchRerunButton + arastirma/page.tsx güncellemesi
 **UI hint**: yes
 
 ### Phase 19: AI Keyword Data Acquisition
@@ -141,7 +141,7 @@ Plans:
 | 15.5. WP Site Import Engine | v3.0 | 8/8 | Complete | 2026-05-02 |
 | 16. Recovery Engine | v3.0 | 6/6 | Complete | 2026-05-06 |
 | 17. Keyword Intelligence | v3.0 | 3/3 | Complete | 2026-05-08 |
-| 18. Project Launch Gate & Sector Research | v4.0 | 0/3 | Not started | - |
+| 18. Project Launch Gate & Sector Research | v4.0 | 3/3 | Complete    | 2026-05-08 |
 | 19. AI Keyword Data Acquisition | v4.0 | 0/TBD | Not started | - |
 | 20. AI Keyword Clustering & Approval | v4.0 | 0/TBD | Not started | - |
 | 21. Site Blueprint Auto-Generation Gate | v4.0 | 0/TBD | Not started | - |
