@@ -65,6 +65,6 @@ export async function POST(request: NextRequest) {
         { status: 503 }
       )
     }
-    return NextResponse.json({ error: 'Research pipeline failed' }, { status: 500 })
+    return NextResponse.json({ error: 'Research pipeline failed', detail: message }, { status: 500 })
   }
 }

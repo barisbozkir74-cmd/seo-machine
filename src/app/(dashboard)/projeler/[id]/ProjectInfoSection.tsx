@@ -268,7 +268,7 @@ export function ProjectInfoSection({ projectId, userId, hasResearch: initialHasR
         if (json.code === 'DATAFORSEO_NOT_CONFIGURED') {
           setLaunchError('DataForSEO credentials yapılandırılmamış. Lütfen sistem ayarlarını kontrol edin.')
         } else {
-          setLaunchError('Araştırma başarısız oldu. Lütfen tekrar deneyin.')
+          setLaunchError(`Araştırma başarısız oldu: ${json.detail ?? json.error ?? 'Bilinmeyen hata'}`)
         }
         return
       }
