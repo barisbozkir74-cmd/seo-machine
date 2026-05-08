@@ -56,16 +56,16 @@ Proje bilgilerinden otomatik başlayan, sektör araştırması yapan ve keyword 
 
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
-| PROJ-06 | TBD | Pending |
-| PROJ-07 | TBD | Pending |
-| SRCH-01 | TBD | Pending |
-| SRCH-02 | TBD | Pending |
-| SRCH-03 | TBD | Pending |
-| KWST-01 | TBD | Pending |
-| KWST-02 | TBD | Pending |
-| KWST-03 | TBD | Pending |
-| KWST-04 | TBD | Pending |
-| KWST-05 | TBD | Pending |
-| BLUE-06 | TBD | Pending |
-| MON-03 | TBD | Pending |
-| PAGE-05 | TBD | Pending |
+| PROJ-06 | Phase 18 | Pending |
+| PROJ-07 | Phase 18 | Pending |
+| SRCH-01 | Phase 18 | Pending |
+| SRCH-02 | Phase 18 | Pending |
+| SRCH-03 | Phase 18 | Pending |
+| KWST-01 | Phase 19 | Pending |
+| KWST-02 | Phase 19 | Pending |
+| KWST-05 | Phase 19 | Pending |
+| KWST-03 | Phase 20 | Pending |
+| KWST-04 | Phase 20 | Pending |
+| BLUE-06 | Phase 21 | Pending |
+| MON-03 | Phase 22 | Pending |
+| PAGE-05 | Phase 22 | Pending |

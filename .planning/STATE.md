@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
 milestone: v4.0
-milestone_name: TBD
-status: planning_next_milestone
-stopped_at: v3.0 milestone complete
+milestone_name: AI-Powered Project Intelligence Layer
+status: ready_to_plan
+stopped_at: v4.0 roadmap created — Phase 18 ready to plan
 last_updated: "2026-05-08T00:00:00.000Z"
-last_activity: 2026-05-08 -- v3.0 milestone archived
+last_activity: 2026-05-08 -- v4.0 roadmap created (Phases 18-22)
 progress:
-  total_phases: 17
+  total_phases: 22
   completed_phases: 17
-  total_plans: 69
+  total_plans: TBD
   completed_plans: 69
-  percent: 100
+  percent: in_progress
 ---
 
 # Project State
@@ -21,73 +21,26 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-08)
 
 **Core value:** Her website projesi için sıfırdan açılıp kurgulanan, tüm kararları kaydeden ve stage bazlı ilerleyen tek merkezi proje yönetim sistemi
-**Current focus:** v4.0 planning — run `/gsd-new-milestone` to start
+**Current focus:** v4.0 — Phase 18: Project Launch Gate & Sector Research
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-05-08 — Milestone v4.0 AI-Powered Project Intelligence Layer started
+Phase: 18 of 22 (Project Launch Gate & Sector Research)
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-05-08 — v4.0 roadmap created, Phase 18 ready to plan
 
-Progress: v3.0 COMPLETE — 17/17 phases, 69/69 plans
+Progress: v3.0 COMPLETE — 17/17 phases done. v4.0 starting Phase 18.
 
-## v3.0 Phase Summary — SHIPPED 2026-05-08
+## v4.0 Phase Summary
 
-| Phase | Name | Plans | Status |
-|-------|------|-------|--------|
-| 12 | Content Studio | 5/5 | ✓ Complete |
-| 13 | WordPress Publishing | 5/5 | ✓ Complete |
-| 14 | GSC Integration | 6/6 | ✓ Complete |
-| 15 | Monitoring Dashboard | 2/2 | ✓ Complete |
-| 15.5 | WP Site Import Engine | 8/8 | ✓ Complete |
-| 16 | Recovery Engine | 6/6 | ✓ Complete |
-| 17 | Keyword Intelligence | 3/3 | ✓ Complete |
-
-## Performance Metrics
-
-**Velocity:**
-
-- Total plans completed: 23
-- Average duration: 11 min
-- Total execution time: 0.73 hours
-
-**By Phase:**
-
-| Phase | Plans | Total | Avg/Plan |
-|-------|-------|-------|----------|
-| 01-foundation | 4/4 | 43 min | ~11 min |
-| 01 | 4 | - | - |
-| 2 | 6 | - | - |
-| 09 | 4 | - | - |
-| 15 | 2 | - | - |
-| 17 | 3 | - | - |
-
-**Recent Trend:**
-
-- Last 5 plans: 01-01 (14 min), 01-02 (6 min), 01-03 (8 min), 01-04 (15 min)
-- Trend: stable
-
-*Updated after each plan completion*
-| Phase 02-project-core P02-03 | 12 | 2 tasks | 3 files |
-| Phase 02-project-core P02-04 | 8 | 1 tasks | 1 files |
-| Phase 02-project-core P02-05 | 12 | 2 tasks | 3 files |
-| Phase 02-project-core P02-06 | 8 | 2 tasks | 3 files |
-| Phase 03-rules-engine P01 | 12 | 2 tasks | 3 files |
-| Phase 03-rules-engine P02 | 8 | 2 tasks | 3 files |
-| Phase 03-rules-engine P03 | 10 | 2 tasks | 5 files |
-| Phase 04-competitor-intelligence P04-01 | 3 | 2 tasks | 5 files |
-| Phase 04-competitor-intelligence P04-02 | 2 | 2 tasks | 1 files |
-| Phase 04-competitor-intelligence P04-03 | 5 | 2 tasks | 4 files |
-| Phase 04-competitor-intelligence P04-04 | 12 | 2 tasks | 4 files |
-| Phase 05-keyword-import-enrichment P01 | 2 | 2 tasks | 2 files |
-| Phase 05-keyword-import-enrichment P02 | 5 | 2 tasks | 3 files |
-| Phase 08-page-planner-internal-links P08-01 | 114 | 3 tasks | 5 files |
-| Phase 08-page-planner-internal-links P08-02 | 420 | 2 tasks | 5 files |
-| Phase 09-page-package-generator P09-01 | 8 | 2 tasks | 1 files |
-| Phase 09-page-package-generator P09-02 | 10 | 2 tasks | 2 files |
-| Phase 09-page-package-generator P03 | 7 | 2 tasks | 3 files |
-| Phase 09-page-package-generator P09-04 | 18 | 2 tasks | 2 files |
+| Phase | Name | Requirements | Status |
+|-------|------|--------------|--------|
+| 18 | Project Launch Gate & Sector Research | PROJ-06, PROJ-07, SRCH-01, SRCH-02, SRCH-03 | Not started |
+| 19 | AI Keyword Data Acquisition | KWST-01, KWST-02, KWST-05 | Not started |
+| 20 | AI Keyword Clustering & Approval | KWST-03, KWST-04 | Not started |
+| 21 | Site Blueprint Auto-Generation Gate | BLUE-06 | Not started |
+| 22 | Polish & Carry-overs | MON-03, PAGE-05 | Not started |
 
 ## Accumulated Context
 
@@ -96,89 +49,10 @@ Progress: v3.0 COMPLETE — 17/17 phases, 69/69 plans
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
-- Stack locked: Next.js + Supabase + n8n (Faz 2+) + OpenAI + DataForSEO
-- n8n excluded from Faz 1 scope — Edge Functions sufficient for all Phase 1-8 work
-- Human-directed system: no autonomous actions, all critical steps require user trigger
-- shadcn v4 uses @base-ui/react (not @radix-ui) — form.tsx must be created manually in future plans if needed
-- Tailwind v4 is CSS-first (no tailwind.config.ts) — all theme customization via CSS custom properties in globals.css
-- Dark mode enforced statically via html className="dark" — no theme toggle needed for internal tool
-- Route structure: app/(auth)/ for public auth pages, app/(dashboard)/ for protected pages
-- Supabase client files at src/lib/supabase/ (not root lib/) — @/* alias maps to src/*
-- middleware.ts at project root (not inside src/) — Next.js convention
-- Tables created in dependency order to resolve circular FK (keywords <-> keyword_clusters)
-- rules.project_id nullable: NULL = global rule, non-NULL = project-scoped (supports RULE-03)
-- Performance indexes added for all project_id, user_id FKs per T-02-04 threat model
-- RLS UPDATE policies use both USING and WITH CHECK — prevents user_id tampering (T-03-04)
-- lib/supabase/vault.ts is server-only; SUPABASE_SERVICE_ROLE_KEY never NEXT_PUBLIC_ (T-03-01, T-03-03)
-- Auth error messages unified for login (T-04-01) — "Incorrect email or password..." does not reveal email existence
-- Dashboard layout has server-side auth guard independent of middleware (T-04-03 defense-in-depth)
-- router.push + router.refresh() pattern after auth (forces session cookie propagation)
-- Supabase nested relation sorgusu .select('*, stages(stage_name, status)') ile JOIN yerine ilişki sorgusu kullanıldı
-- Badge renk ataması className ile direkt CSS — variant prop kullanılmıyor (UI-SPEC zorunluluğu)
-- dashboard/page.tsx stub'ı sync redirect ile değiştirildi — async Supabase çağrısı gereksizdi
-- DialogTrigger render prop — @base-ui/react asChild desteklemiyor, render prop eşdeğer davranış sağlıyor
-- Zod şeması server ve client'ta ayrı tanımlandı — bağımsız bundle'lar için
-- Stages INSERT başarısız olursa orphan project DELETE ile temizleniyor
-- RadioButtonIcon ve CircleIcon kullanıldı — Record01Icon ve Circle01Icon hugeicons free paketinde mevcut değil
-- Proje detay sayfası 2 sütunlu layout: w-64 shrink-0 sol (stage list) + flex-1 min-w-0 sağ (içerik) — h-screen flex flex-col yapısı
-- maybeSingle() kullanıldı: .single() son stage'de hata fırlatır, maybeSingle() null döner — isLastStage tespiti doğru çalışır
-- DialogTrigger render prop pattern: base-ui asChild desteklemiyor — render={<Button />} eşdeğer davranış sağlar
-- isLastStage: stageList.length > 0 && every completed — boş liste yanlışlıkla tamamlandı göstermez
-- addNote stage doğrulaması: stages sorgusunda id+project_id+user_id üçlüsü — ownership garantisi
-- user çekimi page.tsx üstüne alındı: tek getUser() çağrısı hem auth hem notes sorgusu için
-- audits tablosu not formatı: event_type='note', entity_type='stage', entity_id=stageId, payload={content}
-- Seed guard pattern: Server Component içinde rules yoksa seedGlobalRules() otomatik çağrılıyor — boş sayfa görünmez
-- Toggle interaktivitesi (RuleToggleRow) Plan 03-02'de eklenecek — statik değer gösterimi bu plan için yeterli
-- RuleToggleRow <td> döndürüyor (TableRow wrapper değil) — sayfa bileşeni <TableRow><RuleToggleRow /></TableRow> pattern kullanıyor
-- toggleAction prop injection: global sayfada toggleRule, proje sayfasında toggleProjectRule.bind(null, projectId)
-- resetProjectRule sadece scope='project' satırlarını siliyor — global kurallar etkilenmiyor (T-03-02-03)
-- RULE_META ve CATEGORIES sabitleri src/lib/rules/rule-meta.ts'e çıkarıldı — her iki sayfadan import edildi (DRY)
-- resolvedRules scope alanı explicit 'global' | 'project' type annotation — TS2322 önlendi
-- toggleProjectRule.bind(null, id) pattern: Server Action partial application ile proje ID SSR'da sabitleniyor
-- vault.ts env var fallback öncelikli — DATAFORSEO_LOGIN/PASSWORD env var mevcutsa Supabase Vault sorgusu yapılmaz
-- extractCategories() server-only değil — pure function, test edilebilir, client da kullanabilir
-- .env.local.example kullanıldı — .gitignore .env* pattern'ı .env.example commit edilmesini engelliyor
-- discoverCompetitors DB'ye yazmaz — sadece domain[] döner; addCompetitors() ile ayrı commit (D-04 dialog flow)
-- top_pages JSONB'de title yok — DataForSEO Relevant Pages endpoint'te title gelmiyor (RESEARCH.md Pitfall 1)
-- updated_at manuel set edildi — kullanıcı son çekim zamanını görebilir (D-06)
-- fetchOwnDomainData sonucu DB'ye yazılmaz — SSR page.tsx'e döner, null dönerse gap tablosunda uyarı gösterilir (Q3 RESOLVED — 04-04'te override edildi)
-- own_category_structure JSONB olarak projects tablosuna eklendi — fetchOwnDomainData artık persist ediyor (04-04 CR-01 fix)
-- OwnDomainAnalyzeButton statik import kullanıyor — dynamic import kaldırıldı (04-04)
-- content_areas 'Diğer' kategorisi hariç CategoryStructure shape kullanıyor (04-04 COMP-03)
-- opportunityCategories: Set<string> SSR'da hesaplanıyor, serialize edilmiyor (04-04 COMP-04)
-- verifyProjectOwnership yardımcı fonksiyon: 4 action'da tekrar eden ownership check DRY pattern
-- buildGapReport SSR'da hesaplanır — pure function olarak tanımlandı, client bundle maliyeti yok (COMP-04)
-- OwnDomainAnalyzeButton dynamic import('./actions') — server-only modülü client'ta doğrudan import edilemez
-- enrichedCount ImportKeywordsResult tipine eklendi — UI'da gösterilmiyor, ileriki fazlar için hazır
-- deleteKeyword üçlü ownership — keywordId + projectId + user.id; kümedeki son keyword silinince keyword_clusters da temizlenir (D-12)
-- fetchKeywordData: boş liste guard + keywords_data/google_ads/search_volume/live endpoint; Türkiye varsayılan (2792, tr)
-- IntentBadge className direkt renk ataması — variant prop kullanılmaz (D-11); group-hover pattern ile satır üzerinde × butonu görünür (D-12)
-- BulkEditPagesDialog dirty state uses Map — only changed rows sent to updatePageAttributes
-- SuggestLinksDialog opened programmatically via open prop — no DialogTrigger asChild needed
-- Orphan computation runs SSR via Set of linkedPageIds — no extra DB query needed
-- page_packages tablosu pages'ten ayrı tutuldu — pages sadece site blueprint identity tutar (D-01, Phase 9)
-- Phase 9'da page_id UNIQUE constraint — versioning Phase 12'ye ertelendi (D-07)
-- supabase migration repair --status applied: önceden DB'ye uygulanmış migration'ları history'ye kayıt ettirme pattern
-- RLS UPDATE policy hem USING hem WITH CHECK — user_id tampering engellenir (T-09-01-01 mitigasyonu)
-- actions.ts pages tablosuna yazmayı bıraktı — page_packages upsert'e geçildi (D-05 uygulandı)
-- verifyOwnership() helper: 3 action'da tekrar eden ownership check DRY pattern
-- createPagePackage UNIQUE violation fallback (23505): mevcut id döndürülür, hata vermez
-- QaBadge tamamen client-side çalışır — computeQaRules() pure function (sunucuya veri göndermez)
-- LockedBanner yalnızca UI trigger sorumluluğu taşır — gerçek unlock server action'da (T-09-03-02 mitigasyonu)
-- page.tsx dual SSR query pattern: pages identity + page_packages batch join + selectedPage full pkg fetch
-- PageData.pkg nullable field: null = package yok, object = tam page_packages verisi
-- handleSave önce createPagePackage idempotent çağrısı: package yoksa oluştur, sonra updatePagePackage
-- DialogContent (DialogPopup değil): dialog.tsx export adı esas alındı — fonksiyonel olarak aynı
-- Focus keyword Field daima disabled: readOnly veri, kullanıcı değiştiremez
-- v2.0 LLM for QUAL-01: Claude claude-sonnet-4-6 via Anthropic SDK (not OpenAI) — existing SDK pattern in codebase
-- v2.0 Schema generation: page_packages.schema_type (text) exists; new schema_jsonld (jsonb) column needed
-- v2.0 QUAL-02 scoring: extends QaBadge pattern; can be computed client-side or server-side at lock time
-- v2.0 PAGE-03 metadata validator: hooks into updatePagePackage action (save flow) and updatePackageStatus (lock flow)
-- v3.0 WordPress credentials: stored in Supabase secrets (wp_url, wp_app_password) — never NEXT_PUBLIC_
-- v3.0 GSC OAuth tokens: stored in Supabase (gsc_tokens JSONB column on projects) — server-only access
-- v3.0 Content Studio: uses Claude claude-sonnet-4-6 (same model as QA audit) — section-by-section streaming
-- v3.0 Recovery Engine: n8n scheduled workflow (daily) — position decay detection + update task creation
-- v3.0 n8n is available from Phase 14+ for GSC sync and Phase 16 for recovery detection workflows
+- v3.0: n8n available from Phase 14+ — relevant for sector research automation (SRCH-01/02)
+- v3.0: DataForSEO pattern established — vault.ts env var fallback, all API calls via Edge Function or n8n
+- v3.0: Human-directed system — "Projeyi Başlat" and "Sistemi Kur" are explicit user triggers, not automatic
+- v3.0: Claude claude-sonnet-4-6 used for AI tasks (Content Studio, QA) — same pattern for KWST clustering
 
 ### Pending Todos
 
@@ -190,42 +64,15 @@ None.
 
 ## Deferred Items
 
-Items acknowledged and deferred at milestone close on 2026-05-08:
+Carried forward from v3.0 (now mapped to Phase 22):
 
 | Category | Item | Status |
 |----------|------|--------|
-| Config | supabase start (requires Docker) | User must run manually if using local dev |
-| Page Packages | Revision history (PAGE-05) | Deferred to v3 |
-| uat_gap | Phase 01: 01-HUMAN-UAT.md | partial — 5 pending scenarios |
-| uat_gap | Phase 02: 02-HUMAN-UAT.md | partial — 4 pending scenarios |
-| uat_gap | Phase 05: 05-HUMAN-UAT.md | partial — 3 pending scenarios |
-| uat_gap | Phase 09: 09-HUMAN-UAT.md | partial — 4 pending scenarios |
-| uat_gap | Phase 10: 10-HUMAN-UAT.md | partial — 3 pending scenarios |
-| uat_gap | Phase 11: 11-HUMAN-UAT.md | partial — 4 pending scenarios |
-| uat_gap | Phase 14: 14-HUMAN-UAT.md | partial — 4 pending scenarios |
-| uat_gap | Phase 15: 15-HUMAN-UAT.md | partial — 3 pending scenarios |
-| uat_gap | Phase 15.5: 15.5-HUMAN-UAT.md | partial — 3 pending scenarios |
-| verification_gap | Phase 01: 01-VERIFICATION.md | human_needed |
-| verification_gap | Phase 02: 02-VERIFICATION.md | human_needed |
-| verification_gap | Phase 03: 03-VERIFICATION.md | human_needed |
-| verification_gap | Phase 04: 04-VERIFICATION.md | human_needed |
-| verification_gap | Phase 05: 05-VERIFICATION.md | human_needed |
-| verification_gap | Phase 06: 06-VERIFICATION.md | human_needed |
-| verification_gap | Phase 08: 08-VERIFICATION.md | human_needed |
-| verification_gap | Phase 09: 09-VERIFICATION.md | human_needed |
-| verification_gap | Phase 10: 10-VERIFICATION.md | human_needed |
-| verification_gap | Phase 11: 11-VERIFICATION.md | human_needed |
-| verification_gap | Phase 13: 13-VERIFICATION.md | human_needed |
-| verification_gap | Phase 14: 14-VERIFICATION.md | human_needed |
-| verification_gap | Phase 15: 15-VERIFICATION.md | human_needed |
-| verification_gap | Phase 15.5: 15.5-VERIFICATION.md | human_needed |
-| verification_gap | Phase 16: 16-VERIFICATION.md | human_needed |
-| verification_gap | Phase 17: 17-VERIFICATION.md | human_needed |
-| context_question | Phase 07: 07-CONTEXT.md | 3 open questions (generation overwrite, sayfalar/site-blueprint merge, 0 clusters) |
-| context_question | Phase 08: 08-CONTEXT.md | 3 open questions (link_type logic, anchor text for missing focus_keyword, conflict handling) |
+| Carry-over | MON-03: Monitoring + imported pages | Phase 22 |
+| Carry-over | PAGE-05: Revision history | Phase 22 |
 
 ## Session Continuity
 
-Last session: v3.0 milestone close
-Stopped at: v3.0 archived, git tagged, REQUIREMENTS.md removed
-Next action: `/gsd-new-milestone` — define v4.0 scope
+Last session: 2026-05-08 — v4.0 roadmap creation
+Stopped at: ROADMAP.md and STATE.md written, REQUIREMENTS.md traceability updated
+Next action: `/gsd-plan-phase 18`

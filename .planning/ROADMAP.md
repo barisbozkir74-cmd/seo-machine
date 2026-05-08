@@ -3,7 +3,7 @@
 ## Milestones
 
 - ✅ **v3.0 Autonomous Growth Layer** — Phases 12–17 (shipped 2026-05-08)
-- 📋 **v4.0** — TBD (run `/gsd-new-milestone` to define)
+- 🚧 **v4.0 AI-Powered Project Intelligence Layer** — Phases 18–22 (in progress)
 
 ## Phases
 
@@ -45,13 +45,75 @@ Archive: `.planning/milestones/v3.0-ROADMAP.md`
 
 </details>
 
-### 📋 v4.0 (Planned)
+### 🚧 v4.0 AI-Powered Project Intelligence Layer (Phases 18–22)
 
-Run `/gsd-new-milestone` to define the next milestone scope.
+**Milestone Goal:** Proje bilgilerinden otomatik başlayan, sektör araştırması yapan ve keyword stratejisi kuran AI-driven akış — site blueprint'e kadar uçtan uca.
 
-Carry-overs from v3.0:
-- MON-03: Monitoring dashboard + imported pages entegrasyonu
-- PAGE-05: Revision history
+- [ ] **Phase 18: Project Launch Gate & Sector Research** - Proje bilgileri tamamlanınca "Projeyi Başlat" aktifleşir ve sektör araştırmasını otomatik tetikler
+- [ ] **Phase 19: AI Keyword Data Acquisition** - DataForSEO ile rakip keywordleri çekme, CSV akışıyla birleştirme, birleşik keyword havuzu oluşturma
+- [ ] **Phase 20: AI Keyword Clustering & Approval** - Keyword havuzunu AI ile gruplama, kullanıcı onay/red/düzenleme akışı, onaylananları sisteme işleme
+- [ ] **Phase 21: Site Blueprint Auto-Generation Gate** - Onaylanan keyword stratejisinden "Sistemi Kur" tetiklenince site blueprint otomatik oluşturulması
+- [ ] **Phase 22: Polish & Carry-overs** - Monitoring + imported pages entegrasyonu ve revision history
+
+## Phase Details
+
+### Phase 18: Project Launch Gate & Sector Research
+**Goal**: Kullanıcı proje bilgilerini tamamladığında "Projeyi Başlat" aktif hale gelir ve tetiklenince sektör araştırması otomatik olarak başlar ve rapor üretilir
+**Depends on**: Phase 17
+**Requirements**: PROJ-06, PROJ-07, SRCH-01, SRCH-02, SRCH-03
+**Success Criteria** (what must be TRUE):
+  1. Kullanıcı zorunlu proje alanları eksikken "Projeyi Başlat" butonunu disabled olarak görür; tüm alanlar dolduğunda buton aktifleşir
+  2. "Projeyi Başlat" tetiklenince sistem otomatik olarak Google arama sorguları oluşturur ve sektör araştırmasını başlatır (hem yeni proje hem WP import akışı için)
+  3. Sistem, proje bilgilerindeki sektör + rakipler + ana keywordlerden otomatik arama sorguları üretir
+  4. Araştırma tamamlandığında pazar özeti, rakip konumları, sektör açıkları ve fırsatlar içeren bir rapor oluşur
+  5. Kullanıcı araştırma raporunu projeye ait dedicated bölümde görüntüler ve notlar ekleyebilir
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 19: AI Keyword Data Acquisition
+**Goal**: Rakip keywordleri DataForSEO ile otomatik çekilir, mevcut CSV import akışıyla birleştirilir ve genişletilmiş keyword havuzu hazırlanır
+**Depends on**: Phase 18
+**Requirements**: KWST-01, KWST-02, KWST-05
+**Success Criteria** (what must be TRUE):
+  1. Sistem proje rakiplerinin kullandığı keywordleri DataForSEO API üzerinden otomatik çeker
+  2. Çekilen rakip keywordleri + varsa CSV import keywordleri + ilişkili genişletmeler birleşik bir keyword havuzunda toplanır
+  3. Mevcut CSV import akışı bozulmadan çalışmaya devam eder ve AI akışıyla paralel kullanılabilir
+  4. Kullanıcı birleşik keyword havuzunun kaynaklarını (CSV vs rakip vs genişletme) ayırt edebilir
+**Plans**: TBD
+
+### Phase 20: AI Keyword Clustering & Approval
+**Goal**: Keyword havuzu AI tarafından gruplandırılır, kullanıcı gruplama önerilerini inceleyip onaylar/reddeder/düzenler ve onaylananlar keyword tablosuna işlenir
+**Depends on**: Phase 19
+**Requirements**: KWST-03, KWST-04
+**Success Criteria** (what must be TRUE):
+  1. AI, keyword havuzunu anlamlı gruplara ayırır ve gruplama önerilerini kullanıcıya sunar
+  2. Kullanıcı her grubu tek tek kabul veya reddedebilir; gruplar içindeki keywordleri düzenleyebilir
+  3. Onaylanan gruplar keyword tablosuna işlenir ve mevcut keyword clustering akışıyla uyumlu çalışır
+  4. Kullanıcı onay akışını tamamlamadan bir sonraki adıma geçemez (sistem blueprint gate'i kilitler)
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 21: Site Blueprint Auto-Generation Gate
+**Goal**: Kullanıcı keyword stratejisini onayladıktan sonra "Sistemi Kur" tetiklenince site blueprint onaylanan gruplardan otomatik olarak oluşturulur
+**Depends on**: Phase 20
+**Requirements**: BLUE-06
+**Success Criteria** (what must be TRUE):
+  1. Keyword stratejisi onaylanmadan "Sistemi Kur" butonu erişilemez (disabled) durumdadır
+  2. "Sistemi Kur" tetiklenince onaylanan keyword gruplarından site blueprint otomatik oluşturulur
+  3. Oluşturulan blueprint kullanıcı tarafından mevcut site blueprint arayüzünde görüntülenebilir ve düzenlenebilir
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 22: Polish & Carry-overs
+**Goal**: Monitoring dashboard imported page verileriyle zenginleştirilir ve her sayfa paketinin geçmiş versiyonları revision history olarak izlenebilir hale gelir
+**Depends on**: Phase 21
+**Requirements**: MON-03, PAGE-05
+**Success Criteria** (what must be TRUE):
+  1. Monitoring dashboard'da imported pages verisi görüntülenir ve cluster bazlı özetlere dahil edilir
+  2. Kullanıcı her sayfa paketi için geçmiş versiyonları listede görür ve herhangi bir versiyona geri dönebilir
+  3. Yeni kayıt yapıldığında önceki versiyon otomatik olarak revision history'ye eklenir
+**Plans**: TBD
+**UI hint**: yes
 
 ## Progress
 
@@ -75,3 +137,8 @@ Carry-overs from v3.0:
 | 15.5. WP Site Import Engine | v3.0 | 8/8 | Complete | 2026-05-02 |
 | 16. Recovery Engine | v3.0 | 6/6 | Complete | 2026-05-06 |
 | 17. Keyword Intelligence | v3.0 | 3/3 | Complete | 2026-05-08 |
+| 18. Project Launch Gate & Sector Research | v4.0 | 0/TBD | Not started | - |
+| 19. AI Keyword Data Acquisition | v4.0 | 0/TBD | Not started | - |
+| 20. AI Keyword Clustering & Approval | v4.0 | 0/TBD | Not started | - |
+| 21. Site Blueprint Auto-Generation Gate | v4.0 | 0/TBD | Not started | - |
+| 22. Polish & Carry-overs | v4.0 | 0/TBD | Not started | - |
