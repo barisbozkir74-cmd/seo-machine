@@ -8,82 +8,59 @@ Bir web tasarım & SEO ajansının yeni gelen her website projesini uçtan uca y
 
 Her website projesi için sıfırdan açılıp kurgulanan, tüm kararları kaydeden ve stage bazlı ilerleyen **tek merkezi proje yönetim sistemi** — ajans çalışanı sistemi yönetir, sistem kendi başına rastgele akmaz.
 
-## Previous Milestone: v2.0 Page Package OS — COMPLETE (2026-04-25)
+## Previous Milestone: v3.0 Autonomous Growth Layer — COMPLETE (2026-05-08)
 
 **Shipped features:**
-- Schema Center — page_type'a göre JSON-LD üretimi (Organization, WebPage, Service, FAQPage, LocalBusiness) *(Phase 10)*
-- Metadata Validator — title/meta/H1/slug tutarlılık kontrolü, kilitleme öncesi uyarı *(Phase 11)*
-- Rules Engine — proje bazlı SEO kuralları, panelden değiştirilebilir *(Phase 3)*
-- QA Scoring — SEO score, content score, human score, schema score, readiness score — Claude QA denetimi ile *(Phase 11)*
+- Content Studio — heading bazlı bölüm-bölüm AI içerik üretimi, onay akışı, HTML çıktısı *(Phase 12)*
+- WordPress Publishing — REST API draft/publish/scheduled, slug, meta, JSON-LD schema *(Phase 13)*
+- GSC Integration — OAuth, index durumu, keyword/sayfa bazlı performans verisi *(Phase 14)*
+- Monitoring Dashboard — cluster bazlı trafik özeti, decay alert sistemi *(Phase 15)*
+- WordPress Site Import Engine — WP crawl, hiyerarşik tree, AI intent, 6 audit flag *(Phase 15.5)*
+- Recovery Engine — n8n webhook daily decay tespiti + recovery task açma *(Phase 16)*
+- Keyword Intelligence — Niche score + cluster-to-revenue sınıflandırması *(Phase 17)*
 
-## Current Milestone: v3.0 Autonomous Growth Layer
+## Current Milestone: v4.0 (Planning)
 
-**Goal:** Kilitlenen sayfa paketlerini içerikle doldur, WordPress'e yayınla, GSC ile izle ve performans düşüşlerini otomatik tespitle devir al.
+**Goal:** Sonraki milestone `/gsd-new-milestone` ile tanımlanacak.
 
-**Target features:**
-- Content Studio — heading yapısına göre bölüm bölüm AI içerik üretimi, insan onay akışı
-- WordPress REST API publish — slug, title, content, meta, schema ile draft/publish gönderimi
-- Google Search Console entegrasyonu — index durumu + performans verisi çekimi
-- Recovery & Refresh Engine — ranking düşüşü tespiti, güncelleme görevi açma
-- Monitoring Dashboard — cluster bazlı trafik, sayfa bazlı izleme
-- Niche Selection Engine — volüm, rekabet, ticari değer, programmatic potansiyel skorlaması
-- Cluster-to-Revenue Mapping — bilgi trafiği vs. ticari intent ayrımı
+**Known carry-overs from v3.0:**
+- MON-03: Monitoring dashboard + imported pages entegrasyonu
+- PAGE-05: Revision history
+- 30 deferred audit items (UAT, verification, context questions)
 
 ## Requirements
 
 ### Validated
 
-#### Project Core (Validated in Phase 2: project-core — 2026-04-22)
-- [x] Yeni proje oluşturma (ad, domain, sektör, hedef ülke/dil, iş modeli, site tipi, marka tonu, rakipler, notlar)
-- [x] Proje bazlı hafıza — tüm kararlar, stage geçmişi ve kurallar kalıcı olarak kaydedilir
-- [x] Tüm projelerin görüntülendiği merkezi proje paneli
-- [x] Her proje için 10 aşamalı stage engine (Intake → Discovery → Keyword Strategy → Blueprint → Page Planning → Page Package → Content → Audit → Launch Prep → Post-Launch)
+#### v1.0 — Decision OS MVP (Phases 1–9)
+- ✓ Infrastructure & Auth (INFR-01–04) — v1.0
+- ✓ Project Core — 10-stage engine, stage geçişi, karar hafızası (PROJ-01–05) — v1.0
+- ✓ Rules Engine — global + proje bazlı SEO kuralları (RULE-01–03) — v1.0
+- ✓ Competitor Intelligence — SERP rakip tespiti, gap analizi (COMP-01–04) — v1.0
+- ✓ Keyword Center — CSV import, enrichment, clustering, opportunity score (KEYW-01–07) — v1.0
+- ✓ Site Blueprint — keyword→sayfa tree, internal link haritası (BLUE-01–05) — v1.0
+
+#### v2.0 — Page Package OS (Phases 10–11)
+- ✓ Page Package Engine — tam SEO paketi üretimi (PAGE-01) — v2.0
+- ✓ Schema Center — JSON-LD üretimi, editör, önizleme (PAGE-02, PAGE-02b) — v2.0
+- ✓ Metadata Validator — rules engine entegrasyonu (PAGE-03) — v2.0
+- ✓ Package Lock mekanizması (PAGE-04) — v2.0
+- ✓ QA Scoring — LLM denetimi + 5 score seti (QUAL-01–02) — v2.0
+
+#### v3.0 — Autonomous Growth Layer (Phases 12–17)
+- ✓ Content Studio — bölüm bazlı AI içerik üretimi, onay/ret akışı (CONT-01–05) — v3.0
+- ✓ WordPress Publishing — draft/publish/scheduled, tam payload (PUBL-01–04) — v3.0
+- ✓ GSC Integration — OAuth, index durumu, performans verisi (GSC-01–03) — v3.0
+- ✓ Monitoring Dashboard — cluster trafik özeti, decay alert (MON-01–02) — v3.0
+- ✓ WordPress Site Import Engine — crawl, AI intent, 6 audit flag (IMP-01–05) — v3.0
+- ✓ Recovery Engine — daily decay tespiti + recovery task (REC-01–03) — v3.0
+- ✓ Keyword Intelligence — niche score + cluster-to-revenue (NICH-01–02, RVEN-01–02) — v3.0
 
 ### Active
 
-#### Research & Intelligence (Validated in Phase 4: competitor-intelligence — 2026-04-23)
-- [x] Rakip toplama ve kaydetme (COMP-01, COMP-02)
-- [x] Rakip sayfa yapısı, içerik, kategori analizi (COMP-03)
-- [x] Pazar boşluğu ve fırsat tespiti (karar destek çıktısı) (COMP-04)
-- [ ] Niche selection engine — volüm, rekabet, ticari değer, programmatic potansiyel skorlaması
-
-#### Keyword Strategy (Validated in Phase 5-6 — 2026-04-24)
-- [x] CSV ile keyword import veya manuel giriş (KEYW-01, KEYW-02)
-- [x] DataForSEO ile keyword enrichment (hacim, intent, CPC, difficulty) (KEYW-03)
-- [x] Keyword clustering (SERP similarity + intent mapping) (KEYW-04)
-- [x] Opportunity scoring — traffic potential, commercial value, competition score (KEYW-06)
-- [ ] Cluster-to-revenue mapping (bilgi trafiği vs. ticari intent ayrımı)
-- [x] Cannibalization prevention — tek cluster için tek primary page zorunluluğu (KEYW-05)
-
-#### Site Blueprint (Validated in Phase 7: site-blueprint-tree — 2026-04-24)
-- [x] Keyword cluster'larından site tree üretimi (generatePagesFromClusters — BLUE-01)
-- [x] Menü, kategori/servis/ürün/blog ilişkisi — D-02 intent→page_type mapping
-- [x] Keyword-to-page mapping + conflict detection (BLUE-02)
-- [x] Site tree reorder — ↑↓ sort_order swap (BLUE-03)
-- [x] Tab switcher: Ağaç Görünümü + Keyword Eşleme
-- [x] D-06 slugify: Türkçe normalize, max 60 char, -2/-3 duplicate suffix
-
-#### Page Production (Validated in Phase 8: page-planner-internal-links — 2026-04-24)
-- [x] Page planner — hangi sayfalar açılacak, tipi, önceliği, focus keyword'ü (BLUE-04)
-- [x] Internal link map — pillar–support–bridge mantığı, orphan page kontrolü (BLUE-05)
-- [x] Page Package Engine — her sayfa için: slug, SEO title, meta description, H1, heading yapısı, içerik blokları, CTA, görsel isimleri, alt text, iç link giriş/çıkışı, schema, canonical, FAQ (Validated in Phase 9: page-package-generator — 2026-04-24)
-- [x] Schema üretimi (page type'a göre: Organization, WebPage, Service, FAQPage, LocalBusiness vb.) *(Validated in Phase 10 — 2026-04-25)*
-- [x] Metadata validator — rules engine ile title/meta/H1/slug tutarlılığı kontrolü *(Validated in Phase 11 — 2026-04-25)*
-
-#### Rules & Governance
-- [x] Proje bazlı ve global SEO kuralları (SEO title keyword ile başlasın mı, H1 exact match mı, slug exact match mı, hangi schema zorunlu vb.) *(Validated in Phase 3)*
-- [x] Kurallar panelden değiştirilebilir, sistem buna göre davranır *(Validated in Phase 3)*
-
-#### Content & QA
-- [x] Content Studio — sayfa paketi kilitlendikten sonra içerik üretimi *(Validated in Phase 12 — 2026-04-26)*
-- [x] İkinci model ile QA — intent drift, robotik dil, entity eksikliği, duplicate risk kontrolü *(Validated in Phase 11 — 2026-04-25)*
-- [x] SEO score, content score, human score, schema score, readiness score *(Validated in Phase 11 — 2026-04-25)*
-
-#### Publishing & Monitoring
-- [x] WordPress REST API ile draft/publish gönderimi (slug, title, content, meta, schema) *(Validated in Phase 13 — 2026-04-27)*
-- [x] Google Search Console entegrasyonu — OAuth, index durumu, performans verisi çekimi *(Validated in Phase 14 — 2026-04-27)*
-- [ ] Recovery & refresh engine — ranking düşüşü tespiti ve güncelleme görevi açma
-- [x] Monitoring dashboard — cluster bazlı trafik, sayfa bazlı performans + decay alert *(Validated in Phase 15 — 2026-04-28)*
+#### v4.0 — Next Milestone (Planning)
+- [ ] MON-03: Monitoring dashboard + imported pages entegrasyonu
+- [ ] PAGE-05: Revision history — her sayfa paketinin geçmiş versiyonları
 
 ### Out of Scope
 
@@ -132,13 +109,15 @@ Her website projesi için sıfırdan açılıp kurgulanan, tüm kararları kayde
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Supabase merkez hafıza olarak seçildi | Auth, Postgres, Storage ve Edge Functions tek pakette; RLS ile proje izolasyonu sağlanır | — Pending |
-| n8n orkestrasyon katmanı | Çok adımlı workflow, retry, schedule ve webhook desteği; API key'ler güvenli tutuluyor | — Pending |
-| Next.js frontend | SSR, modern ekosistem, Supabase ile iyi entegrasyon | — Pending |
-| Human-directed sistem | Sistem kendi başına rastgele akmaz; her kritik aksiyon kullanıcı tarafından tetiklenir | — Pending |
-| 3 fazlı uygulama stratejisi | Tüm sistemi tek seferde kurmak yerine MVP → Page Package OS → Growth Layer şeklinde inşa | — Pending |
-| İkinci model QA katmanı | Üretim modeli ile denetim modelini ayırmak kaliteyi artırır, robotik dil ve intent drift riskini azaltır | — Pending |
-| WordPress REST API entegrasyonu | Ajansın halihazırda WordPress kullanan müşterileri var; native publish akışı gerekli | — Pending |
+| Supabase merkez hafıza olarak seçildi | Auth, Postgres, Storage ve Edge Functions tek pakette; RLS ile proje izolasyonu sağlanır | ✓ Good — v1.0 |
+| n8n orkestrasyon katmanı | Çok adımlı workflow, retry, schedule ve webhook desteği; API key'ler güvenli tutuluyor | ✓ Good — v3.0 (Recovery Engine) |
+| Next.js frontend | SSR, modern ekosistem, Supabase ile iyi entegrasyon | ✓ Good — v1.0 |
+| Human-directed sistem | Sistem kendi başına rastgele akmaz; her kritik aksiyon kullanıcı tarafından tetiklenir | ✓ Good — confirmed v3.0 |
+| 3 fazlı uygulama stratejisi | Tüm sistemi tek seferde kurmak yerine MVP → Page Package OS → Growth Layer şeklinde inşa | ✓ Good — v3.0 complete |
+| İkinci model QA katmanı (Claude) | Üretim modeli ile denetim modelini ayırmak kaliteyi artırır; OpenAI değil Claude tercih edildi | ✓ Good — v2.0/v3.0 |
+| WordPress REST API entegrasyonu | Ajansın halihazırda WordPress kullanan müşterileri var; native publish akışı gerekli | ✓ Good — v3.0 |
+| Phase 15.5 eklenmesi (WP Import Engine) | Recovery Engine imported pages bağımlılığını karşılamak için milestone sırasına eklendi | ✓ Good — kritik bağımlılık giderildi |
+| calculateNicheScore 4-faktör model | Hacim, rekabet, CPC proxy, programmatic potential — ağırlıklı ortalama, normalize 0-100 | ✓ Good — v3.0 |
 
 ## Evolution
 
@@ -157,5 +136,18 @@ This document evolves at phase transitions and milestone boundaries.
 3. Audit Out of Scope — reasons still valid?
 4. Update Context with current state
 
+## Context
+
+**Mevcut durum (v3.0 sonrası):**
+- Codebase: ~22,827 TypeScript/TSX satırı
+- Tech stack: Next.js + Supabase + n8n + Claude claude-sonnet-4-6 + DataForSEO + WordPress REST API + GSC API
+- Tüm temel workflow tamamlandı: proje açılışından içerik üretimi → WordPress yayını → GSC izleme → decay tespiti → recovery döngüsü
+- Keyword Intelligence (niche score + revenue classification) v3.0'da tamamlandı
+
+**Bilinen teknik borç:**
+- BL-01: null avg_position aggregation bug (monitoring/aggregation.ts) — orta öncelik
+- BL-02: Unauthenticated izleme sayfası 404 yerine /login redirect — düşük öncelik
+- 30 deferred UAT/verification items — STATE.md Deferred Items
+
 ---
-*Last updated: 2026-04-25 — Milestone v3.0 started (Autonomous Growth Layer)*
+*Last updated: 2026-05-08 after v3.0 milestone — Autonomous Growth Layer SHIPPED*

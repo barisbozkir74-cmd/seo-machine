@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
-status: milestone_complete
-stopped_at: Phase 16 UI-SPEC approved
-last_updated: "2026-05-07T21:17:02.544Z"
-last_activity: 2026-05-07 -- Phase --phase execution started
+milestone: v4.0
+milestone_name: TBD
+status: planning_next_milestone
+stopped_at: v3.0 milestone complete
+last_updated: "2026-05-08T00:00:00.000Z"
+last_activity: 2026-05-08 -- v3.0 milestone archived
 progress:
-  total_phases: 18
-  completed_phases: 18
+  total_phases: 17
+  completed_phases: 17
   total_plans: 69
-  completed_plans: 66
+  completed_plans: 69
   percent: 100
 ---
 
@@ -18,30 +18,31 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-25)
+See: .planning/PROJECT.md (updated 2026-05-08)
 
 **Core value:** Her website projesi için sıfırdan açılıp kurgulanan, tüm kararları kaydeden ve stage bazlı ilerleyen tek merkezi proje yönetim sistemi
-**Current focus:** Phase --phase — 17
+**Current focus:** v4.0 planning — run `/gsd-new-milestone` to start
 
 ## Current Position
 
-Phase: 17
-Plan: Not started
-Status: Milestone complete
+Phase: —
+Plan: —
+Status: v3.0 milestone complete, planning v4.0
 Last activity: 2026-05-08
 
-Progress: [█_________] 17% (1/6 phases complete)
+Progress: v3.0 COMPLETE — 17/17 phases, 69/69 plans
 
-## v3.0 Phase Summary
+## v3.0 Phase Summary — SHIPPED 2026-05-08
 
-| Phase | Name | Requirements | Status |
-|-------|------|--------------|--------|
-| 12 | Content Studio | CONT-01 to CONT-05 | Complete (5/5 plans, verified 2026-04-26) |
-| 13 | WordPress Publishing | PUBL-01 to PUBL-04 | Ready to execute (5 plans planned 2026-04-26) |
-| 14 | GSC Integration | GSC-01 to GSC-03 | Not started |
-| 15 | Monitoring Dashboard | MON-01, MON-02 | Not started |
-| 16 | Recovery Engine | REC-01, REC-02, REC-03 | Planned (6 plans, 2026-04-30) |
-| 17 | Keyword Intelligence | NICH-01, NICH-02, RVEN-01, RVEN-02 | Not started |
+| Phase | Name | Plans | Status |
+|-------|------|-------|--------|
+| 12 | Content Studio | 5/5 | ✓ Complete |
+| 13 | WordPress Publishing | 5/5 | ✓ Complete |
+| 14 | GSC Integration | 6/6 | ✓ Complete |
+| 15 | Monitoring Dashboard | 2/2 | ✓ Complete |
+| 15.5 | WP Site Import Engine | 8/8 | ✓ Complete |
+| 16 | Recovery Engine | 6/6 | ✓ Complete |
+| 17 | Keyword Intelligence | 3/3 | ✓ Complete |
 
 ## Performance Metrics
 
@@ -189,16 +190,42 @@ None.
 
 ## Deferred Items
 
-| Category | Item | Status | Deferred At |
-|----------|------|--------|-------------|
-| Config | supabase start (requires Docker) | User must run manually if using local dev | Plan 01 |
-| Dashboard UI | Full dashboard is a stub showing email only | RESOLVED — 02-02 ile /dashboard/projeler sayfası oluşturuldu | Plan 04 |
-| Page Packages | Revision history (PAGE-05) | Deferred to v3 | Phase 9 planning |
+Items acknowledged and deferred at milestone close on 2026-05-08:
+
+| Category | Item | Status |
+|----------|------|--------|
+| Config | supabase start (requires Docker) | User must run manually if using local dev |
+| Page Packages | Revision history (PAGE-05) | Deferred to v3 |
+| uat_gap | Phase 01: 01-HUMAN-UAT.md | partial — 5 pending scenarios |
+| uat_gap | Phase 02: 02-HUMAN-UAT.md | partial — 4 pending scenarios |
+| uat_gap | Phase 05: 05-HUMAN-UAT.md | partial — 3 pending scenarios |
+| uat_gap | Phase 09: 09-HUMAN-UAT.md | partial — 4 pending scenarios |
+| uat_gap | Phase 10: 10-HUMAN-UAT.md | partial — 3 pending scenarios |
+| uat_gap | Phase 11: 11-HUMAN-UAT.md | partial — 4 pending scenarios |
+| uat_gap | Phase 14: 14-HUMAN-UAT.md | partial — 4 pending scenarios |
+| uat_gap | Phase 15: 15-HUMAN-UAT.md | partial — 3 pending scenarios |
+| uat_gap | Phase 15.5: 15.5-HUMAN-UAT.md | partial — 3 pending scenarios |
+| verification_gap | Phase 01: 01-VERIFICATION.md | human_needed |
+| verification_gap | Phase 02: 02-VERIFICATION.md | human_needed |
+| verification_gap | Phase 03: 03-VERIFICATION.md | human_needed |
+| verification_gap | Phase 04: 04-VERIFICATION.md | human_needed |
+| verification_gap | Phase 05: 05-VERIFICATION.md | human_needed |
+| verification_gap | Phase 06: 06-VERIFICATION.md | human_needed |
+| verification_gap | Phase 08: 08-VERIFICATION.md | human_needed |
+| verification_gap | Phase 09: 09-VERIFICATION.md | human_needed |
+| verification_gap | Phase 10: 10-VERIFICATION.md | human_needed |
+| verification_gap | Phase 11: 11-VERIFICATION.md | human_needed |
+| verification_gap | Phase 13: 13-VERIFICATION.md | human_needed |
+| verification_gap | Phase 14: 14-VERIFICATION.md | human_needed |
+| verification_gap | Phase 15: 15-VERIFICATION.md | human_needed |
+| verification_gap | Phase 15.5: 15.5-VERIFICATION.md | human_needed |
+| verification_gap | Phase 16: 16-VERIFICATION.md | human_needed |
+| verification_gap | Phase 17: 17-VERIFICATION.md | human_needed |
+| context_question | Phase 07: 07-CONTEXT.md | 3 open questions (generation overwrite, sayfalar/site-blueprint merge, 0 clusters) |
+| context_question | Phase 08: 08-CONTEXT.md | 3 open questions (link_type logic, anchor text for missing focus_keyword, conflict handling) |
 
 ## Session Continuity
 
-Last session: --stopped-at
-Stopped at: Phase 16 UI-SPEC approved
-Resume file: --resume-file
-
-**Planned Phase:** 15 (Monitoring Dashboard) — 2 plans — 2026-04-28T09:18:54.358Z
+Last session: v3.0 milestone close
+Stopped at: v3.0 archived, git tagged, REQUIREMENTS.md removed
+Next action: `/gsd-new-milestone` — define v4.0 scope
