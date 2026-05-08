@@ -186,6 +186,71 @@ export async function fetchBacklinksSummary(
   }
 }
 
+export type RelatedKeywordItem = {
+  keyword_data?: {
+    keyword?: string
+    keyword_info?: {
+      search_volume?: number
+      cpc?: number
+      competition?: number
+    }
+    search_intent_info?: {
+      main_intent?: string
+    }
+  }
+  depth?: number
+}
+
+export async function fetchRelatedKeywords(
+  keywords: string[],
+  credentials: { login: string; password: string },
+  location: { locationCode: number; languageCode: string } = { locationCode: 2792, languageCode: 'tr' },
+  options: { depth?: number; limit?: number } = {}
+): Promise<RelatedKeywordItem[]> {
+  if (keywords.length === 0) return []
+
+  const { depth = 1, limit = 20 } = options
+  const authHeader = `Basic ${Buffer.from(`${credentials.login}:${credentials.password}`).toString('base64')}`
+
+  // RESEARCH.md Tuzak 3: depth: 1 + limit: 20 — patlama önlenir.
+  // Birden fazla seed keyword için ayrı task gönderilir; DataForSEO her task için ayrı result döner.
+  const tasks = keywords.map((kw) => ({
+    keyword: kw,
+    location_code: location.locationCode,
+    language_code: location.languageCode,
+    depth,
+    limit,
+    include_seed_keyword: false,
+  }))
+
+  const response = await fetch(
+    'https://api.dataforseo.com/v3/dataforseo_labs/google/related_keywords/live',
+    {
+      method: 'POST',
+      headers: { Authorization: authHeader, 'Content-Type': 'application/json' },
+      body: JSON.stringify(tasks),
+    }
+  )
+
+  if (!response.ok) {
+    throw new Error(`DataForSEO Related Keywords API hatası: ${response.status}`)
+  }
+
+  const data = await response.json()
+
+  // Tüm task sonuçlarını flatten — her task ayrı items[] taşır
+  const allItems: RelatedKeywordItem[] = []
+  for (const task of data.tasks ?? []) {
+    for (const result of task.result ?? []) {
+      for (const item of result.items ?? []) {
+        allItems.push(item as RelatedKeywordItem)
+      }
+    }
+  }
+
+  return allItems
+}
+
 export type KeywordDataItem = {
   keyword: string
   search_volume: number | null
