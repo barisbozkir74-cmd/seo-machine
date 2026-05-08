@@ -3,6 +3,8 @@ import { IntentBadge } from './IntentBadge'
 import { ClusterDeleteButton } from './ClusterDeleteButton'
 import { PrimaryKeywordStar } from './PrimaryKeywordStar'
 import { MoveKeywordDialog } from './MoveKeywordDialog'
+import { RevenueBadge } from './RevenueBadge'
+import { RevenueOverrideSelect } from './RevenueOverrideSelect'
 
 type ClusterKeyword = {
   id: string
@@ -18,6 +20,8 @@ type ClusterData = {
   cluster_name: string
   intent: string | null
   primary_keyword_id: string | null
+  opportunity_score: number | null   // Phase 17
+  revenue_type: string | null        // Phase 17
   keywords: ClusterKeyword[]
 }
 
@@ -77,11 +81,27 @@ export function ClusterPanel({
               <span className="text-sm font-semibold truncate">{cluster.cluster_name}</span>
               <IntentBadge intent={cluster.intent} />
             </div>
-            <ClusterDeleteButton
-              projectId={projectId}
-              clusterId={cluster.id}
-              clusterName={cluster.cluster_name}
-            />
+            {/* Phase 17: Revenue + Niche Skoru sütunları */}
+            <div className="flex items-center gap-3 shrink-0">
+              {/* Revenue sütunu — w-28 */}
+              <div className="w-28 flex items-center gap-1">
+                <RevenueBadge revenueType={cluster.revenue_type} />
+                <RevenueOverrideSelect
+                  clusterId={cluster.id}
+                  projectId={projectId}
+                  currentRevenue={cluster.revenue_type}
+                />
+              </div>
+              {/* Niche Skoru sütunu — w-24, text-right */}
+              <div className="w-24 flex justify-end">
+                <ScoreBadge score={cluster.opportunity_score} />
+              </div>
+              <ClusterDeleteButton
+                projectId={projectId}
+                clusterId={cluster.id}
+                clusterName={cluster.cluster_name}
+              />
+            </div>
           </div>
 
           {/* Keyword satırları */}
