@@ -59,10 +59,9 @@ export async function POST(request: NextRequest) {
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Araştırma pipeline başarısız oldu.'
     console.error('[research/trigger] Pipeline error:', err)
-    // T-18-07: SerpAPI key hatası özel mesajıyla dön
-    if (message.includes('SERPAPI_KEY') || message.includes('SerpAPI key')) {
+    if (message.includes('DataForSEO credentials')) {
       return NextResponse.json(
-        { error: 'SerpAPI anahtarı yapılandırılmamış.', code: 'SERPAPI_NOT_CONFIGURED' },
+        { error: 'DataForSEO credentials yapılandırılmamış.', code: 'DATAFORSEO_NOT_CONFIGURED' },
         { status: 503 }
       )
     }

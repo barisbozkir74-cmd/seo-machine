@@ -2,7 +2,7 @@ import 'server-only'
 
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@supabase/supabase-js'
-import { getSerpApiKey } from '@/lib/supabase/vault'
+import { getDataForSeoCredentials } from '@/lib/supabase/vault'
 
 // ─── Service clients ──────────────────────────────────────────────────────────
 
@@ -84,32 +84,42 @@ function buildSearchQueries(input: ResearchInput): string[] {
   return queries.slice(0, 7)
 }
 
-// ─── SerpAPI fetcher ──────────────────────────────────────────────────────────
+// ─── DataForSEO SERP fetcher ──────────────────────────────────────────────────
 
 /**
- * Tek sorgu için SerpAPI çağrısı.
+ * Tek sorgu için DataForSEO SERP API çağrısı.
  * T-18-04: Rate limit riski nedeniyle sorgular paralel değil sıralı çalışır.
- * 10 saniyelik timeout ile korunur.
+ * 15 saniyelik timeout ile korunur.
  */
-async function fetchSerpResults(query: string, serpApiKey: string): Promise<string> {
-  const url = `https://serpapi.com/search.json?q=${encodeURIComponent(query)}&api_key=${serpApiKey}&hl=tr&gl=tr&num=10`
+async function fetchSerpResults(
+  query: string,
+  credentials: { login: string; password: string }
+): Promise<string> {
+  const authHeader = `Basic ${Buffer.from(`${credentials.login}:${credentials.password}`).toString('base64')}`
 
   const timeoutPromise = new Promise<never>((_, reject) =>
-    setTimeout(() => reject(new Error(`SerpAPI sorgu zaman aşımı: ${query}`)), 10000)
+    setTimeout(() => reject(new Error(`DataForSEO SERP sorgu zaman aşımı: ${query}`)), 15000)
   )
 
-  const fetchPromise = fetch(url).then(async (res) => {
-    if (!res.ok) throw new Error(`SerpAPI hatası: ${res.status}`)
+  const fetchPromise = fetch('https://api.dataforseo.com/v3/serp/google/organic/live/regular', {
+    method: 'POST',
+    headers: { Authorization: authHeader, 'Content-Type': 'application/json' },
+    body: JSON.stringify([{ keyword: query, location_code: 2792, language_code: 'tr', depth: 10 }]),
+  }).then(async (res) => {
+    if (!res.ok) throw new Error(`DataForSEO SERP API hatası: ${res.status}`)
     return res.json()
   })
 
   const data = await Promise.race([fetchPromise, timeoutPromise])
 
-  // organic_results'tan title + snippet + link al
-  const results = ((data as { organic_results?: Array<{ title?: string; snippet?: string; link?: string }> }).organic_results ?? [])
+  type OrganicItem = { type: string; title?: string; description?: string; url?: string }
+  const items: OrganicItem[] = data?.tasks?.[0]?.result?.[0]?.items ?? []
+
+  const results = items
+    .filter((item) => item.type === 'organic')
     .slice(0, 5)
-    .map((r) =>
-      `Başlık: ${r.title ?? ''}\nÖzet: ${r.snippet ?? ''}\nLink: ${r.link ?? ''}`
+    .map((item) =>
+      `Başlık: ${item.title ?? ''}\nÖzet: ${item.description ?? ''}\nLink: ${item.url ?? ''}`
     )
     .join('\n\n')
 
@@ -217,16 +227,16 @@ async function saveReport(report: ClaudeReport, input: ResearchInput): Promise<v
  * Hata durumunda throw — çağıran route katmanı hatayı yönetir.
  */
 export async function runSectorResearch(input: ResearchInput): Promise<void> {
-  // 1. SerpAPI anahtarını al (env var önce, vault fallback — T-18-01)
-  const serpApiKey = await getSerpApiKey()
+  // 1. DataForSEO credentials al (env var önce, vault fallback)
+  const credentials = await getDataForSeoCredentials()
 
   // 2. Arama sorgularını üret
   const queries = buildSearchQueries(input)
 
-  // 3. Her sorgu için sırayla SerpAPI çağrısı (T-18-04: paralel değil, rate limit riski)
+  // 3. Her sorgu için sırayla DataForSEO SERP çağrısı (T-18-04: paralel değil, rate limit riski)
   const results: string[] = []
   for (const query of queries) {
-    const result = await fetchSerpResults(query, serpApiKey)
+    const result = await fetchSerpResults(query, credentials)
     results.push(`Sorgu: ${query}\n\n${result}`)
   }
 

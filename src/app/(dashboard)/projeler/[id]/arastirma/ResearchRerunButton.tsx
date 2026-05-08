@@ -27,8 +27,8 @@ export function ResearchRerunButton({ projectId, userId }: ResearchRerunButtonPr
       })
       const json = await res.json()
       if (!res.ok) {
-        if (json.code === 'SERPAPI_NOT_CONFIGURED') {
-          setError('SerpAPI anahtarı yapılandırılmamış. Lütfen sistem ayarlarını kontrol edin.')
+        if (json.code === 'DATAFORSEO_NOT_CONFIGURED') {
+          setError('DataForSEO credentials yapılandırılmamış. Lütfen sistem ayarlarını kontrol edin.')
         } else {
           setError('Araştırma başarısız oldu. Lütfen tekrar deneyin.')
         }
