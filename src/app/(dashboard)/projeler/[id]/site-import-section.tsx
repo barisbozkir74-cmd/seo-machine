@@ -66,6 +66,9 @@ export function SiteImportSection({
         setStatus(parseStatus(data.status))
         setCurrent(data.current ?? 0)
         setTotal(data.total ?? 0)
+        if (data.status === 'error' && data.errorMessage) {
+          setError(data.errorMessage)
+        }
         if (data.status === 'complete' || data.status === 'error') {
           clearInterval(interval)
         }
@@ -157,7 +160,12 @@ export function SiteImportSection({
           role="status"
           className="flex items-center justify-between rounded-md bg-emerald-500/20 border border-emerald-500/30 px-4 py-3"
         >
-          <span className="text-sm text-emerald-400">İçe aktarma tamamlandı</span>
+          <span className="text-sm text-emerald-400">
+            İçe aktarma tamamlandı
+            {importCompletedAt && (
+              <span className="ml-2 text-emerald-400/60">{formatImportDate(importCompletedAt)}</span>
+            )}
+          </span>
           <Link
             href={`/projeler/${projectId}/site-analizi`}
             className="text-sm font-medium text-emerald-400 hover:text-emerald-300"
@@ -218,7 +226,7 @@ export function SiteImportSection({
       )}
 
       {/* CTA butonları */}
-      {hasWpCredentials && status !== 'complete' && (
+      {hasWpCredentials && (
         <div className="flex justify-end gap-2">
           {status === 'error' && (
             <Button
@@ -234,15 +242,17 @@ export function SiteImportSection({
             <Button
               onClick={handleStartImport}
               disabled={isActive || !hasWpCredentials}
-              variant={importCompletedAt && status === 'idle' ? 'outline' : 'default'}
+              variant="outline"
               className="min-h-[44px]"
               title={!hasWpCredentials ? 'WordPress bağlantısı yapılandırılmamış' : undefined}
             >
               {isActive
                 ? 'İçe Aktarılıyor...'
-                : importCompletedAt && status === 'idle'
-                  ? 'WordPress Sitemi Yenile'
-                  : 'WordPress Sitemi İçeri Al'}
+                : status === 'complete'
+                  ? 'Yeniden İçe Aktar'
+                  : importCompletedAt && status === 'idle'
+                    ? 'WordPress Sitemi Yenile'
+                    : 'WordPress Sitemi İçeri Al'}
             </Button>
           )}
         </div>

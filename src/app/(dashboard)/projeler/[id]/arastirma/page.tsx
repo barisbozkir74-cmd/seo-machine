@@ -3,7 +3,6 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { ProjectNav } from '../ProjectNav'
 import { ResearchSection, type ColumnConfig } from './ResearchSection'
-import { ResearchRerunButton } from './ResearchRerunButton'
 import type { SectionKey } from './actions'
 
 // ─── Bölüm konfigürasyonları ─────────────────────────────────────────────────
@@ -109,10 +108,7 @@ export default async function ArastirmaPage({
         >
           ← {project.name}
         </Link>
-        <div className="flex justify-between items-center">
-          <h1 className="text-xl font-semibold">Araştırma</h1>
-          <ResearchRerunButton projectId={id} userId={user.id} />
-        </div>
+        <h1 className="text-xl font-semibold">Araştırma</h1>
       </div>
 
       <div className="flex flex-1 min-h-0">

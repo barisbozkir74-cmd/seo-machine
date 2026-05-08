@@ -107,28 +107,31 @@ export async function matchGscData(
 /**
  * Imported pages için GSC metriklerini URL eşleştirmesi ile atar.
  * D-14: Eşleşme bulunamazsa GSC alanları null kalır.
+ * gsc_index_status: Search Analytics map'te URL varsa 'indexed' (impressions = indekslendi).
+ * URL Inspection API çağrısı yapılmaz — türetilmiş değer.
  */
 export function enrichWithGscMetrics(
   importedPages: Array<{ link: string | null }>,
   gscMap: Map<string, GscPageMetric> | null
-): Array<{ gsc_clicks: number | null; gsc_impressions: number | null; gsc_avg_position: number | null }> {
+): Array<{ gsc_clicks: number | null; gsc_impressions: number | null; gsc_avg_position: number | null; gsc_index_status: string | null }> {
   if (!gscMap) {
-    return importedPages.map(() => ({ gsc_clicks: null, gsc_impressions: null, gsc_avg_position: null }))
+    return importedPages.map(() => ({ gsc_clicks: null, gsc_impressions: null, gsc_avg_position: null, gsc_index_status: null }))
   }
 
   return importedPages.map(page => {
     if (!page.link) {
-      return { gsc_clicks: null, gsc_impressions: null, gsc_avg_position: null }
+      return { gsc_clicks: null, gsc_impressions: null, gsc_avg_position: null, gsc_index_status: null }
     }
     const normalizedLink = normalizeUrl(page.link)
     const metric = gscMap.get(normalizedLink)
     if (!metric) {
-      return { gsc_clicks: null, gsc_impressions: null, gsc_avg_position: null }
+      return { gsc_clicks: null, gsc_impressions: null, gsc_avg_position: null, gsc_index_status: null }
     }
     return {
       gsc_clicks: metric.clicks,
       gsc_impressions: metric.impressions,
       gsc_avg_position: metric.avgPosition,
+      gsc_index_status: 'indexed',
     }
   })
 }

@@ -14,6 +14,8 @@ import { ProjectNav } from '../ProjectNav'
 import { AddPageDialog } from './AddPageDialog'
 import { PageDeleteButton } from './PageDeleteButton'
 import { BulkEditPagesDialog } from './BulkEditPagesDialog'
+import { WpContentTab } from './WpContentTab'
+import type { ImportedPage } from '@/lib/wp/normalize'
 
 const PAGE_TYPE_LABELS: Record<string, string> = {
   'ana-sayfa': 'Ana Sayfa',
@@ -114,10 +116,13 @@ function StatusBadge({ status }: { status: string | null }) {
 
 export default async function SayfalarPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ tab?: string }>
 }) {
   const { id } = await params
+  const { tab = 'olusturulan' } = await searchParams
   const supabase = await createClient()
 
   const {
@@ -183,6 +188,22 @@ export default async function SayfalarPage({
     title: p.title,
   }))
 
+  // WordPress içe aktarılan sayfalar
+  const { data: importedRaw } = await supabase
+    .from('project_imported_pages')
+    .select(`
+      wp_id, wp_type, title, slug, link, parent_wp_id, wp_modified_at,
+      content_summary, primary_intent,
+      gsc_clicks, gsc_impressions, gsc_avg_position,
+      flag_orphan, flag_weak_page, flag_outdated,
+      flag_missing_metadata, flag_missing_keyword, flag_duplicate_intent
+    `)
+    .eq('project_id', id)
+    .eq('flag_orphan', false)
+    .order('wp_id', { ascending: true })
+
+  const importedPages = (importedRaw ?? []) as ImportedPage[]
+
   return (
     <div className="flex flex-col h-screen">
       {/* Breadcrumb + başlık */}
@@ -198,20 +219,50 @@ export default async function SayfalarPage({
             <h1 className="text-xl font-semibold">Sayfa Listesi</h1>
             <p className="text-sm text-muted-foreground mt-1">{project.domain}</p>
           </div>
-          <div className="flex items-center gap-2">
-            <BulkEditPagesDialog
-              projectId={id}
-              pages={pagesWithKeywords.map((p) => ({
-                id: p.id,
-                title: p.title,
-                page_type: p.page_type,
-                priority: p.priority,
-                focus_keyword_id: p.focus_keyword_id,
-              }))}
-              keywords={allKeywords}
-            />
-            <AddPageDialog projectId={id} existingPages={existingPages} />
-          </div>
+          {tab === 'olusturulan' && (
+            <div className="flex items-center gap-2">
+              <BulkEditPagesDialog
+                projectId={id}
+                pages={pagesWithKeywords.map((p) => ({
+                  id: p.id,
+                  title: p.title,
+                  page_type: p.page_type,
+                  priority: p.priority,
+                  focus_keyword_id: p.focus_keyword_id,
+                }))}
+                keywords={allKeywords}
+              />
+              <AddPageDialog projectId={id} existingPages={existingPages} />
+            </div>
+          )}
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-1 mt-4 border-b border-border">
+          <Link
+            href={`/projeler/${id}/sayfalar?tab=olusturulan`}
+            className={cn(
+              'px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors',
+              tab === 'olusturulan'
+                ? 'border-foreground text-foreground'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
+            )}
+          >
+            Oluşturulan
+            <span className="ml-1.5 text-xs opacity-60">{pagesWithKeywords.length}</span>
+          </Link>
+          <Link
+            href={`/projeler/${id}/sayfalar?tab=wordpress`}
+            className={cn(
+              'px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors',
+              tab === 'wordpress'
+                ? 'border-foreground text-foreground'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
+            )}
+          >
+            WordPress
+            <span className="ml-1.5 text-xs opacity-60">{importedPages.length}</span>
+          </Link>
         </div>
       </div>
 
@@ -223,7 +274,20 @@ export default async function SayfalarPage({
 
         {/* Ana içerik */}
         <div className="flex-1 min-w-0 overflow-y-auto p-8">
-          {pagesWithKeywords.length === 0 ? (
+          {tab === 'wordpress' ? (
+            importedPages.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-24 text-center space-y-2">
+                <p className="text-sm text-muted-foreground max-w-sm">
+                  Henüz WordPress içeriği içe aktarılmamış.
+                </p>
+                <Link href={`/projeler/${id}`} className="text-sm text-primary hover:underline">
+                  WordPress Sitemi İçeri Al →
+                </Link>
+              </div>
+            ) : (
+              <WpContentTab pages={importedPages as ImportedPage[]} />
+            )
+          ) : pagesWithKeywords.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-24 text-center space-y-2">
               <p className="text-sm text-muted-foreground max-w-sm">
                 Henüz sayfa eklenmemiş. Site Blueprint&apos;ten sayfaları içe

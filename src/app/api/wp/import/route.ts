@@ -5,6 +5,7 @@ import { fetchAllWpContent } from '@/lib/wp/import'
 import { normalizeWpPage, type ImportedPage } from '@/lib/wp/normalize'
 import { computeAuditFlags, computeDuplicateIntentFlags } from '@/lib/wp/audit-flags'
 import { matchGscData, enrichWithGscMetrics } from '@/lib/wp/gsc-match'
+import { normalizeUrl } from '@/lib/wp/url-normalize'
 import { enrichImportedPages } from '@/lib/wp/enrichment'
 
 // Service role client — RLS bypass, uzun-süreli pipeline için
@@ -128,13 +129,35 @@ export async function POST(request: NextRequest) {
     }
 
     // IMP-03: GSC URL matching — userId matchGscData'ya iletiliyor
-    const gscMap = await matchGscData(projectId, project.gsc_property_url, userId)
-    if (gscMap) {
+    const gscPropertyUrl = project.gsc_property_url
+    console.log(`[wp/import] GSC property: ${gscPropertyUrl ?? 'bağlı değil'}`)
+
+    const gscMap = await matchGscData(projectId, gscPropertyUrl, userId)
+
+    if (!gscMap) {
+      console.log('[wp/import] gscMap null — GSC bağlı değil, sc-domain property, veya token hatası')
+    } else {
+      console.log(`[wp/import] GSC map: ${gscMap.size} URL yüklendi`)
+
+      // URL eşleştirme teşhis logu — ilk 3 WP linki ve karşılık gelen GSC anahtarı
+      const samplePages = allPages.filter(p => p.link).slice(0, 3)
+      for (const p of samplePages) {
+        const norm = normalizeUrl(p.link!)
+        const hit = gscMap.has(norm)
+        console.log(`[wp/import] WP link: ${p.link} → norm: ${norm} → GSC hit: ${hit}`)
+      }
+      if (gscMap.size > 0) {
+        const firstKey = [...gscMap.keys()][0]
+        console.log(`[wp/import] GSC örnek URL: ${firstKey}`)
+      }
+
       const gscEnriched = enrichWithGscMetrics(allPages, gscMap)
+      let matchCount = 0
       for (let i = 0; i < allPages.length; i++) {
         const page = allPages[i]
         const gsc = gscEnriched[i]
         if (gsc.gsc_clicks !== null || gsc.gsc_impressions !== null) {
+          matchCount++
           await serviceClient
             .from('project_imported_pages')
             .update({ ...gsc, updated_at: new Date().toISOString() })
@@ -142,6 +165,7 @@ export async function POST(request: NextRequest) {
             .eq('wp_id', page.wp_id)
         }
       }
+      console.log(`[wp/import] GSC eşleşme: ${matchCount}/${allPages.length} sayfa`)
     }
 
     // IMP-05 Faz A: Audit flags hesaplama — AI enrichment öncesi

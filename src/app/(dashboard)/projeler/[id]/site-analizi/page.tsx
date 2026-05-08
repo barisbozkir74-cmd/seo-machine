@@ -18,7 +18,7 @@ export default async function SiteAnaliziPage({
 
   const { data: project } = await supabase
     .from('projects')
-    .select('id, name, import_status')
+    .select('id, name, import_status, import_completed_at')
     .eq('id', id)
     .eq('user_id', user.id)
     .single()
@@ -44,7 +44,7 @@ export default async function SiteAnaliziPage({
       .select(`
         wp_id, wp_type, title, slug, link, parent_wp_id,
         wp_modified_at, content_summary, primary_intent,
-        gsc_clicks, gsc_impressions, gsc_avg_position,
+        gsc_clicks, gsc_impressions, gsc_avg_position, gsc_index_status,
         flag_orphan, flag_weak_page, flag_outdated,
         flag_missing_metadata, flag_missing_keyword, flag_duplicate_intent
       `)
@@ -94,7 +94,7 @@ export default async function SiteAnaliziPage({
           )}
 
           {importDone && (
-            <ImportedPageTree pages={flattenedPages} />
+            <ImportedPageTree pages={flattenedPages} importStatus={project.import_status} />
           )}
         </div>
       </div>

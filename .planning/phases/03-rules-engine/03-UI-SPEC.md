@@ -1,7 +1,8 @@
 ---
 phase: 3
 slug: rules-engine
-status: draft
+status: approved
+reviewed_at: 2026-04-23
 shadcn_initialized: true
 preset: base-mira
 created: 2026-04-22

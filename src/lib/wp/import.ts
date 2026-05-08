@@ -22,7 +22,7 @@ export interface WpRawItem {
   excerpt?: { rendered?: string } | null
 }
 
-const WP_FIELDS = 'id,title,link,slug,parent,date,modified,status,menu_order,yoast_head_json,excerpt'
+const WP_FIELDS = 'id,title,name,link,slug,parent,date,modified,status,menu_order,yoast_head_json,excerpt'
 
 /**
  * Exponential backoff retry — RESEARCH.md "Rate Limiting Strategy".

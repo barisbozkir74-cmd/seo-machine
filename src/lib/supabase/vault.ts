@@ -1,14 +1,13 @@
 import 'server-only'
 import { createClient } from '@supabase/supabase-js'
 
-// Service role client — Vault okuma için anon key değil service role key gerekir
+// Service role client — Vault için anon key değil service role key gerekir
 const serviceClient = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
 export async function getDataForSeoCredentials(): Promise<{ login: string; password: string }> {
-  // Önce env var fallback — Phase 1'de Vault kurulmamış olabilir (RESEARCH.md Pitfall 4)
   if (process.env.DATAFORSEO_LOGIN && process.env.DATAFORSEO_PASSWORD) {
     return {
       login: process.env.DATAFORSEO_LOGIN,
@@ -16,11 +15,8 @@ export async function getDataForSeoCredentials(): Promise<{ login: string; passw
     }
   }
 
-  // Supabase Vault'tan oku
   const { data, error } = await serviceClient
-    .from('vault.decrypted_secrets')
-    .select('name, decrypted_secret')
-    .in('name', ['dataforseo_login', 'dataforseo_password'])
+    .rpc('vault_get_secrets', { p_names: ['dataforseo_login', 'dataforseo_password'] })
 
   if (error || !data?.length) {
     throw new Error(
@@ -38,7 +34,7 @@ export async function getDataForSeoCredentials(): Promise<{ login: string; passw
   return { login: loginRow.decrypted_secret, password: passwordRow.decrypted_secret }
 }
 
-// wp_url ve wp_app_password'u Vault'a kaydeder (upsert: varsa güncelle, yoksa oluştur)
+// wp credentials'ı Vault'a kaydeder (upsert: varsa sil+yeniden oluştur)
 // SECURITY: appPassword hiçbir zaman loglanmaz
 export async function saveWpCredentials(
   projectId: string,
@@ -50,30 +46,21 @@ export async function saveWpCredentials(
   const passKey = `wp_app_password_${projectId}`
   const userKey = `wp_username_${projectId}`
 
-  // Her iki key için upsert: önce mevcut secret ID'yi ara
   async function upsertSecret(keyName: string, value: string): Promise<void> {
-    const { data: existing } = await serviceClient
-      .from('vault.secrets')
-      .select('id')
-      .eq('name', keyName)
-      .maybeSingle()
+    const { data: rows } = await serviceClient
+      .rpc('vault_find_secret_id', { p_name: keyName })
 
-    if (existing?.id) {
-      // CR-03: vault.update_secret may fail if vault schema not on search_path;
-      // delete-then-create is schema-agnostic and always reliable.
-      await serviceClient.from('vault.secrets').delete().eq('id', existing.id)
-      const { error } = await serviceClient.rpc('vault.create_secret', {
-        secret: value,
-        name: keyName,
-      })
-      if (error) throw new Error(`Vault güncellenemedi: ${keyName}`)
-    } else {
-      const { error } = await serviceClient.rpc('vault.create_secret', {
-        secret: value,
-        name: keyName,
-      })
-      if (error) throw new Error(`Vault'a yazılamadı: ${keyName}`)
+    const existingId = rows?.[0]?.id ?? null
+
+    if (existingId) {
+      const { error: delError } = await serviceClient
+        .rpc('vault_delete_secret', { p_id: existingId })
+      if (delError) throw new Error(`Vault silinemedi: ${keyName} — ${delError.message}`)
     }
+
+    const { error: createError } = await serviceClient
+      .rpc('vault_create_secret', { p_name: keyName, p_secret: value })
+    if (createError) throw new Error(`Vault'a yazılamadı: ${keyName} — ${createError.message}`)
   }
 
   await upsertSecret(urlKey, wpUrl)
@@ -81,8 +68,7 @@ export async function saveWpCredentials(
   await upsertSecret(userKey, username)
 }
 
-// wp_url ve wp_app_password'u Vault'tan okur
-// Her iki key de mevcutsa { wpUrl, appPassword } döner; biri eksikse null döner
+// wp credentials'ı Vault'tan okur
 export async function getWordPressCredentials(
   projectId: string
 ): Promise<{ wpUrl: string; appPassword: string; username: string } | null> {
@@ -91,9 +77,7 @@ export async function getWordPressCredentials(
   const userKey = `wp_username_${projectId}`
 
   const { data, error } = await serviceClient
-    .from('vault.decrypted_secrets')
-    .select('name, decrypted_secret')
-    .in('name', [urlKey, passKey, userKey])
+    .rpc('vault_get_secrets', { p_names: [urlKey, passKey, userKey] })
 
   if (error || !data?.length) return null
 
@@ -109,7 +93,7 @@ export async function getWordPressCredentials(
   }
 }
 
-// Her iki WP key de Vault'ta mevcutsa true döner (bağlantı durumu badge'i için)
+// WP key'leri Vault'ta mevcutsa true döner
 export async function hasWordPressCredentials(projectId: string): Promise<boolean> {
   const creds = await getWordPressCredentials(projectId)
   return creds !== null

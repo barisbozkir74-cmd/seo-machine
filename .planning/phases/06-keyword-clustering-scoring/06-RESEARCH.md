@@ -514,22 +514,22 @@ Step 2.6: SKIPPED — Phase 6 saf TypeScript + mevcut Supabase + mevcut DataForS
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Clustering yeniden tetikleme stratejisi**
    - Bilinenler: "Kümelere Böl" butonu kullanıcı tetikler; otomatik değil.
    - Belirsizlik: Kullanıcı yeni keyword import edince mevcut kümeler ne olur? Sıfırdan yeniden kümeleme mi, sadece yeni keyword'leri mevcut kümelere ata mı?
-   - Öneri: Açık "Yeniden Kümeleme" butonu; mevcut manuel atamaları koruyup sadece cluster_id=null olan keywordleri kümeleme.
+   - **KARAR:** Açık "Yeniden Kümeleme" butonu ile sıfırdan yeniden kümeleme — mevcut cluster atamaları silinir, tüm keywordler yeniden kümelenir. Buton küme varsa "Yeniden Kümeleme", yoksa "Kümelere Böl" metni gösterir (UI-SPEC.md Copywriting Contract).
 
 2. **Cluster paneli tasarım kararı: ayrı sayfa mı, aynı sayfada section mı?**
    - Bilinenler: Phase 5 düz tablo zaten keyword-stratejisi sayfasında.
    - Belirsizlik: Cluster-grouped görünüm için ayrı `/keyword-stratejisi/kumeler` route gerekli mi?
-   - Öneri: Aynı sayfada tab veya toggle ile (import/düz tablo/küme görünümü).
+   - **KARAR:** Aynı sayfada toggle ile — `?view=flat` (default) / `?view=cluster` URL query parametresi. Ayrı route açılmaz. Server Component searchParams ile okur. (06-UI-SPEC.md — "Karar: Cluster Panel Konumu")
 
 3. **Unenriched keywords için clustering davranışı**
    - Bilinenler: enriched_at IS NULL olan keywordler intent verisi taşımaz.
    - Belirsizlik: Bu keywordler tamamen clustering dışı mı tutulsun, sadece metin benzerliğiyle mi kümelensin?
-   - Öneri: Intent yoksa sadece metin benzerliği; cluster'a atanırlar ama opportunity_score hesaplanmaz (NULL kalır).
+   - **KARAR:** enriched_at IS NOT NULL filtresi — unenriched keywordler clusterAndScoreKeywords'e dahil edilmez. Enrichment uyarı banner'ı ile kullanıcı bilgilendirilir: "X keyword zenginleştirilmemiş — bunlar yalnızca metin benzerliğiyle kümelenecek." (06-UI-SPEC.md — Enrichment Uyarısı kararı)
 
 ---
 

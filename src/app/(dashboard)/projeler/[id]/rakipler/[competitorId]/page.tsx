@@ -12,6 +12,9 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { SeoFetchButton } from './SeoFetchButton'
+import { CompetitorAnalysisButton } from './CompetitorAnalysisButton'
+import { type CompetitorAnalysis } from './actions'
+import { ProjectNav } from '../../ProjectNav'
 
 type RankedKeyword = {
   keyword: string
@@ -53,6 +56,7 @@ type Competitor = {
   content_areas: Record<string, CategoryEntry> | null
   ranked_keywords: RankedKeyword[] | null
   backlinks_summary: BacklinksSummary | null
+  analysis: CompetitorAnalysis | null
   updated_at: string
 }
 
@@ -79,7 +83,7 @@ export default async function CompetitorDetailPage({
 
   const { data: comp } = await supabase
     .from('competitors')
-    .select('id, domain, source, top_pages, category_structure, content_areas, ranked_keywords, backlinks_summary, updated_at')
+    .select('id, domain, source, top_pages, category_structure, content_areas, ranked_keywords, backlinks_summary, analysis, updated_at')
     .eq('id', competitorId)
     .eq('project_id', id)
     .eq('user_id', user.id)
@@ -137,19 +141,7 @@ export default async function CompetitorDetailPage({
       <div className="flex flex-1 min-h-0">
         {/* Sol sütun */}
         <div className="w-64 shrink-0 border-r border-border overflow-y-auto p-4">
-          <Separator className="my-4" />
-          <Link
-            href={`/projeler/${id}/rakipler`}
-            className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 px-3 py-2 rounded-md hover:bg-secondary"
-          >
-            Rakipler
-          </Link>
-          <Link
-            href={`/projeler/${id}/kurallar`}
-            className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 px-3 py-2 rounded-md hover:bg-secondary"
-          >
-            Proje Kuralları
-          </Link>
+          <ProjectNav projectId={id} activePath={`/projeler/${id}/rakipler`} />
         </div>
 
         {/* Sağ sütun */}
@@ -224,6 +216,18 @@ export default async function CompetitorDetailPage({
                   </div>
                 </div>
               </div>
+            </>
+          )}
+
+          {/* AI Analizi */}
+          {hasSeenData && (
+            <>
+              <Separator />
+              <CompetitorAnalysisButton
+                competitorId={competitorId}
+                projectId={id}
+                initialAnalysis={competitor.analysis}
+              />
             </>
           )}
 

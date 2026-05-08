@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
   // T-15.5-06-03: Ownership check — kullanıcı sadece kendi projesini okuyabilmeli
   const { data: project } = await serviceClient
     .from('projects')
-    .select('import_status, import_current, import_total')
+    .select('import_status, import_current, import_total, import_error_message')
     .eq('id', projectId)
     .eq('user_id', user.id)
     .single()
@@ -44,5 +44,6 @@ export async function GET(request: NextRequest) {
     status: project.import_status ?? 'idle',
     current: project.import_current ?? 0,
     total: project.import_total ?? 0,
+    errorMessage: project.import_error_message ?? null,
   })
 }

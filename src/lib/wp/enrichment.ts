@@ -1,21 +1,17 @@
 import 'server-only'
-/**
- * AI enrichment — claude-haiku-4-5 ile toplu content_summary + primary_intent üretimi.
- * D-04: Import biter bitmez ayrı batch çağrısı — DB write sonrası.
- * D-05: claude-haiku-4-5, BATCH_SIZE=20 paralel.
- * D-06: content_summary max 200 char, primary_intent enum.
- * Hata handling: parse hatası → null, import başarılı sayılır.
- */
 
-import Anthropic from '@anthropic-ai/sdk'
+import OpenAI from 'openai'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
-if (!process.env.ANTHROPIC_API_KEY) {
-  throw new Error('ANTHROPIC_API_KEY environment variable is not set')
+function getOpenAIClient(): OpenAI {
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error('OPENAI_API_KEY environment variable is not set')
+  }
+  return new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 }
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
-const BATCH_SIZE = 20
+const BATCH_SIZE = 5
+const CALL_TIMEOUT_MS = 15_000
 const VALID_INTENTS = ['informational', 'commercial', 'transactional', 'navigational'] as const
 type PrimaryIntent = (typeof VALID_INTENTS)[number]
 
@@ -32,11 +28,8 @@ interface PageToEnrich {
   slug: string | null
 }
 
-/**
- * Tek sayfa için AI enrichment çağrısı.
- * qa-audit/route.ts messages.create pattern — EXACT ANALOG.
- */
 async function enrichSinglePage(page: PageToEnrich): Promise<EnrichmentResult> {
+  const fallback = { wp_id: page.wp_id, content_summary: null, primary_intent: null }
   try {
     const prompt = `Aşağıdaki web sayfasını analiz et ve JSON formatında yanıt ver.
 Sayfa başlığı: ${page.title}
@@ -49,59 +42,52 @@ Görev:
 Yanıtı SADECE JSON formatında ver, başka hiçbir şey ekleme:
 {"summary": "...", "intent": "informational|commercial|transactional|navigational"}`
 
-    const message = await anthropic.messages.create({
-      model: 'claude-haiku-4-5',
+    const apiCall = getOpenAIClient().chat.completions.create({
+      model: 'gpt-4o-mini',
       max_tokens: 150,
       messages: [{ role: 'user', content: prompt }],
     })
 
-    const text = message.content[0]?.type === 'text' ? message.content[0].text : ''
+    const timeout = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Enrichment timeout')), CALL_TIMEOUT_MS)
+    )
+    const response = await Promise.race([apiCall, timeout])
 
-    // JSON extract — qa-audit/route.ts pattern EXACT COPY
-    const jsonMatch =
-      text.match(/```json\s*([\s\S]*?)```/) ?? text.match(/(\{[\s\S]*\})/)
+    const text = response.choices[0]?.message?.content ?? ''
+    const jsonMatch = text.match(/```json\s*([\s\S]*?)```/) ?? text.match(/(\{[\s\S]*\})/)
     const jsonText = jsonMatch ? jsonMatch[1] : text
 
     let parsed: { summary?: string; intent?: string }
     try {
       parsed = JSON.parse(jsonText.trim())
     } catch {
-      // D-04: parse hatası → null, import başarılı
-      return { wp_id: page.wp_id, content_summary: null, primary_intent: null }
+      return fallback
     }
 
-    // D-06: max 200 char truncate
-    const summary =
-      typeof parsed.summary === 'string' ? parsed.summary.slice(0, 200) : null
-
-    // D-06: valid enum kontrolü
+    const summary = typeof parsed.summary === 'string' ? parsed.summary.slice(0, 200) : null
     const intent = VALID_INTENTS.includes(parsed.intent as PrimaryIntent)
       ? (parsed.intent as PrimaryIntent)
       : null
 
     return { wp_id: page.wp_id, content_summary: summary, primary_intent: intent }
   } catch {
-    // D-04: AI hatası → null, import başarılı
-    return { wp_id: page.wp_id, content_summary: null, primary_intent: null }
+    return fallback
   }
 }
 
-/**
- * Tüm sayfalar için toplu AI enrichment.
- * BATCH_SIZE=20 paralel, batch'ler arası sıralı.
- * DB güncelleme: serviceClient (service role) ile project_imported_pages.
- */
 export async function enrichImportedPages(
   pages: PageToEnrich[],
   serviceClient: SupabaseClient,
   projectId: string
 ): Promise<void> {
+  console.log(`[enrichment] Başlıyor: ${pages.length} sayfa, batch=${BATCH_SIZE}`)
+
   for (let i = 0; i < pages.length; i += BATCH_SIZE) {
     const batch = pages.slice(i, i + BATCH_SIZE)
+    console.log(`[enrichment] Batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(pages.length / BATCH_SIZE)} (${batch.length} sayfa)`)
 
-    const results = await Promise.all(batch.map((page) => enrichSinglePage(page)))
+    const results = await Promise.all(batch.map(enrichSinglePage))
 
-    // Batch sonuçlarını DB'ye yaz
     for (const result of results) {
       if (result.content_summary !== null || result.primary_intent !== null) {
         await serviceClient
@@ -116,4 +102,6 @@ export async function enrichImportedPages(
       }
     }
   }
+
+  console.log(`[enrichment] Tamamlandı: ${pages.length} sayfa işlendi`)
 }

@@ -1,7 +1,8 @@
 ---
 phase: 14
 slug: gsc-integration
-status: draft
+status: approved
+reviewed_at: 2026-04-27
 shadcn_initialized: true
 preset: base-mira
 created: 2026-04-27

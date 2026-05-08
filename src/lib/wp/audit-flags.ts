@@ -54,23 +54,13 @@ export function computeAuditFlags(input: AuditFlagInput): AuditFlagOutput {
   // Basit kural: flag_orphan_deleted=true → kesin orphan
   const flag_orphan = input.flag_orphan_deleted
 
-  // missing_metadata (D-13, RESEARCH.md Pitfall 3)
-  // 1. Yoast title veya description varsa → false
-  // 2. Native title.rendered ve excerpt.rendered her ikisi de eksikse → true
+  // missing_metadata — Yoast SEO title veya description yoksa flag (SEO perspektifi)
+  // native title varlığı yeterli değil; Yoast/meta tag optimizasyonu beklenir
   const hasYoast = Boolean(input.yoast_title?.trim() || input.yoast_description?.trim())
-  const hasNative = Boolean(input.native_title?.trim() || input.native_excerpt?.trim())
-  const flag_missing_metadata = !hasYoast && !hasNative
+  const flag_missing_metadata = !hasYoast
 
-  // missing_keyword (A5 — exact URL segment match)
-  let flag_missing_keyword = false
-  if (input.project_keywords.length > 0 && input.page_link) {
-    const linkLower = input.page_link.toLowerCase()
-    const hasKeyword = input.project_keywords.some(kw => {
-      const slug = kw.toLowerCase().replace(/\s+/g, '-')
-      return linkLower.includes(slug) || linkLower.includes(kw.toLowerCase())
-    })
-    flag_missing_keyword = !hasKeyword
-  }
+  // missing_keyword — Phase 16'da keyword mapping tamamlanınca aktif edilecek
+  const flag_missing_keyword = false
 
   return { flag_orphan, flag_weak_page, flag_outdated, flag_missing_metadata, flag_missing_keyword }
 }

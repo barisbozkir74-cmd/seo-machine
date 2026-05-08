@@ -68,7 +68,7 @@ export function StageTransition({
           <DialogTitle>Aşamayı Tamamla</DialogTitle>
         </DialogHeader>
         <p className="text-sm">
-          &ldquo;{activeStage.stage_name}&rdquo; aşamasını tamamlamak istediğinizden emin misiniz?
+          &ldquo;{activeStage?.stage_name}&rdquo; aşamasını tamamlamak istediğinizden emin misiniz?
         </p>
         <p className="text-sm text-muted-foreground">Bu işlem geri alınamaz.</p>
         {error && <p className="text-sm text-destructive">{error}</p>}

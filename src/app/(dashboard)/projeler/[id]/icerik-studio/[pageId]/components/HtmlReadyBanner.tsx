@@ -5,8 +5,8 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import { Tick02Icon, Link03Icon } from '@hugeicons/core-free-icons'
 import { Button } from '@/components/ui/button'
 import { PublishDialog } from './PublishDialog'
-import { GscIndexBadge } from '../../sayfa-paketi/GscIndexBadge'
-import { checkIndexStatus } from '../../sayfa-paketi/actions'
+import { GscIndexBadge } from '../../../sayfa-paketi/GscIndexBadge'
+import { checkIndexStatus } from '../../../sayfa-paketi/actions'
 
 type Props = {
   projectId: string

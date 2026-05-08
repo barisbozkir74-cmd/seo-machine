@@ -1,10 +1,12 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { after } from 'next/server'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { saveWpCredentials } from '@/lib/supabase/vault'
+import { runImportPipeline } from '@/lib/wp/pipeline'
 
 export type AdvanceStageResult =
   | { success: true; isLastStage: boolean }
@@ -147,6 +149,14 @@ export async function saveWordPressCredentials(
   if (!wpUrl || !wpUrl.startsWith('https://')) {
     return { success: false, error: "Geçerli bir WordPress URL'si girin (https:// ile başlamalı)." }
   }
+  // /wp-admin, /wp-login, /wp-content gibi WP path'lerini sil — sadece kök URL sakla
+  try {
+    const parsed = new URL(wpUrl)
+    parsed.pathname = parsed.pathname.replace(/\/(wp-admin|wp-login\.php|wp-content)(\/.*)?$/, '/')
+    wpUrl = parsed.origin + (parsed.pathname === '/' ? '' : parsed.pathname.replace(/\/$/, ''))
+  } catch {
+    return { success: false, error: "Geçerli bir URL girin." }
+  }
   if (!username || username.trim().length === 0) {
     return { success: false, error: 'WordPress kullanıcı adı gereklidir.' }
   }
@@ -171,8 +181,10 @@ export async function saveWordPressCredentials(
   try {
     // SECURITY: appPassword vault.ts'e iletilir — loglanmaz, response'ta dönmez
     await saveWpCredentials(projectId, wpUrl, appPassword, username)
-  } catch {
-    return { success: false, error: 'WordPress bağlantısı kaydedilemedi. Lütfen tekrar deneyin.' }
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : 'Bilinmeyen hata'
+    console.error('[saveWordPressCredentials]', msg)
+    return { success: false, error: `WordPress bağlantısı kaydedilemedi: ${msg}` }
   }
 
   revalidatePath(`/projeler/${projectId}`)
@@ -328,17 +340,10 @@ export async function startSiteImport(
     .single()
   if (!project) return { jobStarted: false, error: 'Proje bulunamadı.' }
 
-  // T-15.5-07-02: userId server-side session'dan alınır — RESEARCH.md Pitfall 1:
-  // Uzun import loop Route Handler'da çalışmalı, Server Action burada fire & forget yapar
-  const siteUrl = process.env.NEXT_PUBLIC_APP_URL
-    ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
-
-  // Fire & forget — await etmiyoruz; loop Route Handler'da asenkron çalışır
-  fetch(`${siteUrl}/api/wp/import`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ projectId, userId: user.id }),
-  }).catch((err) => console.error('[startSiteImport] fire&forget failed:', err))
+  // after() — response döndükten sonra pipeline çalışır, HTTP self-call yok
+  after(async () => {
+    await runImportPipeline(projectId, user.id)
+  })
 
   return { jobStarted: true }
 }

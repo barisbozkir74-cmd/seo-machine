@@ -18,9 +18,10 @@ const ALL_FLAGS: FlagKey[] = [
 
 interface ImportedPageTreeProps {
   pages: ImportedPageWithDepth[]
+  importStatus?: string | null
 }
 
-export function ImportedPageTree({ pages }: ImportedPageTreeProps) {
+export function ImportedPageTree({ pages, importStatus }: ImportedPageTreeProps) {
   const [activeFlags, setActiveFlags] = useState<Set<FlagKey>>(new Set())
 
   function toggleFlag(flag: FlagKey) {
@@ -54,12 +55,13 @@ export function ImportedPageTree({ pages }: ImportedPageTreeProps) {
       ) : (
         <div className="rounded-md border border-border overflow-hidden">
           {/* Header */}
-          <div className="grid grid-cols-[1fr_1fr_auto_auto_auto_auto] gap-0 bg-muted/50 border-b border-border text-xs text-muted-foreground font-normal">
+          <div className="grid grid-cols-[1fr_1fr_auto_auto_auto_auto_auto] gap-0 bg-muted/50 border-b border-border text-xs text-muted-foreground font-normal">
             <div className="px-4 py-2">Sayfa</div>
             <div className="px-4 py-2">URL</div>
             <div className="px-4 py-2 min-w-[180px]">Durum</div>
             <div className="px-4 py-2 w-20 text-right">Tıklama</div>
             <div className="px-4 py-2 w-20 text-right">Pozisyon</div>
+            <div className="px-4 py-2 w-32">İndeks</div>
             <div className="px-4 py-2 w-8"></div>
           </div>
 
@@ -67,7 +69,7 @@ export function ImportedPageTree({ pages }: ImportedPageTreeProps) {
           {filtered.map(page => (
             <div
               key={page.wp_id}
-              className="grid grid-cols-[1fr_1fr_auto_auto_auto_auto] gap-0 border-b border-border last:border-0 items-center text-sm hover:bg-muted/30 transition-colors"
+              className="grid grid-cols-[1fr_1fr_auto_auto_auto_auto_auto] gap-0 border-b border-border last:border-0 items-center text-sm hover:bg-muted/30 transition-colors"
             >
               {/* Başlık — depth indent + ↳ */}
               <div
@@ -103,7 +105,7 @@ export function ImportedPageTree({ pages }: ImportedPageTreeProps) {
                     <AuditFlagBadge key={flag} flag={flag} />
                   ) : null
                 )}
-                {page.primary_intent === null && page.content_summary === null && (
+                {page.primary_intent === null && page.content_summary === null && importStatus === 'enriching' && (
                   <span className="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded-sm">
                     Analiz ediliyor...
                   </span>
@@ -136,6 +138,19 @@ export function ImportedPageTree({ pages }: ImportedPageTreeProps) {
                     ? Number(page.gsc_avg_position).toFixed(1)
                     : '—'}
                 </span>
+              </div>
+
+              {/* GSC index status */}
+              <div className="px-4 py-2 w-32">
+                {page.gsc_index_status === 'indexed' ? (
+                  <span className="inline-flex px-1.5 py-0.5 rounded text-[10px] bg-emerald-900/40 text-emerald-400">
+                    GSC&apos;de Görünüyor
+                  </span>
+                ) : (
+                  <span className="inline-flex px-1.5 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400">
+                    Bilinmiyor
+                  </span>
+                )}
               </div>
 
               {/* Boş aksiyon alanı */}
