@@ -15,6 +15,7 @@ import { KeywordImport } from './KeywordImport'
 import { IntentBadge } from './IntentBadge'
 import { KeywordDeleteButton } from './KeywordDeleteButton'
 import { ProjectNav } from '../ProjectNav'
+import { AiAcquireButton } from './AiAcquireButton'
 import { ClusterButton } from './ClusterButton'
 import { ViewToggle } from './ViewToggle'
 import { ClusterPanel } from './ClusterPanel'
@@ -41,6 +42,7 @@ type KeywordRow = {
   enriched_at: string | null
   cluster_id: string | null
   opportunity_score: number | null
+  source: 'manual' | 'competitor' | 'expansion'
 }
 
 type ClusterWithKeywords = {
@@ -80,7 +82,7 @@ export default async function KeywordStratejisiPage({
   // Keyword düz sorgusu — opportunity_score eklendi
   const { data: keywordsRaw } = await supabase
     .from('keywords')
-    .select('id, keyword, volume, cpc, difficulty, search_intent, enriched_at, cluster_id, opportunity_score')
+    .select('id, keyword, volume, cpc, difficulty, search_intent, enriched_at, cluster_id, opportunity_score, source')
     .eq('project_id', id)
     .eq('user_id', user.id)
     .order('volume', { ascending: false, nullsFirst: false })
@@ -182,11 +184,14 @@ export default async function KeywordStratejisiPage({
                   )}
                 </h2>
               </div>
-              {totalKeywords > 0 && (
+              {totalKeywords > 0 ? (
                 <div className="flex items-center gap-2">
                   <ViewToggle currentView={view ?? 'flat'} />
+                  <AiAcquireButton projectId={id} userId={user.id} />
                   <ClusterButton projectId={id} hasExistingClusters={totalClusters > 0} />
                 </div>
+              ) : (
+                <AiAcquireButton projectId={id} userId={user.id} />
               )}
             </div>
 
@@ -246,6 +251,7 @@ export default async function KeywordStratejisiPage({
                       <TableHead className="text-xs text-right w-20">Volume</TableHead>
                       <TableHead className="text-xs text-right w-18">CPC</TableHead>
                       <TableHead className="text-xs text-right w-16">KD</TableHead>
+                      <TableHead className="text-xs w-24">Kaynak</TableHead>
                       <TableHead className="text-xs w-28">Küme</TableHead>
                       <TableHead className="text-xs text-right w-16">Skor</TableHead>
                       <TableHead className="text-xs w-28">Intent</TableHead>
@@ -278,6 +284,15 @@ export default async function KeywordStratejisiPage({
                                 <span className="text-xs text-muted-foreground">{label}</span>
                               </span>
                             ) : '—'}
+                          </TableCell>
+                          <TableCell className="w-24">
+                            {kw.source === 'manual' ? (
+                              <Badge className="bg-secondary text-muted-foreground text-xs border-0">Manual</Badge>
+                            ) : kw.source === 'competitor' ? (
+                              <Badge className="bg-blue-500/20 text-blue-400 text-xs border-0">Rakip</Badge>
+                            ) : (
+                              <Badge className="bg-emerald-500/20 text-emerald-400 text-xs border-0">Genişletme</Badge>
+                            )}
                           </TableCell>
                           <TableCell className="w-28">
                             {clusterName ? (
