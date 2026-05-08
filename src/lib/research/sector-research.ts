@@ -1,6 +1,6 @@
 import 'server-only'
 
-import Anthropic from '@anthropic-ai/sdk'
+import OpenAI from 'openai'
 import { createClient } from '@supabase/supabase-js'
 import { getDataForSeoCredentials } from '@/lib/supabase/vault'
 
@@ -13,9 +13,9 @@ function getServiceClient() {
   )
 }
 
-function getAnthropicClient() {
-  if (!process.env.ANTHROPIC_API_KEY) throw new Error('ANTHROPIC_API_KEY env var eksik.')
-  return new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+function getOpenAIClient() {
+  if (!process.env.OPENAI_API_KEY) throw new Error('OPENAI_API_KEY env var eksik.')
+  return new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -133,7 +133,7 @@ async function fetchSerpResults(
  * T-18-03: JSON parse try/catch — bozuk veri DB'ye yazılmaz.
  */
 async function analyzeWithClaude(serpResults: string, input: ResearchInput): Promise<ClaudeReport> {
-  const anthropic = getAnthropicClient()
+  const openai = getOpenAIClient()
 
   const prompt = `Sen bir SEO stratejisti uzmanısın. Aşağıdaki Google arama sonuçlarını analiz ederek ${input.sector} sektöründeki pazar durumunu ve fırsatları değerlendir.
 
@@ -155,16 +155,13 @@ SADECE aşağıdaki JSON formatında yanıt ver, başka hiçbir şey ekleme:
 }
 Her bölümde en az 3, en fazla 8 satır üret.`
 
-  const message = await anthropic.messages.create({
-    model: 'claude-sonnet-4-6',
+  const response = await openai.chat.completions.create({
+    model: 'gpt-4o-mini',
     max_tokens: 4000,
     messages: [{ role: 'user', content: prompt }],
   })
 
-  const text = message.content
-    .filter((block) => block.type === 'text')
-    .map((block) => (block as { type: 'text'; text: string }).text)
-    .join('')
+  const text = response.choices[0]?.message?.content ?? ''
 
   // T-18-03: JSON parse — bozuk veri geçmez
   const jsonMatch =
