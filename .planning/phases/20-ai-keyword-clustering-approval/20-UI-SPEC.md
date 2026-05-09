@@ -34,7 +34,7 @@ Projedeki mevcut Tailwind token örüntüsünden türetildi. Yeni spacing tanım
 | Token | Tailwind class | Pixel karşılık | Kullanım yeri |
 |-------|---------------|----------------|---------------|
 | xs | gap-1 / p-1 | 4px | İkon boşlukları, inline padding |
-| sm | gap-2 / px-2 py-1.5 | 8px | Kompakt satır elemanları |
+| sm | gap-2 / px-2 py-1 | 8px | Kompakt satır elemanları |
 | md | px-3 py-2 | 12px / 8px | Keyword satır padding |
 | lg | px-3 py-3 | 12px / 12px | Cluster header padding |
 | xl | px-6 py-3 | 24px / 12px | Sayfa toolbar padding |
@@ -237,9 +237,9 @@ Tıklandığında `<span>` yerini `<input>` alır. Enter veya blur ile kaydedili
 
 | Status | className |
 |--------|-----------|
-| draft | `bg-secondary text-muted-foreground text-xs px-1.5 py-0.5 rounded` |
-| approved | `bg-emerald-500/20 text-emerald-400 text-xs px-1.5 py-0.5 rounded` |
-| rejected | `bg-red-500/20 text-red-400 text-xs px-1.5 py-0.5 rounded` |
+| draft | `bg-secondary text-muted-foreground text-xs px-2 py-1 rounded` |
+| approved | `bg-emerald-500/20 text-emerald-400 text-xs px-2 py-1 rounded` |
+| rejected | `bg-red-500/20 text-red-400 text-xs px-2 py-1 rounded` |
 
 Metin:
 - draft → "Beklemede"
