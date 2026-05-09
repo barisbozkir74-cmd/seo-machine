@@ -74,3 +74,19 @@ describe('clusterEnrichedKeywords', () => {
     expect(clusters[0].totalVolume).toBeGreaterThanOrEqual(clusters[1]?.totalVolume ?? 0)
   })
 })
+
+// Phase 20 — D-07: clusterAndScoreKeywords status='draft' yazma kontrolü
+// Bu test mocked değil; clusterAndScoreKeywords server action gerektirdiğinden
+// burada sadece clusterEnrichedKeywords çıktı yapısının 'status' içermediğini
+// (clustering.ts layer'ında) ve action layer'ında eklendiğini belgelemek için
+// bir smoke test eklenir:
+describe('clusterEnrichedKeywords output — no status field (status is set in action layer)', () => {
+  it('clusterEnrichedKeywords sonucu status alanı taşımaz — status actions.ts tarafından eklenir', () => {
+    // clustering.ts'den gelen ClusterResult tipinde 'status' yok; doğru mimari
+    const result = clusterEnrichedKeywords([
+      { id: '1', keyword: 'test keyword', volume: 100, difficulty: 30, cpc: 1.0, search_intent: 'informational' },
+    ])
+    // ClusterResult'ın 'status' property'si yok; actions.ts upsert'inde eklenir
+    expect(result[0]).not.toHaveProperty('status')
+  })
+})
