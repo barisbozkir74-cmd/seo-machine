@@ -50,7 +50,7 @@ Archive: `.planning/milestones/v3.0-ROADMAP.md`
 **Milestone Goal:** Proje bilgilerinden otomatik başlayan, sektör araştırması yapan ve keyword stratejisi kuran AI-driven akış — site blueprint'e kadar uçtan uca.
 
 - [x] **Phase 18: Project Launch Gate & Sector Research** - Proje bilgileri tamamlanınca "Projeyi Başlat" aktifleşir ve sektör araştırmasını otomatik tetikler (completed 2026-05-08)
-- [ ] **Phase 19: AI Keyword Data Acquisition** - DataForSEO ile rakip keywordleri çekme, CSV akışıyla birleştirme, birleşik keyword havuzu oluşturma
+- [x] **Phase 19: AI Keyword Data Acquisition** - DataForSEO ile rakip keywordleri çekme, CSV akışıyla birleştirme, birleşik keyword havuzu oluşturma (completed 2026-05-09)
 - [ ] **Phase 20: AI Keyword Clustering & Approval** - Keyword havuzunu AI ile gruplama, kullanıcı onay/red/düzenleme akışı, onaylananları sisteme işleme
 - [ ] **Phase 21: Site Blueprint Auto-Generation Gate** - Onaylanan keyword stratejisinden "Sistemi Kur" tetiklenince site blueprint otomatik oluşturulması
 - [ ] **Phase 22: Polish & Carry-overs** - Monitoring + imported pages entegrasyonu ve revision history
@@ -100,7 +100,7 @@ Plans:
   4. Kullanıcı onay akışını tamamlamadan bir sonraki adıma geçemez (sistem blueprint gate'i kilitler)
 **Plans**: 3 plans
 Plans:
-- [ ] 20-01-PLAN.md — DB migration (keyword_clusters.status + projects.keyword_strategy_approved) + supabase db push + Wave 0 test iskeleti
+- [x] 20-01-PLAN.md — DB migration (keyword_clusters.status + projects.keyword_strategy_approved) + supabase db push + Wave 0 test iskeleti (completed 2026-05-09)
 - [ ] 20-02-PLAN.md — 3 yeni server action (updateClusterStatus, removeKeywordFromCluster, approveStrategy) + clusterAndScoreKeywords draft/DraftCluster güncelleme + ClusterButton onSuccess callback
 - [ ] 20-03-PLAN.md — ClusteringApprovalOverlay + ApprovalClusterRow + ApprovalKeywordRow + StatusBadge + StratejiOnaylaButton + KeywordStratejisiToolbar + page.tsx & ClusterPanel güncellemeleri
 **UI hint**: yes
@@ -150,7 +150,7 @@ Plans:
 | 16. Recovery Engine | v3.0 | 6/6 | Complete | 2026-05-06 |
 | 17. Keyword Intelligence | v3.0 | 3/3 | Complete | 2026-05-08 |
 | 18. Project Launch Gate & Sector Research | v4.0 | 3/3 | Complete    | 2026-05-08 |
-| 19. AI Keyword Data Acquisition | v4.0 | 0/3 | Not started | - |
-| 20. AI Keyword Clustering & Approval | v4.0 | 0/3 | Not started | - |
+| 19. AI Keyword Data Acquisition | v4.0 | 3/3 | Complete | 2026-05-09 |
+| 20. AI Keyword Clustering & Approval | v4.0 | 1/3 | In Progress | - |
 | 21. Site Blueprint Auto-Generation Gate | v4.0 | 0/TBD | Not started | - |
 | 22. Polish & Carry-overs | v4.0 | 0/TBD | Not started | - |
