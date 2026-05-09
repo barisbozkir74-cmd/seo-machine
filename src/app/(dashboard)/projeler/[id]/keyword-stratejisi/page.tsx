@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { Separator } from '@/components/ui/separator'
 import {
   Table,
   TableBody,
@@ -11,14 +10,16 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { KeywordImport } from './KeywordImport'
 import { IntentBadge } from './IntentBadge'
 import { KeywordDeleteButton } from './KeywordDeleteButton'
 import { ProjectNav } from '../ProjectNav'
 import { AiAcquireButton } from './AiAcquireButton'
-import { ClusterButton } from './ClusterButton'
-import { ViewToggle } from './ViewToggle'
 import { ClusterPanel } from './ClusterPanel'
+import { AddKeywordDialog } from './AddKeywordDialog'
+import { ProjectPageShell } from '../ProjectPageShell'
+import { MasterSeoMap } from './MasterSeoMap'
+import { AiSuggestButton } from './AiSuggestButton'
+import { KeywordStratejisiToolbar } from './KeywordStratejisiToolbar'
 
 function kdColor(kd: number): { dot: string; label: string } {
   if (kd < 30) return { dot: 'bg-emerald-400', label: 'Kolay' }
@@ -43,6 +44,9 @@ type KeywordRow = {
   cluster_id: string | null
   opportunity_score: number | null
   source: 'manual' | 'competitor' | 'expansion'
+  parent_keyword_id: string | null
+  is_starred: boolean
+  is_ai_suggested: boolean
 }
 
 type ClusterWithKeywords = {
@@ -50,8 +54,9 @@ type ClusterWithKeywords = {
   cluster_name: string
   intent: string | null
   primary_keyword_id: string | null
-  opportunity_score: number | null  // Phase 17
-  revenue_type: string | null       // Phase 17
+  opportunity_score: number | null
+  revenue_type: string | null
+  status: string | null  // YENİ — D-07
   keywords: KeywordRow[]
 }
 
@@ -64,7 +69,8 @@ export default async function KeywordStratejisiPage({
 }) {
   const { id } = await params
   const { view, sort, dir } = await searchParams
-  const isClusterView = view === 'cluster'
+  const isMapView = view === 'map'
+  const isClusterView = view !== 'flat' && view !== 'map'
 
   const supabase = await createClient()
 
@@ -73,43 +79,38 @@ export default async function KeywordStratejisiPage({
 
   const { data: project } = await supabase
     .from('projects')
-    .select('id, name, domain')
+    .select('id, name, domain, seo_arch_summary, seo_arch_built_at, keyword_strategy_approved')
     .eq('id', id)
     .eq('user_id', user.id)
     .single()
   if (!project) notFound()
 
-  // Keyword düz sorgusu — opportunity_score eklendi
   const { data: keywordsRaw } = await supabase
     .from('keywords')
-    .select('id, keyword, volume, cpc, difficulty, search_intent, enriched_at, cluster_id, opportunity_score, source')
+    .select('id, keyword, volume, cpc, difficulty, search_intent, enriched_at, cluster_id, opportunity_score, source, parent_keyword_id, is_starred, is_ai_suggested')
     .eq('project_id', id)
     .eq('user_id', user.id)
     .order('volume', { ascending: false, nullsFirst: false })
 
   const keywords: KeywordRow[] = (keywordsRaw ?? []) as KeywordRow[]
 
-  // Sıralama mantığı (D-04: niche skoruna göre sıralanabilir) — T-17-05: whitelist ile SQL injection önlenir
   const sortColumn = sort === 'niche_score' ? 'opportunity_score' : 'total_volume'
   const ascending = dir === 'asc'
 
-  // Cluster adları + küme bilgisi (opportunity_score, revenue_type Phase 17'de eklendi)
   const { data: clustersRaw } = await supabase
     .from('keyword_clusters')
-    .select('id, cluster_name, intent, primary_keyword_id, opportunity_score, revenue_type')
+    .select('id, cluster_name, intent, primary_keyword_id, opportunity_score, revenue_type, total_volume, page_type, target_url, arch_status, ai_reasoning, priority_rank, content_month, status')
     .eq('project_id', id)
     .eq('user_id', user.id)
     .order(sortColumn, { ascending, nullsFirst: false })
 
   const clusters = clustersRaw ?? []
 
-  // Cluster map for flat table badge display
   const clusterMap: Record<string, string> = {}
   for (const c of clusters) {
     clusterMap[c.id] = c.cluster_name
   }
 
-  // Cluster view için keyword'leri cluster'lara göre grupla
   const clusterKeywordMap: Record<string, KeywordRow[]> = {}
   for (const kw of keywords) {
     if (kw.cluster_id) {
@@ -120,10 +121,10 @@ export default async function KeywordStratejisiPage({
 
   const clustersWithKeywords: ClusterWithKeywords[] = clusters.map((c) => ({
     ...c,
+    status: (c as unknown as { status: string | null }).status ?? null,  // YENİ
     keywords: clusterKeywordMap[c.id] ?? [],
   }))
 
-  // ClusterPanel için allClusters (keyword count dahil)
   const allClusters = clusters.map((c) => ({
     id: c.id,
     cluster_name: c.cluster_name,
@@ -131,233 +132,246 @@ export default async function KeywordStratejisiPage({
     keyword_count: (clusterKeywordMap[c.id] ?? []).length,
   }))
 
-  // Özet sayıları
   const totalKeywords = keywords.length
   const totalClusters = clusters.length
   const pendingEnrichment = keywords.filter((kw) => !kw.enriched_at).length
 
   return (
-    <div className="flex flex-col h-screen">
-      <div className="p-8 pb-4">
-        <Link
-          href={`/projeler/${id}`}
-          className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 mb-4"
-        >
-          ← {project.name}
-        </Link>
-        <h1 className="text-xl font-semibold">Keyword Stratejisi</h1>
-        <p className="text-sm text-muted-foreground mt-1">{project.domain}</p>
+    <div className="flex flex-col h-screen overflow-hidden">
+
+      {/* ── Üst başlık çubuğu ── */}
+      <div className="flex items-center justify-between px-6 py-3 border-b border-border shrink-0">
+        <div className="flex items-center gap-3 min-w-0">
+          <Link
+            href={`/projeler/${id}`}
+            className="text-sm text-muted-foreground hover:text-foreground shrink-0"
+          >
+            ← {project.name}
+          </Link>
+          <span className="text-muted-foreground/40 shrink-0">·</span>
+          <span className="text-sm font-medium truncate">Keyword Stratejisi</span>
+          {totalKeywords > 0 && (
+            <span className="text-xs text-muted-foreground shrink-0">
+              {totalKeywords} keyword · {totalClusters} küme
+              {pendingEnrichment > 0 && (
+                <span className="ml-1 text-amber-400">· {pendingEnrichment} zenginleştirilecek</span>
+              )}
+            </span>
+          )}
+        </div>
+
+        {/* Araç çubuğu */}
+        <div className="flex items-center gap-2 shrink-0">
+          <AddKeywordDialog
+            projectId={id}
+            clusters={clusters.map((c) => ({ id: c.id, cluster_name: c.cluster_name }))}
+          />
+          <AiAcquireButton projectId={id} userId={user.id} />
+          {totalKeywords > 0 && (
+            <>
+              <AiSuggestButton projectId={id} />
+              <KeywordStratejisiToolbar
+                projectId={id}
+                hasExistingClusters={totalClusters > 0}
+                hasApprovedCluster={clusters.some((c) => (c as unknown as { status: string }).status === 'approved')}
+                isStrategyApproved={(project as unknown as { keyword_strategy_approved: boolean | null }).keyword_strategy_approved ?? false}
+              />
+            </>
+          )}
+          {/* Görünüm seçici */}
+          <div className="flex items-center gap-0.5 rounded-md border border-border p-0.5">
+            <Link
+              href={`/projeler/${id}/keyword-stratejisi`}
+              className={`text-xs px-2.5 py-1 rounded transition-colors ${isClusterView ? 'bg-secondary text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+            >
+              Kümeler
+            </Link>
+            <Link
+              href={`/projeler/${id}/keyword-stratejisi?view=flat`}
+              className={`text-xs px-2.5 py-1 rounded transition-colors ${view === 'flat' ? 'bg-secondary text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+            >
+              Liste
+            </Link>
+            <Link
+              href={`/projeler/${id}/keyword-stratejisi?view=map`}
+              className={`text-xs px-2.5 py-1 rounded transition-colors ${isMapView ? 'bg-secondary text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+            >
+              SEO Haritası
+            </Link>
+          </div>
+        </div>
       </div>
 
-      <div className="flex flex-1 min-h-0">
+      {/* ── Ana içerik (sol nav + tablo + AI chat) ── */}
+      <ProjectPageShell projectId={id} section="keyword-stratejisi">
+
         {/* Sol navigasyon */}
-        <div className="w-64 shrink-0 border-r border-border overflow-y-auto p-4">
+        <div className="w-56 shrink-0 border-r border-border overflow-y-auto p-3">
           <ProjectNav projectId={id} activePath={`/projeler/${id}/keyword-stratejisi`} />
         </div>
 
-        {/* Ana içerik */}
-        <div className="flex-1 min-w-0 overflow-y-auto p-8 space-y-10">
+        {/* Tablo / Harita alanı */}
+        <div className="flex-1 min-w-0 flex flex-col min-h-0">
 
-          {/* Import bölümü */}
-          <section className="space-y-3">
-            <h2 className="text-base font-semibold">Keyword İçe Aktar</h2>
-            <p className="text-sm text-muted-foreground">
-              Keyword listeni yapıştır — DataForSEO, Semrush, Ahrefs veya düz metin. Format:{' '}
-              <code className="text-xs bg-secondary px-1 py-0.5 rounded">keyword tab volume tab KD</code>
-            </p>
-            <KeywordImport projectId={id} />
-          </section>
-
-          <Separator />
-
-          {/* Keyword listesi */}
-          <section className="space-y-4">
-            {/* Section header: başlık + ViewToggle + ClusterButton */}
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <h2 className="text-base font-semibold">
-                  Keyword Listesi
-                  {totalKeywords > 0 && (
-                    <span className="ml-2 text-sm font-normal text-muted-foreground">
-                      {totalKeywords} keyword · {totalClusters} küme
-                    </span>
-                  )}
-                </h2>
+          {isMapView ? (
+            <MasterSeoMap
+              projectId={id}
+              clusters={clusters.map((c) => ({
+                id: c.id,
+                cluster_name: c.cluster_name,
+                page_type: (c as unknown as Record<string, string | null>).page_type ?? null,
+                target_url: (c as unknown as Record<string, string | null>).target_url ?? null,
+                arch_status: (c as unknown as Record<string, string | null>).arch_status ?? null,
+                ai_reasoning: (c as unknown as Record<string, string | null>).ai_reasoning ?? null,
+                priority_rank: (c as unknown as Record<string, number | null>).priority_rank ?? null,
+                content_month: (c as unknown as Record<string, number | null>).content_month ?? null,
+                intent: c.intent ?? null,
+                total_volume: (c as unknown as Record<string, number | null>).total_volume ?? null,
+                keyword_count: (clusterKeywordMap[c.id] ?? []).length,
+              }))}
+              archSummary={(project as unknown as Record<string, string | null>).seo_arch_summary ?? null}
+              archBuiltAt={(project as unknown as Record<string, string | null>).seo_arch_built_at ?? null}
+            />
+          ) : keywords.length === 0 ? (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="text-center space-y-2">
+                <p className="text-sm text-muted-foreground">Henüz keyword eklenmemiş.</p>
+                <p className="text-xs text-muted-foreground">Sağ üstten keyword ekleyebilir veya AI ile çekebilirsin.</p>
               </div>
-              {totalKeywords > 0 ? (
-                <div className="flex items-center gap-2">
-                  <ViewToggle currentView={view ?? 'flat'} />
-                  <AiAcquireButton projectId={id} userId={user.id} />
-                  <ClusterButton projectId={id} hasExistingClusters={totalClusters > 0} />
-                </div>
-              ) : (
-                <AiAcquireButton projectId={id} userId={user.id} />
-              )}
             </div>
 
-            {/* Enrichment uyarı banner */}
-            {pendingEnrichment > 0 && (
-              <div className="rounded-md border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-400">
-                {pendingEnrichment} keyword zenginleştirilmemiş — bunlar yalnızca metin benzerliğiyle kümelenecek.
-              </div>
-            )}
+          ) : isClusterView ? (
+            <div className="flex-1 overflow-y-auto p-4">
+              {clustersWithKeywords.length > 0 && (
+                <div className="flex items-center justify-end gap-3 pb-2">
+                  <span className="text-xs text-muted-foreground w-28 text-left">Revenue</span>
+                  {(() => {
+                    const isActive = sort === 'niche_score'
+                    const nextDir = isActive && dir === 'desc' ? 'asc'
+                      : isActive && dir === 'asc' ? undefined
+                      : 'desc'
+                    const href = nextDir
+                      ? `/projeler/${id}/keyword-stratejisi?view=cluster&sort=niche_score&dir=${nextDir}`
+                      : `/projeler/${id}/keyword-stratejisi?view=cluster`
+                    return (
+                      <Link
+                        href={href}
+                        className="text-xs text-muted-foreground hover:text-foreground w-24 text-right transition-colors"
+                      >
+                        Niche Skoru{isActive && dir === 'desc' ? ' ↓' : isActive && dir === 'asc' ? ' ↑' : ''}
+                      </Link>
+                    )
+                  })()}
+                  <div className="w-8" />
+                </div>
+              )}
+              <ClusterPanel
+                clusters={clustersWithKeywords}
+                allClusters={allClusters}
+                projectId={id}
+              />
+            </div>
 
-            {keywords.length === 0 ? (
-              <div className="py-8 text-center">
-                <p className="text-sm text-muted-foreground">Henüz keyword eklenmemiş.</p>
-                <p className="text-sm text-muted-foreground">Yukarıdan keyword listeni içe aktar.</p>
-              </div>
-            ) : isClusterView ? (
-              /* Küme Görünümü */
-              <>
-                {clustersWithKeywords.length > 0 && (
-                  <div className="flex items-center justify-end gap-3 px-3 pb-1">
-                    <span className="text-xs text-muted-foreground w-28 text-left">Revenue</span>
-                    {/* Niche Skoru sıralama başlığı — URL searchParam ile SSR sıralama */}
-                    {(() => {
-                      const isActive = sort === 'niche_score'
-                      const nextDir = isActive && dir === 'desc' ? 'asc'
-                        : isActive && dir === 'asc' ? undefined
-                        : 'desc'
-                      const href = nextDir
-                        ? `/projeler/${id}/keyword-stratejisi?view=cluster&sort=niche_score&dir=${nextDir}`
-                        : `/projeler/${id}/keyword-stratejisi?view=cluster`
-                      return (
-                        <Link
-                          href={href}
-                          className="text-xs text-muted-foreground hover:text-foreground w-24 text-right transition-colors"
-                        >
-                          Niche Skoru{isActive && dir === 'desc' ? ' ↓' : isActive && dir === 'asc' ? ' ↑' : ''}
-                        </Link>
-                      )
-                    })()}
-                    <div className="w-8" />
-                  </div>
-                )}
-                <ClusterPanel
-                  clusters={clustersWithKeywords}
-                  allClusters={allClusters}
-                  projectId={id}
-                />
-              </>
-            ) : (
-              /* Düz Liste — 8 sütun (Skor eklendi) */
-              <div className="rounded-md border border-border overflow-hidden">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-secondary/40">
-                      <TableHead className="text-xs w-10">{/* × */}</TableHead>
-                      <TableHead className="text-xs">Keyword</TableHead>
-                      <TableHead className="text-xs text-right w-20">Volume</TableHead>
-                      <TableHead className="text-xs text-right w-18">CPC</TableHead>
-                      <TableHead className="text-xs text-right w-16">KD</TableHead>
-                      <TableHead className="text-xs w-24">Kaynak</TableHead>
-                      <TableHead className="text-xs w-28">Küme</TableHead>
-                      <TableHead className="text-xs text-right w-16">Skor</TableHead>
-                      <TableHead className="text-xs w-28">Intent</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {keywords.map((kw) => {
-                      const isEnriching = !kw.enriched_at
-                      const { dot, label } = kdColor(kw.difficulty ?? 0)
-                      const clusterName = kw.cluster_id ? clusterMap[kw.cluster_id] : null
+          ) : (
+            /* Düz tablo — tam yükseklik, sticky header */
+            <div className="flex-1 overflow-auto">
+              <Table>
+                <TableHeader className="sticky top-0 z-10 bg-background border-b border-border">
+                  <TableRow className="bg-secondary/40 hover:bg-secondary/40">
+                    <TableHead className="text-xs w-8 py-2" />
+                    <TableHead className="text-xs py-2">Keyword</TableHead>
+                    <TableHead className="text-xs text-right w-20 py-2">Volume</TableHead>
+                    <TableHead className="text-xs text-right w-16 py-2">CPC</TableHead>
+                    <TableHead className="text-xs w-20 py-2">KD</TableHead>
+                    <TableHead className="text-xs w-24 py-2">Kaynak</TableHead>
+                    <TableHead className="text-xs w-32 py-2">Küme</TableHead>
+                    <TableHead className="text-xs text-right w-14 py-2">Skor</TableHead>
+                    <TableHead className="text-xs w-24 py-2">Intent</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {keywords.map((kw) => {
+                    const isEnriching = !kw.enriched_at
+                    const { dot, label } = kdColor(kw.difficulty ?? 0)
+                    const clusterName = kw.cluster_id ? clusterMap[kw.cluster_id] : null
 
-                      return (
-                        <TableRow key={kw.id} className="group">
-                          <TableCell className="w-10 py-2">
-                            <KeywordDeleteButton projectId={id} keywordId={kw.id} />
-                          </TableCell>
-                          <TableCell className={`text-sm${isEnriching ? ' opacity-50' : ''}`}>
-                            {kw.keyword}
-                          </TableCell>
-                          <TableCell className={`text-sm text-right font-normal${isEnriching ? ' opacity-50' : ''}`}>
-                            {kw.volume !== null ? formatVolume(kw.volume) : '—'}
-                          </TableCell>
-                          <TableCell className={`text-sm text-right font-normal${isEnriching ? ' opacity-50' : ''}`}>
-                            {kw.cpc !== null ? `$${kw.cpc.toFixed(2)}` : '—'}
-                          </TableCell>
-                          <TableCell className={`text-sm text-right${isEnriching ? ' opacity-50' : ''}`}>
-                            {kw.difficulty !== null ? (
-                              <span className="flex items-center justify-end gap-1.5">
-                                <span className={`w-2 h-2 rounded-full shrink-0 ${dot}`} />
-                                <span className="text-xs text-muted-foreground">{label}</span>
-                              </span>
-                            ) : '—'}
-                          </TableCell>
-                          <TableCell className="w-24">
-                            {kw.source === 'manual' ? (
-                              <Badge className="bg-secondary text-muted-foreground text-xs border-0">Manual</Badge>
-                            ) : kw.source === 'competitor' ? (
-                              <Badge className="bg-blue-500/20 text-blue-400 text-xs border-0">Rakip</Badge>
-                            ) : (
-                              <Badge className="bg-emerald-500/20 text-emerald-400 text-xs border-0">Genişletme</Badge>
-                            )}
-                          </TableCell>
-                          <TableCell className="w-28">
-                            {clusterName ? (
-                              <Badge className="bg-secondary text-muted-foreground text-xs border-0">
-                                {clusterName}
-                              </Badge>
-                            ) : (
-                              <span className="text-sm text-muted-foreground">—</span>
-                            )}
-                          </TableCell>
-                          {/* Skor sütunu — Phase 6 yeni */}
-                          <TableCell className="text-right w-16">
-                            {kw.opportunity_score === null ? (
-                              <span className="text-sm text-muted-foreground">—</span>
-                            ) : kw.opportunity_score >= 70 ? (
-                              <Badge className="bg-violet-500/20 text-violet-400 text-xs border-0">
-                                {kw.opportunity_score.toFixed(1)}
-                              </Badge>
-                            ) : kw.opportunity_score >= 40 ? (
-                              <Badge className="bg-amber-500/20 text-amber-400 text-xs border-0">
-                                {kw.opportunity_score.toFixed(1)}
-                              </Badge>
-                            ) : (
-                              <Badge className="bg-secondary text-muted-foreground text-xs border-0">
-                                {kw.opportunity_score.toFixed(1)}
-                              </Badge>
-                            )}
-                          </TableCell>
-                          <TableCell className="w-28">
-                            {isEnriching ? (
-                              <svg
-                                className="animate-spin h-4 w-4 text-muted-foreground"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                              >
-                                <circle
-                                  className="opacity-25"
-                                  cx="12"
-                                  cy="12"
-                                  r="10"
-                                  stroke="currentColor"
-                                  strokeWidth="4"
-                                />
-                                <path
-                                  className="opacity-75"
-                                  fill="currentColor"
-                                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                                />
-                              </svg>
-                            ) : (
-                              <IntentBadge intent={kw.search_intent} />
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      )
-                    })}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </section>
+                    return (
+                      <TableRow key={kw.id} className="group h-9">
+                        <TableCell className="w-8 py-1 pl-3">
+                          <KeywordDeleteButton projectId={id} keywordId={kw.id} />
+                        </TableCell>
+                        <TableCell className={`py-1 text-sm${isEnriching ? ' opacity-50' : ''}`}>
+                          {kw.keyword}
+                        </TableCell>
+                        <TableCell className={`py-1 text-xs text-right tabular-nums${isEnriching ? ' opacity-50' : ''}`}>
+                          {kw.volume !== null ? formatVolume(kw.volume) : '—'}
+                        </TableCell>
+                        <TableCell className={`py-1 text-xs text-right tabular-nums${isEnriching ? ' opacity-50' : ''}`}>
+                          {kw.cpc !== null ? `$${kw.cpc.toFixed(2)}` : '—'}
+                        </TableCell>
+                        <TableCell className={`py-1${isEnriching ? ' opacity-50' : ''}`}>
+                          {kw.difficulty !== null ? (
+                            <span className="flex items-center gap-1.5">
+                              <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${dot}`} />
+                              <span className="text-xs text-muted-foreground">{label}</span>
+                            </span>
+                          ) : <span className="text-xs text-muted-foreground">—</span>}
+                        </TableCell>
+                        <TableCell className="py-1 w-24">
+                          {kw.source === 'manual' ? (
+                            <Badge className="bg-secondary text-muted-foreground text-xs border-0 px-1.5 py-0">Manual</Badge>
+                          ) : kw.source === 'competitor' ? (
+                            <Badge className="bg-blue-500/20 text-blue-400 text-xs border-0 px-1.5 py-0">Rakip</Badge>
+                          ) : (
+                            <Badge className="bg-emerald-500/20 text-emerald-400 text-xs border-0 px-1.5 py-0">Genişletme</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="py-1 w-32">
+                          {clusterName ? (
+                            <span className="text-xs text-muted-foreground truncate block max-w-28">
+                              {clusterName}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-muted-foreground/40">—</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="py-1 text-right w-14">
+                          {kw.opportunity_score === null ? (
+                            <span className="text-xs text-muted-foreground/40">—</span>
+                          ) : kw.opportunity_score >= 70 ? (
+                            <Badge className="bg-violet-500/20 text-violet-400 text-xs border-0 px-1.5 py-0">
+                              {kw.opportunity_score.toFixed(0)}
+                            </Badge>
+                          ) : kw.opportunity_score >= 40 ? (
+                            <Badge className="bg-amber-500/20 text-amber-400 text-xs border-0 px-1.5 py-0">
+                              {kw.opportunity_score.toFixed(0)}
+                            </Badge>
+                          ) : (
+                            <Badge className="bg-secondary text-muted-foreground text-xs border-0 px-1.5 py-0">
+                              {kw.opportunity_score.toFixed(0)}
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="py-1 w-24">
+                          {isEnriching ? (
+                            <svg className="animate-spin h-3 w-3 text-muted-foreground" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                            </svg>
+                          ) : (
+                            <IntentBadge intent={kw.search_intent} />
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          )}
 
         </div>
-      </div>
+      </ProjectPageShell>
     </div>
   )
 }

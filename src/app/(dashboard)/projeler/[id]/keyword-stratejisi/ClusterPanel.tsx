@@ -1,10 +1,13 @@
 import { Badge } from '@/components/ui/badge'
 import { IntentBadge } from './IntentBadge'
+import { StatusBadge } from './StatusBadge'
 import { ClusterDeleteButton } from './ClusterDeleteButton'
 import { PrimaryKeywordStar } from './PrimaryKeywordStar'
 import { MoveKeywordDialog } from './MoveKeywordDialog'
+import { KeywordDeleteButton } from './KeywordDeleteButton'
 import { RevenueBadge } from './RevenueBadge'
 import { RevenueOverrideSelect } from './RevenueOverrideSelect'
+import { LongTailButton } from './LongTailButton'
 
 type ClusterKeyword = {
   id: string
@@ -13,6 +16,10 @@ type ClusterKeyword = {
   cpc: number | null
   difficulty: number | null
   opportunity_score: number | null
+  parent_keyword_id: string | null
+  is_starred: boolean
+  is_ai_suggested: boolean
+  project_id?: string
 }
 
 type ClusterData = {
@@ -22,6 +29,7 @@ type ClusterData = {
   primary_keyword_id: string | null
   opportunity_score: number | null   // Phase 17
   revenue_type: string | null        // Phase 17
+  status: string | null              // Phase 20 — 'draft' | 'approved' | 'rejected'
   keywords: ClusterKeyword[]
 }
 
@@ -62,24 +70,36 @@ export function ClusterPanel({
 }) {
   if (clusters.length === 0) {
     return (
-      <div className="py-8 text-center">
+      <div className="py-12 text-center space-y-1">
         <p className="text-sm text-muted-foreground">Henüz küme oluşturulmadı.</p>
-        <p className="text-sm text-muted-foreground">
-          &ldquo;Kümelere Böl&rdquo; butonuna basarak keyword&apos;leri otomatik gruplandır.
+        <p className="text-xs text-muted-foreground">
+          Sağ üstteki &ldquo;AI ile Kümelendirme&rdquo; butonuna bas — GPT keyword&apos;leri anlamsal gruplara ayırsın.
         </p>
       </div>
     )
   }
 
   return (
-    <div className="space-y-4">
+    <div className="grid grid-cols-2 gap-4">
       {clusters.map((cluster) => (
-        <div key={cluster.id} className="rounded-md border border-border bg-card overflow-hidden">
+        <div
+          key={cluster.id}
+          className={`rounded-md border border-border bg-card overflow-hidden ${
+            cluster.status === 'rejected' ? 'opacity-60' : ''
+          }`}
+        >
           {/* Cluster header */}
           <div className="group flex items-center justify-between bg-secondary/40 px-3 py-3">
             <div className="flex items-center gap-2 min-w-0">
               <span className="text-sm font-semibold truncate">{cluster.cluster_name}</span>
+              <StatusBadge status={cluster.status} />
               <IntentBadge intent={cluster.intent} />
+              <span className="text-xs text-muted-foreground shrink-0">
+                {cluster.keywords.length} kw
+                {cluster.keywords.reduce((s, k) => s + (k.volume ?? 0), 0) > 0 && (
+                  <> · {formatVolume(cluster.keywords.reduce((s, k) => s + (k.volume ?? 0), 0))} vol</>
+                )}
+              </span>
             </div>
             {/* Phase 17: Revenue + Niche Skoru sütunları */}
             <div className="flex items-center gap-3 shrink-0">
@@ -105,51 +125,82 @@ export function ClusterPanel({
           </div>
 
           {/* Keyword satırları */}
-          {cluster.keywords.map((kw) => {
-            const isPrimary = kw.id === cluster.primary_keyword_id
-            const { dot, label } = kdColor(kw.difficulty ?? 0)
+          {cluster.keywords
+            .filter((kw) => !kw.parent_keyword_id)
+            .map((kw) => {
+              const isPrimary = kw.id === cluster.primary_keyword_id
+              const { dot, label } = kdColor(kw.difficulty ?? 0)
+              const longTails = cluster.keywords.filter((c) => c.parent_keyword_id === kw.id)
 
-            return (
-              <div
-                key={kw.id}
-                className="group flex items-center px-3 py-2 border-t border-border/50 hover:bg-secondary/20 gap-2"
-              >
-                <PrimaryKeywordStar
-                  clusterId={cluster.id}
-                  keywordId={kw.id}
-                  projectId={projectId}
-                  isPrimary={isPrimary}
-                />
-                <span className={`flex-1 text-sm min-w-0 truncate ${isPrimary ? 'font-semibold' : 'font-normal'}`}>
-                  {kw.keyword}
-                </span>
-                <span className="text-sm text-right w-16 shrink-0 font-normal">
-                  {kw.volume !== null ? formatVolume(kw.volume) : <span className="text-muted-foreground">—</span>}
-                </span>
-                <span className="text-sm text-right w-14 shrink-0 font-normal">
-                  {kw.cpc !== null ? `$${kw.cpc.toFixed(2)}` : <span className="text-muted-foreground">—</span>}
-                </span>
-                <span className="text-sm text-right w-16 shrink-0">
-                  {kw.difficulty !== null ? (
-                    <span className="flex items-center justify-end gap-1.5">
-                      <span className={`w-2 h-2 rounded-full shrink-0 ${dot}`} />
-                      <span className="text-xs text-muted-foreground">{label}</span>
+              return (
+                <div key={kw.id}>
+                  <div className="group flex items-center px-3 py-2 border-t border-border/50 hover:bg-secondary/20 gap-2">
+                    <PrimaryKeywordStar
+                      keywordId={kw.id}
+                      projectId={projectId}
+                      isStarred={kw.is_starred}
+                      isAiSuggested={kw.is_ai_suggested}
+                    />
+                    <span className={`flex-1 text-sm min-w-0 truncate ${kw.is_starred ? 'font-semibold' : 'font-normal'}`}>
+                      {kw.keyword}
                     </span>
-                  ) : <span className="text-muted-foreground">—</span>}
-                </span>
-                <div className="w-16 flex justify-end shrink-0">
-                  <ScoreBadge score={kw.opportunity_score} />
+                    {isPrimary && (
+                      <LongTailButton
+                        keywordId={kw.id}
+                        projectId={projectId}
+                        hasLongTail={longTails.length > 0}
+                      />
+                    )}
+                    <span className="text-sm text-right w-16 shrink-0 font-normal">
+                      {kw.volume !== null ? formatVolume(kw.volume) : <span className="text-muted-foreground">—</span>}
+                    </span>
+                    <span className="text-sm text-right w-14 shrink-0 font-normal">
+                      {kw.cpc !== null ? `$${kw.cpc.toFixed(2)}` : <span className="text-muted-foreground">—</span>}
+                    </span>
+                    <span className="text-sm text-right w-16 shrink-0">
+                      {kw.difficulty !== null ? (
+                        <span className="flex items-center justify-end gap-1.5">
+                          <span className={`w-2 h-2 rounded-full shrink-0 ${dot}`} />
+                          <span className="text-xs text-muted-foreground">{label}</span>
+                        </span>
+                      ) : <span className="text-muted-foreground">—</span>}
+                    </span>
+                    <div className="w-16 flex justify-end shrink-0">
+                      <ScoreBadge score={kw.opportunity_score} />
+                    </div>
+                    <MoveKeywordDialog
+                      keywordId={kw.id}
+                      keywordText={kw.keyword}
+                      currentClusterId={cluster.id}
+                      projectId={projectId}
+                      allClusters={allClusters}
+                    />
+                    <KeywordDeleteButton projectId={projectId} keywordId={kw.id} />
+                  </div>
+
+                  {/* Uzun kuyruk satırları */}
+                  {longTails.map((lt) => (
+                    <div
+                      key={lt.id}
+                      className="group flex items-center pl-9 pr-3 py-1.5 border-t border-border/30 bg-secondary/10 hover:bg-secondary/20 gap-2"
+                    >
+                      <span className="text-xs text-muted-foreground/50 shrink-0">↳</span>
+                      <span className="flex-1 text-xs text-muted-foreground min-w-0 truncate">{lt.keyword}</span>
+                      <span className="text-xs text-right w-16 shrink-0 tabular-nums text-muted-foreground">
+                        {lt.volume !== null ? formatVolume(lt.volume) : '—'}
+                      </span>
+                      <span className="text-xs text-right w-14 shrink-0 tabular-nums text-muted-foreground">
+                        {lt.cpc !== null ? `$${lt.cpc.toFixed(2)}` : '—'}
+                      </span>
+                      <span className="w-16 shrink-0" />
+                      <span className="w-16 shrink-0" />
+                      <span className="w-6 shrink-0" />
+                      <KeywordDeleteButton projectId={projectId} keywordId={lt.id} />
+                    </div>
+                  ))}
                 </div>
-                <MoveKeywordDialog
-                  keywordId={kw.id}
-                  keywordText={kw.keyword}
-                  currentClusterId={cluster.id}
-                  projectId={projectId}
-                  allClusters={allClusters}
-                />
-              </div>
-            )
-          })}
+              )
+            })}
 
           {/* Footer */}
           <div className="flex items-center justify-end px-3 py-2 border-t border-border/50 bg-secondary/20">
