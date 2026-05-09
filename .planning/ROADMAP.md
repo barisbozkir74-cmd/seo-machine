@@ -101,7 +101,7 @@ Plans:
 **Plans**: 3 plans
 Plans:
 - [x] 20-01-PLAN.md — DB migration (keyword_clusters.status + projects.keyword_strategy_approved) + supabase db push + Wave 0 test iskeleti (completed 2026-05-09)
-- [ ] 20-02-PLAN.md — 3 yeni server action (updateClusterStatus, removeKeywordFromCluster, approveStrategy) + clusterAndScoreKeywords draft/DraftCluster güncelleme + ClusterButton onSuccess callback
+- [x] 20-02-PLAN.md — 3 yeni server action (updateClusterStatus, removeKeywordFromCluster, approveStrategy) + clusterAndScoreKeywords draft/DraftCluster güncelleme + ClusterButton onSuccess callback (completed 2026-05-09)
 - [ ] 20-03-PLAN.md — ClusteringApprovalOverlay + ApprovalClusterRow + ApprovalKeywordRow + StatusBadge + StratejiOnaylaButton + KeywordStratejisiToolbar + page.tsx & ClusterPanel güncellemeleri
 **UI hint**: yes
 
