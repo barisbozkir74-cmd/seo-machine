@@ -283,7 +283,7 @@ export async function addKeyword(
 // ─── Phase 6: Clustering & Scoring Actions ───────────────────────────────────
 
 export type ClusterAndScoreResult =
-  | { success: true; clusterCount: number }
+  | { success: true; clusterCount: number; clusters: DraftCluster[] }
   | { success: false; error: string }
 
 export async function clusterAndScoreKeywords(
@@ -305,15 +305,37 @@ export async function clusterAndScoreKeywords(
     .single()
   if (!project) return { success: false, error: 'Proje bulunamadı.' }
 
+  // D-05: Approved cluster'ların ID'lerini topla — bunlara dokunulmayacak
+  const { data: approvedClusters } = await supabase
+    .from('keyword_clusters')
+    .select('id')
+    .eq('project_id', projectId)
+    .eq('user_id', user.id)
+    .eq('status', 'approved')
+
+  const approvedClusterIds = (approvedClusters ?? []).map((c) => c.id)
+
+  // Eski draft cluster'ları sil (D-05: approved olanlar korunur — Pitfall 2: upsert conflict önlemi)
+  await supabase
+    .from('keyword_clusters')
+    .delete()
+    .eq('project_id', projectId)
+    .eq('user_id', user.id)
+    .eq('status', 'draft')
+
   // Enriched keywords'ü çek (Pitfall 1: enriched_at IS NOT NULL filtresi)
+  // cluster_id dahil edildi — approved cluster filtresi için
   const { data: keywordsRaw } = await supabase
     .from('keywords')
-    .select('id, keyword, volume, cpc, difficulty, search_intent')
+    .select('id, keyword, volume, cpc, difficulty, search_intent, cluster_id')
     .eq('project_id', projectId)
     .eq('user_id', user.id)
     .not('enriched_at', 'is', null)
 
-  const keywords = keywordsRaw ?? []
+  // D-05: Sadece approved cluster'da olmayan keyword'leri kümelendirmeye al
+  const keywords = (keywordsRaw ?? []).filter(
+    (kw) => !kw.cluster_id || !approvedClusterIds.includes(kw.cluster_id)
+  )
 
   if (keywords.length === 0) {
     return { success: false, error: 'Kümelenecek keyword bulunamadı. Önce zenginleştirme çalıştırın.' }
@@ -331,26 +353,40 @@ export async function clusterAndScoreKeywords(
   const scoringCtx = buildScoringContext(keywords)
 
   let clusterCount = 0
+  const draftClusters: DraftCluster[] = []
 
   for (const cluster of clusters) {
-    // keyword_clusters UPSERT — onConflict: project_id,cluster_name (Pitfall 3 önlemi: name "(intent)" suffix zaten içeriyor)
+    // INSERT (upsert değil — Pitfall 2: approved cluster üzerine yazma önlemi)
+    // status: 'draft' — D-08: AI önerisi her zaman draft başlar
     const { data: clusterRow, error: clusterErr } = await supabase
       .from('keyword_clusters')
-      .upsert(
-        {
-          user_id: user.id,
-          project_id: projectId,
-          cluster_name: cluster.name,
-          total_volume: cluster.totalVolume,
-          intent: cluster.intent,
-        },
-        { onConflict: 'project_id,cluster_name', ignoreDuplicates: false }
-      )
+      .insert({
+        user_id: user.id,
+        project_id: projectId,
+        cluster_name: cluster.name,
+        total_volume: cluster.totalVolume,
+        intent: cluster.intent,
+        status: 'draft',
+      })
       .select('id')
       .single()
 
     if (clusterErr || !clusterRow) continue
     clusterCount++
+
+    // DraftCluster listesi için kaydet (D-08: overlay'e data aktarımı)
+    draftClusters.push({
+      id: clusterRow.id,
+      cluster_name: cluster.name,
+      intent: cluster.intent ?? null,
+      total_volume: cluster.totalVolume,
+      status: 'draft',
+      keywords: cluster.keywords.map((kw) => ({
+        id: kw.id,
+        keyword: kw.keyword,
+        volume: kw.volume ?? null,
+      })),
+    })
 
     // Her keyword için opportunity_score hesapla ve cluster_id + score güncelle
     const updates = cluster.keywords.map((kw) => ({
@@ -403,8 +439,8 @@ export async function clusterAndScoreKeywords(
     )
   )
 
-  revalidatePath(`/projeler/${projectId}/keyword-stratejisi`)
-  return { success: true, clusterCount }
+  // revalidatePath KALDIRILDI — overlay kapandıktan sonra approveStrategy veya router.refresh() tetikler
+  return { success: true, clusterCount, clusters: draftClusters }
 }
 
 export type MoveKeywordResult = { success: true } | { success: false; error: string }
