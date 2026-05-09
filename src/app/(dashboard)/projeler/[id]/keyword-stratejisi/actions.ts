@@ -875,3 +875,70 @@ export async function approveStrategy(
   revalidatePath(`/projeler/${projectId}/keyword-stratejisi`)
   return { success: true }
 }
+
+// DraftCluster: clusterAndScoreKeywords'ün overlay'e döneceği tip
+export type DraftCluster = {
+  id: string
+  cluster_name: string
+  intent: string | null
+  total_volume: number
+  status: 'draft'
+  keywords: Array<{ id: string; keyword: string; volume: number | null }>
+}
+
+export type RemoveKeywordFromClusterResult =
+  | { success: true }
+  | { success: false; error: string }
+
+export async function removeKeywordFromCluster(
+  keywordId: string,
+  clusterId: string,
+  projectId: string
+): Promise<RemoveKeywordFromClusterResult> {
+  const uuidRegex = /^[0-9a-f-]{36}$/i
+  if (!uuidRegex.test(keywordId) || !uuidRegex.test(clusterId) || !uuidRegex.test(projectId)) {
+    return { success: false, error: 'Geçersiz ID formatı.' }
+  }
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Oturum bulunamadı.' }
+
+  // T-20-01: Cluster ownership check — IDOR önlemi
+  const { data: clusterRow } = await supabase
+    .from('keyword_clusters')
+    .select('id')
+    .eq('id', clusterId)
+    .eq('project_id', projectId)
+    .eq('user_id', user.id)
+    .single()
+  if (!clusterRow) return { success: false, error: 'Küme bulunamadı.' }
+
+  // keyword.cluster_id = null — havuza gönder (D-03)
+  const { error: kwErr } = await supabase
+    .from('keywords')
+    .update({ cluster_id: null })
+    .eq('id', keywordId)
+    .eq('user_id', user.id)
+
+  if (kwErr) return { success: false, error: 'Keyword kaldırılamadı.' }
+
+  // Pitfall 7: total_volume güncelle — kalan keyword'lerin volume'unu topla
+  const { data: remaining } = await supabase
+    .from('keywords')
+    .select('volume')
+    .eq('cluster_id', clusterId)
+    .eq('user_id', user.id)
+
+  const newVolume = (remaining ?? []).reduce((sum, k) => sum + (k.volume ?? 0), 0)
+
+  await supabase
+    .from('keyword_clusters')
+    .update({ total_volume: newVolume })
+    .eq('id', clusterId)
+    .eq('user_id', user.id)
+
+  // revalidatePath YOK — overlay state korunur (Pitfall 3)
+  // Not: Cluster boşalırsa silinmez — kullanıcı ayrıca reddeder (Pitfall 4)
+  return { success: true }
+}
