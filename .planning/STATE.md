@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: AI-Powered Project Intelligence Layer
-status: executing
-stopped_at: Phase 20 Plan 02 complete — Wave 1 done (backend actions + ClusterButton)
-last_updated: "2026-05-09T18:52:00.000Z"
-last_activity: 2026-05-09 — Phase 20 Plan 02 executed (Wave 1)
+status: completed
+stopped_at: Completed 20-03-PLAN.md — Wave 2 UI overlay tamamlandı; Phase 20 bitti
+last_updated: "2026-05-09T17:57:53.638Z"
+last_activity: 2026-05-09 — Phase 20 Plan 02 executed
 progress:
   total_phases: 5
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 9
   completed_plans: 9
   percent: 100
@@ -21,15 +21,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-08)
 
 **Core value:** Her website projesi için sıfırdan açılıp kurgulanan, tüm kararları kaydeden ve stage bazlı ilerleyen tek merkezi proje yönetim sistemi
-**Current focus:** Phase 20 — AI Keyword Clustering & Approval (Plan 03 Wave 2 next — UI components)
+**Current focus:** Phase 21 — Site Blueprint Auto-Generation Gate
 
 ## Current Position
 
-Phase: 20 — IN PROGRESS (Plans 01-02 complete, Plan 03 Wave 2 next)
-Status: Wave 1 complete — all server actions ready, ClusterButton extended, 11 tests green
-Last activity: 2026-05-09 — Phase 20 Plan 02 executed
+Phase: 20 — COMPLETE (all 3 plans done)
+Status: Wave 2 complete — ClusteringApprovalOverlay + all UI bileşenleri; 6 yeni dosya; 0 TS hatası
+Last activity: 2026-05-09 — Phase 20 Plan 03 executed
 
-Progress: v3.0 COMPLETE — 17/17 phases done. v4.0: Phase 18 ✓, Phase 19 ✓, Phase 20 Plans 01+02 ✓.
+Progress: [██████████] 100%
 
 ## v4.0 Phase Summary
 
@@ -37,7 +37,7 @@ Progress: v3.0 COMPLETE — 17/17 phases done. v4.0: Phase 18 ✓, Phase 19 ✓,
 |-------|------|--------------|--------|
 | 18 | Project Launch Gate & Sector Research | PROJ-06, PROJ-07, SRCH-01, SRCH-02, SRCH-03 | Complete |
 | 19 | AI Keyword Data Acquisition | KWST-01, KWST-02, KWST-05 | Complete |
-| 20 | AI Keyword Clustering & Approval | KWST-03, KWST-04 | In Progress — Plans 01+02 done (2/3) |
+| 20 | AI Keyword Clustering & Approval | KWST-03, KWST-04 | Complete — all 3 plans done |
 | 21 | Site Blueprint Auto-Generation Gate | BLUE-06 | Not started |
 | 22 | Polish & Carry-overs | MON-03, PAGE-05 | Not started |
 
@@ -58,6 +58,9 @@ Recent decisions affecting current work:
 - 20-02: clusterAndScoreKeywords upsert INSERT ile değiştirildi — approved cluster overwrite önlemi (D-05 + Pitfall 2)
 - 20-02: revalidatePath clusterAndScoreKeywords'den kaldırıldı — overlay açıkken page refresh state sıfırlar (Pitfall 3)
 - 20-02: DraftCluster type actions.ts'de export edildi — Wave 2 bileşenleri aynı kaynaktan import eder
+- ClusteringApprovalOverlay native div overlay: Radix Dialog değil — portal stack + revalidatePath etkileşimi riski önlendi
+- KeywordStratejisiToolbar client wrapper: SSR page.tsx useState taşıyamaz; overlay state ayrı bileşende (Pattern 1)
+- router.refresh() overlay kapanışında: status değişiklikleri ClusterPanel'e SSR yolu ile yansır
 
 ### Pending Todos
 
@@ -78,8 +81,8 @@ Carried forward from v3.0 (now mapped to Phase 22):
 
 ## Session Continuity
 
-Last session: 2026-05-09
-Stopped at: Phase 20 Plan 02 complete — 20-02-SUMMARY.md created
-Next action: Execute Phase 20 Plan 03 (Wave 2 — ClusteringApprovalOverlay + UI components + page.tsx update)
+Last session: 2026-05-09T17:57:53.628Z
+Stopped at: Completed 20-03-PLAN.md — Wave 2 UI overlay tamamlandı; Phase 20 bitti
+Next action: Execute Phase 21 — Site Blueprint Auto-Generation Gate (BLUE-06)
 
-**Wave 1 ready:** removeKeywordFromCluster action tested; clusterAndScoreKeywords returns DraftCluster[]; ClusterButton has onSuccess prop; 11/11 tests green.
+**Phase 20 ready:** All 3 plans complete — server actions + ClusterButton + full overlay UI; KWST-03 + KWST-04 done; keyword_strategy_approved flag DB'de yazılıyor.

@@ -23,8 +23,10 @@ Proje bilgilerinden otomatik başlayan, sektör araştırması yapan ve keyword 
 
 - [ ] **KWST-01**: Proje rakiplerinin kullandığı keywordler DataForSEO ile otomatik çekilir
 - [ ] **KWST-02**: Ana keywordler + rakip keywordler + ilişkili genişletmelerden birleşik keyword havuzu oluşturulur
-- [ ] **KWST-03**: AI keyword havuzunu gruplar ve kullanıcıya gruplama önerileri sunar
-- [ ] **KWST-04**: Kullanıcı önerilen grupları kabul/red/düzenleyebilir; onaylananlar keyword tablosuna işlenir
+- [x] **KWST-03
+**: AI keyword havuzunu gruplar ve kullanıcıya gruplama önerileri sunar
+- [x] **KWST-04
+**: Kullanıcı önerilen grupları kabul/red/düzenleyebilir; onaylananlar keyword tablosuna işlenir
 - [ ] **KWST-05**: Mevcut CSV import akışı korunur ve AI keyword akışıyla birlikte çalışır
 
 ### Site Blueprint Gate
