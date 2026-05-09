@@ -41,6 +41,7 @@ Projedeki mevcut Tailwind token örüntüsünden türetildi. Yeni spacing tanım
 | 2xl | gap-4 | 16px | Card grid gap |
 
 **Exceptions:**
+- 12px (px-3/py-3) — mevcut projenin compact satır padding'i (`ClusterPanel.tsx`, `page.tsx`). 8px ile 16px arası geçiş değeri; tüm layout'ları yeniden yazmayı gerektirmeden tutarlılık sağlar.
 - Touch target minimum 36px yükseklik (h-9 = 36px) — mevcut Button default.
 - Overlay panel inner scroll: `max-h` değerleri viewport bağımlı, sabit token dışında.
 
@@ -135,6 +136,8 @@ Bu fazda kullanılan ve oluşturulan bileşenler:
 │ └─────────────────────────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────────────────┘
 ```
+
+**Primary focal point: Sol panel — cluster listesi ilk satırı. Sağ panel secondary (detay); header tertiary (başlık + bulk aksiyonlar).**
 
 ### Overlay CSS Contract
 
