@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: AI-Powered Project Intelligence Layer
-status: completed
-stopped_at: Completed 20-03-PLAN.md — Wave 2 UI overlay tamamlandı; Phase 20 bitti
-last_updated: "2026-05-10T00:00:00.000Z"
-last_activity: 2026-05-10 — Phase 20 complete, human approved
+status: in_progress
+stopped_at: Phase 21 discuss complete — 21-CONTEXT.md + 21-DISCUSSION-LOG.md yazıldı
+last_updated: "2026-05-10T09:40:00.000Z"
+last_activity: 2026-05-10 — Phase 21 discuss complete
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 9
   completed_plans: 9
-  percent: 100
+  percent: 60
 ---
 
 # Project State
@@ -25,11 +25,11 @@ See: .planning/PROJECT.md (updated 2026-05-08)
 
 ## Current Position
 
-Phase: 20 — COMPLETE (all 3 plans done)
-Status: Wave 2 complete — ClusteringApprovalOverlay + all UI bileşenleri; 6 yeni dosya; 0 TS hatası
-Last activity: 2026-05-09 — Phase 20 Plan 03 executed
+Phase: 21 — IN PROGRESS (discuss complete, 0/2 plans done)
+Status: 21-CONTEXT.md yazıldı — "Sistemi Kur" keyword stratejisi sayfasında, approved clusters dialog, overwrite=update, blueprint'e yönlendir
+Last activity: 2026-05-10 — Phase 21 discuss complete
 
-Progress: [██████████] 100%
+Progress: [████████░░] 60%
 
 ## v4.0 Phase Summary
 
@@ -38,7 +38,7 @@ Progress: [██████████] 100%
 | 18 | Project Launch Gate & Sector Research | PROJ-06, PROJ-07, SRCH-01, SRCH-02, SRCH-03 | Complete |
 | 19 | AI Keyword Data Acquisition | KWST-01, KWST-02, KWST-05 | Complete |
 | 20 | AI Keyword Clustering & Approval | KWST-03, KWST-04 | Complete — all 3 plans done |
-| 21 | Site Blueprint Auto-Generation Gate | BLUE-06 | Not started |
+| 21 | Site Blueprint Auto-Generation Gate | BLUE-06 | Discuss complete — 2 plans TBD |
 | 22 | Polish & Carry-overs | MON-03, PAGE-05 | Not started |
 
 ## Accumulated Context
@@ -61,6 +61,11 @@ Recent decisions affecting current work:
 - ClusteringApprovalOverlay native div overlay: Radix Dialog değil — portal stack + revalidatePath etkileşimi riski önlendi
 - KeywordStratejisiToolbar client wrapper: SSR page.tsx useState taşıyamaz; overlay state ayrı bileşende (Pattern 1)
 - router.refresh() overlay kapanışında: status değişiklikleri ClusterPanel'e SSR yolu ile yansır
+- 21-discuss: "Sistemi Kur" keyword-stratejisi sayfasında (KeywordStratejisiToolbar), isStrategyApproved gate
+- 21-discuss: GeneratePagesDialog reused, sadece approved (status='approved') cluster'lar listelenir
+- 21-discuss: alreadyExists → interaktif (disable değil); include=true → overwrite=true → UPDATE (sil değil)
+- 21-discuss: GenerateResult.updated eklendi; başarı sonrası router.push blueprint sayfasına
+- 21-discuss: Site Blueprint "Kümelerden Oluştur" dokunulmaz (D-07 — manuel fallback korunur)
 
 ### Roadmap Evolution
 
@@ -85,8 +90,10 @@ Carried forward from v3.0 (now mapped to Phase 22):
 
 ## Session Continuity
 
-Last session: 2026-05-09T17:57:53.628Z
-Stopped at: Completed 20-03-PLAN.md — Wave 2 UI overlay tamamlandı; Phase 20 bitti
-Next action: Execute Phase 21 — Site Blueprint Auto-Generation Gate (BLUE-06)
+Last session: 2026-05-10T09:40:00.000Z
+Stopped at: Phase 21 discuss complete — 21-CONTEXT.md yazıldı; 5 karar alındı
+Next action: /gsd-plan-phase 21 → 21-01-PLAN.md (server action overwrite) + 21-02-PLAN.md (dialog + toolbar + page.tsx)
 
-**Phase 20 ready:** All 3 plans complete — server actions + ClusterButton + full overlay UI; KWST-03 + KWST-04 done; keyword_strategy_approved flag DB'de yazılıyor.
+**Phase 21 context ready:** Kararlar — "Sistemi Kur" keyword-stratejisi sayfasında; approved cluster'lar GeneratePagesDialog'da; overwrite=true → UPDATE (sil değil); router.push blueprint'e; alreadyExists interaktif (D-03).
+- Wave 0 (21-01): generatePagesFromClusters overwrite desteği + GenerateResult.updated + vitest
+- Wave 1 (21-02): GeneratePagesDialog güncelleme + KeywordStratejisiToolbar "Sistemi Kur" + page.tsx approvedDialogRows
