@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState, useTransition, type ReactNode } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -56,6 +57,8 @@ export function GeneratePagesDialog({
 }) {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
+  const [successMsg, setSuccessMsg] = useState<string | null>(null)
+  const router = useRouter()
 
   // Her satır için form state — satır index'iyle eşleşir
   const initialState = useMemo<RowState[]>(
@@ -78,6 +81,7 @@ export function GeneratePagesDialog({
     if (!next) {
       setState(initialState)
       setError(null)
+      setSuccessMsg(null)
     }
     onOpenChange(next)
   }
@@ -87,6 +91,7 @@ export function GeneratePagesDialog({
   }
 
   const includedCount = state.filter((r) => r.include).length
+  const hasOverwrite = state.some((r, i) => r.include && rows[i]?.alreadyExists)
 
   const handleSubmit = () => {
     setError(null)
@@ -102,6 +107,7 @@ export function GeneratePagesDialog({
         pageName: state[i].pageName.trim(),
         pageType: state[i].pageType,
         focusKeywordId: rows[i].focusKeywordId,
+        overwrite: rows[i].alreadyExists ? true : undefined,
       })
     }
 
@@ -112,6 +118,16 @@ export function GeneratePagesDialog({
         return
       }
       handleOpenChange(false)
+      // D-04: toast + navigate to blueprint
+      const { created, updated } = result
+      const msg =
+        created > 0 && updated > 0
+          ? `${created} sayfa oluşturuldu, ${updated} güncellendi`
+          : created > 0
+          ? `${created} sayfa oluşturuldu`
+          : `${updated} sayfa güncellendi`
+      setSuccessMsg(msg)
+      router.push(`/projeler/${projectId}/site-blueprint`)
     })
   }
 
@@ -125,7 +141,7 @@ export function GeneratePagesDialog({
 
         {rows.length === 0 ? (
           <p className="text-sm text-muted-foreground py-8 text-center">
-            Kümelenmiş keyword bulunamadı. Önce keyword stratejisi sayfasından kümeleme yapın.
+            Onaylanmış küme bulunamadı. Önce keyword stratejisi sayfasından kümeleme yapın.
           </p>
         ) : (
           <div className="rounded-md border border-border overflow-hidden">
@@ -141,7 +157,6 @@ export function GeneratePagesDialog({
             <div className="max-h-96 overflow-y-auto">
               {rows.map((r, idx) => {
                 const rowState = state[idx]
-                const disabled = r.alreadyExists || isPending
                 const rowBg = r.alreadyExists ? 'bg-amber-500/10' : ''
                 return (
                   <div
@@ -159,10 +174,8 @@ export function GeneratePagesDialog({
                         type="text"
                         value={rowState.pageName}
                         onChange={(e) => updateRow(idx, { pageName: e.target.value })}
-                        disabled={disabled}
-                        className={`w-full bg-transparent border-b border-border focus:outline-none focus:border-ring text-sm py-0.5 ${
-                          disabled ? 'opacity-50 cursor-not-allowed' : ''
-                        }`}
+                        disabled={isPending}
+                        className="w-full bg-transparent border-b border-border focus:outline-none focus:border-ring text-sm py-0.5"
                       />
                       {r.alreadyExists && (
                         <span className="ml-2 text-xs px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 shrink-0">
@@ -176,7 +189,7 @@ export function GeneratePagesDialog({
                       <select
                         value={rowState.pageType}
                         onChange={(e) => updateRow(idx, { pageType: e.target.value })}
-                        disabled={disabled}
+                        disabled={isPending}
                         className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                       >
                         {Object.entries(PAGE_TYPE_LABELS).map(([value, label]) => (
@@ -210,10 +223,11 @@ export function GeneratePagesDialog({
         )}
 
         {error && <p className="text-sm text-destructive">{error}</p>}
+        {successMsg && <p className="text-sm text-emerald-400">{successMsg}</p>}
 
         <DialogFooter className="sm:justify-between">
           <span className="text-sm text-muted-foreground self-center">
-            {includedCount} sayfa oluşturulacak
+            {includedCount} sayfa {hasOverwrite ? 'oluşturulacak / güncellenecek' : 'oluşturulacak'}
           </span>
           <div className="flex gap-2">
             <Button
@@ -230,7 +244,7 @@ export function GeneratePagesDialog({
               disabled={isPending || includedCount === 0 || rows.length === 0}
               className={isPending ? 'opacity-50 cursor-wait' : ''}
             >
-              {isPending ? 'Oluşturuluyor…' : 'Oluştur'}
+              {isPending ? 'Oluşturuluyor…' : 'Oluştur / Güncelle'}
             </Button>
           </div>
         </DialogFooter>
