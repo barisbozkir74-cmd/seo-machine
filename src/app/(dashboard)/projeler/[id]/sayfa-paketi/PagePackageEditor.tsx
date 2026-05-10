@@ -12,6 +12,7 @@ import { QaBadge, computeQaRules, type QaRule } from './QaBadge'
 import { PackageStatusBadge } from './PackageStatusBadge'
 import { GscIndexBadge } from './GscIndexBadge'
 import { LockedBanner } from './LockedBanner'
+import { RevisionHistorySheet } from './RevisionHistorySheet'
 import {
   Dialog,
   DialogTrigger,
@@ -291,6 +292,9 @@ export function PagePackageEditor({
   const [aiStatus, setAiStatus] = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
   const [aiError, setAiError] = useState('')
 
+  // Revision History state
+  const [historyOpen, setHistoryOpen] = useState(false)
+
   // QA Dialog state
   const [qaDialogOpen, setQaDialogOpen] = useState(false)
   const [qaDialogPhase, setQaDialogPhase] = useState<'rules' | 'loading' | 'result' | 'error'>('rules')
@@ -311,6 +315,27 @@ export function PagePackageEditor({
     if (fields.content_blocks) setContentBlocks(jsonString(fields.content_blocks))
     if (fields.secondary_keywords) setSecondaryKeywords(jsonString(fields.secondary_keywords))
     if (fields.faq) setFaq(jsonString(fields.faq))
+  }
+
+  function applyRevision(snapshot: Record<string, unknown>) {
+    if (snapshot.seo_title !== undefined) setSeoTitle(String(snapshot.seo_title ?? ''))
+    if (snapshot.meta_description !== undefined) setMetaDescription(String(snapshot.meta_description ?? ''))
+    if (snapshot.h1 !== undefined) setH1(String(snapshot.h1 ?? ''))
+    if (snapshot.slug !== undefined) setSlug(String(snapshot.slug ?? ''))
+    if (snapshot.canonical_url !== undefined) setCanonicalUrl(String(snapshot.canonical_url ?? ''))
+    if (snapshot.strategic_purpose !== undefined) setStrategicPurpose(String(snapshot.strategic_purpose ?? ''))
+    if (snapshot.search_intent !== undefined) setSearchIntent(String(snapshot.search_intent ?? ''))
+    if (snapshot.schema_type !== undefined) setSchemaType(String(snapshot.schema_type ?? ''))
+    if (snapshot.page_type !== undefined) setPageType(String(snapshot.page_type ?? ''))
+    if (snapshot.heading_hierarchy !== undefined) setHeadingHierarchy(jsonString(snapshot.heading_hierarchy))
+    if (snapshot.content_blocks !== undefined) setContentBlocks(jsonString(snapshot.content_blocks))
+    if (snapshot.cta_blocks !== undefined) setCtaBlocks(jsonString(snapshot.cta_blocks))
+    if (snapshot.image_plan !== undefined) setImagePlan(jsonString(snapshot.image_plan))
+    if (snapshot.alt_texts !== undefined) setAltTexts(jsonString(snapshot.alt_texts))
+    if (snapshot.secondary_keywords !== undefined) setSecondaryKeywords(jsonString(snapshot.secondary_keywords))
+    if (snapshot.faq !== undefined) setFaq(jsonString(snapshot.faq))
+    if (snapshot.schema_jsonld !== undefined) setSchemaJsonLd(jsonString(snapshot.schema_jsonld))
+    setHistoryOpen(false)
   }
 
   async function handleAiGenerate() {
@@ -636,6 +661,11 @@ export function PagePackageEditor({
           )}
 
           <div className="flex items-center gap-2 shrink-0">
+            {pkg !== null && (
+              <Button variant="ghost" size="sm" onClick={() => setHistoryOpen(true)}>
+                Geçmiş
+              </Button>
+            )}
             {/* No package state */}
             {!pkg && (
               <>
@@ -833,6 +863,17 @@ export function PagePackageEditor({
 
           </DialogContent>
         </Dialog>
+
+        {/* Revision History Sheet — D-05 */}
+        {pkg !== null && (
+          <RevisionHistorySheet
+            projectId={projectId}
+            pageId={page.id}
+            open={historyOpen}
+            onOpenChange={setHistoryOpen}
+            onLoadRevision={applyRevision}
+          />
+        )}
 
         {/* AI feedback */}
         {aiStatus === 'done' && (
