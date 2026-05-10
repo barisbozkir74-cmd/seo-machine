@@ -1,0 +1,56 @@
+{
+  "phase": "22",
+  "phase_name": "Polish & Carry-overs",
+  "timestamp": "2026-05-10T16:15:00.000Z",
+  "status": "complete",
+  "areas_completed": [
+    "MON-03: Imported pages izlemede nasıl görünür",
+    "PAGE-05: Revision ne zaman kaydedilir",
+    "PAGE-05: Geçmiş listesi UI'da nerede durur",
+    "PAGE-05: Geri yükleme davranışı"
+  ],
+  "areas_remaining": [],
+  "decisions": {
+    "MON-03: Imported pages izlemede nasıl görünür": [
+      {
+        "question": "Imported pages izleme sayfasında nasıl görünmeli?",
+        "answer": "Mevcut 'Sayfalar' sekmesine eklenir",
+        "decision_ref": "D-01"
+      },
+      {
+        "question": "GSC bağlantısı olmayan bir proje izleme sayfasını açinca imported pages görünsün mü?",
+        "answer": "Evet, GSC olmadan da görünsün",
+        "decision_ref": "D-02"
+      },
+      {
+        "question": "Cluster özetleri (kümeler sekmesi) imported pages'i nasıl görsün?",
+        "answer": "Imported pages cluster özetine dahil edilmez",
+        "decision_ref": "D-03"
+      }
+    ],
+    "PAGE-05: Revision History": [
+      {
+        "question": "Sayfa paketi için revision ne zaman oluşturulmalı?",
+        "answer": "Her 'Kaydet' aksiyonunda otomatik",
+        "decision_ref": "D-04"
+      },
+      {
+        "question": "Revision geçmişi listesi sayfa-paketi UI'ında nerede durmalı?",
+        "answer": "Drawer / sheet olarak — 'Geçmiş' butonu sağ üstte açar",
+        "decision_ref": "D-05"
+      },
+      {
+        "question": "'Geri yükle' aksiyonu ne yapmalı?",
+        "answer": "Preview gösterir, kullanıcı 'Bunu Yükle' ile onaylar",
+        "decision_ref": "D-06"
+      }
+    ]
+  },
+  "deferred_ideas": [
+    "Revision saklama limiti / cleanup job",
+    "Imported pages'i cluster'a bağlama akışı",
+    "GSC'siz projelerde clusters/recovery sekme davranışı değişmez"
+  ],
+  "context_file": "22-CONTEXT.md",
+  "discussion_log": "22-DISCUSSION-LOG.md"
+}
