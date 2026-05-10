@@ -142,7 +142,12 @@ Plans:
   1. Monitoring dashboard'da imported pages verisi görüntülenir ve cluster bazlı özetlere dahil edilir
   2. Kullanıcı her sayfa paketi için geçmiş versiyonları listede görür ve herhangi bir versiyona geri dönebilir
   3. Yeni kayıt yapıldığında önceki versiyon otomatik olarak revision history'ye eklenir
-**Plans**: TBD
+**Plans**: 4 plans
+Plans:
+- [ ] 22-01-PLAN.md — shadcn Sheet kurulumu + page_package_revisions migration + supabase db push [BLOCKING]
+- [ ] 22-02-PLAN.md — MON-03: ImportedPageRow type + getImportedPageMetrics + PageMetricsTable importedPages + izleme/page.tsx GSC gate split
+- [ ] 22-03-PLAN.md — PAGE-05: updatePagePackage revision insert + getRevisions server action + RevisionRow type
+- [ ] 22-04-PLAN.md — PAGE-05 UI: RevisionHistorySheet + RevisionPreviewDialog + PagePackageEditor "Geçmiş" button wiring
 **UI hint**: yes
 
 ## Progress
@@ -171,5 +176,5 @@ Plans:
 | 19. AI Keyword Data Acquisition | v4.0 | 3/3 | Complete | 2026-05-09 |
 | 20. AI Keyword Clustering & Approval | v4.0 | 3/3 | Complete | 2026-05-10 |
 | 21. Site Blueprint Auto-Generation Gate | v4.0 | 0/2 | Not started | - |
-| 22. Polish & Carry-overs | v4.0 | 0/TBD | Not started | - |
+| 22. Polish & Carry-overs | v4.0 | 0/4 | Not started | - |
 | 23. Keyword Strategy AI Intelligence Layer | v4.0 | 0/TBD | Not started | - |
