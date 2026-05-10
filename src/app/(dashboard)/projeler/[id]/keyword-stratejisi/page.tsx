@@ -218,7 +218,7 @@ export default async function KeywordStratejisiPage({
               <KeywordStratejisiToolbar
                 projectId={id}
                 hasExistingClusters={totalClusters > 0}
-                hasApprovedCluster={clusters.some((c) => (c as unknown as { status: string }).status === 'approved')}
+                hasApprovedCluster={clustersWithKeywords.some((c) => c.status === 'approved')}
                 isStrategyApproved={(project as unknown as { keyword_strategy_approved: boolean | null }).keyword_strategy_approved ?? false}
                 approvedDialogRows={approvedDialogRows}
               />
