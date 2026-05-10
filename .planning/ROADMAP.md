@@ -51,7 +51,7 @@ Archive: `.planning/milestones/v3.0-ROADMAP.md`
 
 - [x] **Phase 18: Project Launch Gate & Sector Research** - Proje bilgileri tamamlanınca "Projeyi Başlat" aktifleşir ve sektör araştırmasını otomatik tetikler (completed 2026-05-08)
 - [x] **Phase 19: AI Keyword Data Acquisition** - DataForSEO ile rakip keywordleri çekme, CSV akışıyla birleştirme, birleşik keyword havuzu oluşturma (completed 2026-05-09)
-- [ ] **Phase 20: AI Keyword Clustering & Approval** - Keyword havuzunu AI ile gruplama, kullanıcı onay/red/düzenleme akışı, onaylananları sisteme işleme
+- [x] **Phase 20: AI Keyword Clustering & Approval** - Keyword havuzunu AI ile gruplama, kullanıcı onay/red/düzenleme akışı, onaylananları sisteme işleme (completed 2026-05-10)
 - [ ] **Phase 21: Site Blueprint Auto-Generation Gate** - Onaylanan keyword stratejisinden "Sistemi Kur" tetiklenince site blueprint otomatik oluşturulması
 - [ ] **Phase 22: Polish & Carry-overs** - Monitoring + imported pages entegrasyonu ve revision history
 
@@ -102,7 +102,7 @@ Plans:
 Plans:
 - [x] 20-01-PLAN.md — DB migration (keyword_clusters.status + projects.keyword_strategy_approved) + supabase db push + Wave 0 test iskeleti (completed 2026-05-09)
 - [x] 20-02-PLAN.md — 3 yeni server action (updateClusterStatus, removeKeywordFromCluster, approveStrategy) + clusterAndScoreKeywords draft/DraftCluster güncelleme + ClusterButton onSuccess callback (completed 2026-05-09)
-- [ ] 20-03-PLAN.md — ClusteringApprovalOverlay + ApprovalClusterRow + ApprovalKeywordRow + StatusBadge + StratejiOnaylaButton + KeywordStratejisiToolbar + page.tsx & ClusterPanel güncellemeleri
+- [x] 20-03-PLAN.md — ClusteringApprovalOverlay + ApprovalClusterRow + ApprovalKeywordRow + StatusBadge + StratejiOnaylaButton + KeywordStratejisiToolbar + page.tsx & ClusterPanel güncellemeleri (completed 2026-05-10)
 **UI hint**: yes
 
 ### Phase 21: Site Blueprint Auto-Generation Gate
@@ -151,6 +151,6 @@ Plans:
 | 17. Keyword Intelligence | v3.0 | 3/3 | Complete | 2026-05-08 |
 | 18. Project Launch Gate & Sector Research | v4.0 | 3/3 | Complete    | 2026-05-08 |
 | 19. AI Keyword Data Acquisition | v4.0 | 3/3 | Complete | 2026-05-09 |
-| 20. AI Keyword Clustering & Approval | v4.0 | 1/3 | In Progress | - |
+| 20. AI Keyword Clustering & Approval | v4.0 | 3/3 | Complete | 2026-05-10 |
 | 21. Site Blueprint Auto-Generation Gate | v4.0 | 0/TBD | Not started | - |
 | 22. Polish & Carry-overs | v4.0 | 0/TBD | Not started | - |
