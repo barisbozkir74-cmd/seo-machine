@@ -116,7 +116,7 @@ Plans:
   3. Oluşturulan blueprint kullanıcı tarafından mevcut site blueprint arayüzünde görüntülenebilir ve düzenlenebilir
 **Plans**: 2 plans
 Plans:
-- [ ] 21-01-PLAN.md — generatePagesFromClusters overwrite desteği + GenerateResult.updated + vitest testleri
+- [x] 21-01-PLAN.md — generatePagesFromClusters overwrite desteği + GenerateResult.updated + vitest testleri (completed 2026-05-10)
 - [ ] 21-02-PLAN.md — GeneratePagesDialog alreadyExists interaktif + KeywordStratejisiToolbar "Sistemi Kur" + keyword-stratejisi/page.tsx approvedDialogRows
 **UI hint**: yes
 
