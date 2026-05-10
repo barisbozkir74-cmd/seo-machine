@@ -62,6 +62,10 @@ Recent decisions affecting current work:
 - KeywordStratejisiToolbar client wrapper: SSR page.tsx useState taşıyamaz; overlay state ayrı bileşende (Pattern 1)
 - router.refresh() overlay kapanışında: status değişiklikleri ClusterPanel'e SSR yolu ile yansır
 
+### Roadmap Evolution
+
+- Phase 23 added: Keyword Strategy AI Intelligence Layer — proaktif SEO Strategist + Traffic Architect AI, cross-module context aggregation, Second Review AI sistemi, cluster decision memory propagation (2026-05-10)
+
 ### Pending Todos
 
 None.

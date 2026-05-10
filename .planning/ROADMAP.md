@@ -54,6 +54,7 @@ Archive: `.planning/milestones/v3.0-ROADMAP.md`
 - [x] **Phase 20: AI Keyword Clustering & Approval** - Keyword havuzunu AI ile gruplama, kullanıcı onay/red/düzenleme akışı, onaylananları sisteme işleme (completed 2026-05-10)
 - [ ] **Phase 21: Site Blueprint Auto-Generation Gate** - Onaylanan keyword stratejisinden "Sistemi Kur" tetiklenince site blueprint otomatik oluşturulması
 - [ ] **Phase 22: Polish & Carry-overs** - Monitoring + imported pages entegrasyonu ve revision history
+- [ ] **Phase 23: Keyword Strategy AI Intelligence Layer** - Proaktif SEO Strategist + Traffic Architect AI, cross-module context, Second Review AI sistemi, cluster decision memory propagation
 
 ## Phase Details
 
@@ -116,6 +117,19 @@ Plans:
 **Plans**: TBD
 **UI hint**: yes
 
+### Phase 23: Keyword Strategy AI Intelligence Layer
+**Goal**: Keyword strategy bölümünde proaktif çalışan, cross-module context'e sahip, SEO Strategist + Traffic Architect rolünde bir AI katmanı kurulur; Second Review AI sistemi ile cluster kararları tüm modüllere yayılır
+**Depends on**: Phase 20
+**Requirements**: KWST-06, KWST-07
+**Success Criteria** (what must be TRUE):
+  1. Keyword sayfası açılınca AI, tüm modül verilerini (research, rakipler, blueprint, monitoring, GSC) toplayarak soru sormadan proaktif stratejik analiz üretir
+  2. AI 15 analiz sorumluluğunu aktif olarak yerine getirir: intent dağılımı, commercial gap, SERP zayıflığı, cannibalization riski, pillar/support map dahil
+  3. Her cluster için 12-attribute structured output üretilir (page type, difficulty, traffic potential, blueprint impact, internal link map, topical authority contribution)
+  4. Second Review AI sistemi: Primary AI öneri üretir → Review AI intent çakışması + cannibalization + missing commercial pages analizi yapar → karşılaştırma ekranı → human approval
+  5. Keyword modülünde alınan cluster kararları decision memory'ye yazılır ve blueprint / page package / internal link modüllerine otomatik olarak yansır
+**Plans**: TBD
+**UI hint**: yes
+
 ### Phase 22: Polish & Carry-overs
 **Goal**: Monitoring dashboard imported page verileriyle zenginleştirilir ve her sayfa paketinin geçmiş versiyonları revision history olarak izlenebilir hale gelir
 **Depends on**: Phase 21
@@ -154,3 +168,4 @@ Plans:
 | 20. AI Keyword Clustering & Approval | v4.0 | 3/3 | Complete | 2026-05-10 |
 | 21. Site Blueprint Auto-Generation Gate | v4.0 | 0/TBD | Not started | - |
 | 22. Polish & Carry-overs | v4.0 | 0/TBD | Not started | - |
+| 23. Keyword Strategy AI Intelligence Layer | v4.0 | 0/TBD | Not started | - |
