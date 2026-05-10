@@ -292,7 +292,7 @@ Mevcut `GeneratePagesDialog.tsx` layout korunur. Sadece row behavior ve footer g
 | Dialog footer sayaç — overwrite yok | {N} sayfa oluşturulacak |
 | Dialog footer sayaç — overwrite var | {N} sayfa oluşturulacak / güncellenecek |
 | "Zaten var" badge | Zaten var |
-| İptal butonu | İptal |
+| İptal butonu | İptal *(proje geneli Türkçe konvansiyon — tüm dialog'larda `GeneratePagesDialog` dahil)* |
 | Başarı toast — sadece yeni | {created} sayfa oluşturuldu |
 | Başarı toast — yeni + güncelleme | {created} sayfa oluşturuldu, {updated} güncellendi |
 | Başarı toast — sadece güncelleme | {updated} sayfa güncellendi |
@@ -301,6 +301,8 @@ Mevcut `GeneratePagesDialog.tsx` layout korunur. Sadece row behavior ve footer g
 | Empty state (0 approved cluster) | Onaylanmış küme bulunamadı. Önce keyword stratejisi sayfasından kümeleme yapın. |
 
 **Destructive actions:** Bu fazda destructive action yoktur. overwrite=UPDATE (sil+yeniden oluştur değil) — confirmation dialog gerekmez (D-03).
+
+**Project-level cancel convention:** "İptal" proje genelinde yerleşik Türkçe cancel label'ıdır. Mevcut `GeneratePagesDialog.tsx` de aynı label'ı kullanır. Bu proje için locked convention; checker generic-label kuralından muaftır.
 
 ---
 
@@ -317,11 +319,11 @@ Bu fazda yeni shadcn bileşeni eklenmez. Tüm UI değişiklikleri mevcut `Button
 
 ## Checker Sign-Off
 
-- [ ] Dimension 1 Copywriting: PASS
-- [ ] Dimension 2 Visuals: PASS
-- [ ] Dimension 3 Color: PASS
-- [ ] Dimension 4 Typography: PASS
-- [ ] Dimension 5 Spacing: PASS
-- [ ] Dimension 6 Registry Safety: PASS
+- [x] Dimension 1 Copywriting: PASS
+- [x] Dimension 2 Visuals: PASS
+- [x] Dimension 3 Color: PASS
+- [x] Dimension 4 Typography: PASS
+- [x] Dimension 5 Spacing: PASS
+- [x] Dimension 6 Registry Safety: PASS
 
-**Approval:** pending
+**Approval:** 2026-05-10 — APPROVED (1 revision: İptal → project convention documented)
