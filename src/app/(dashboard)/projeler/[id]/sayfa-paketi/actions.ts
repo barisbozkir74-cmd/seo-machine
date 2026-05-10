@@ -287,6 +287,37 @@ export async function updatePagePackage(
   const project = await verifyOwnership(supabase, projectId, user.id)
   if (!project) return { success: false, error: 'Proje bulunamadı.' }
 
+  // D-04: Auto-snapshot before every save
+  // 1. Fetch current package state for snapshot
+  const { data: currentPkg } = await supabase
+    .from('page_packages')
+    .select('*')
+    .eq('page_id', pageId)
+    .eq('project_id', projectId)
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  if (currentPkg) {
+    // 2. Count existing revisions to compute next version_num
+    const { count } = await supabase
+      .from('page_package_revisions')
+      .select('id', { count: 'exact', head: true })
+      .eq('package_id', currentPkg.id)
+
+    const versionNum = (count ?? 0) + 1
+
+    // 3. Insert revision — non-fatal: do not block save on failure
+    await supabase.from('page_package_revisions').insert({
+      package_id: currentPkg.id,
+      page_id: pageId,
+      project_id: projectId,
+      user_id: user.id,
+      snapshot: currentPkg,
+      version_num: versionNum,
+    })
+    // Note: no error check — revision failure does not block save
+  }
+
   const { error } = await supabase
     .from('page_packages')
     .upsert(
