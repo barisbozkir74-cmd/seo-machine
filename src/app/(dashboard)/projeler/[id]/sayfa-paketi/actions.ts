@@ -8,6 +8,13 @@ import { checkUrlIndexStatus } from '@/lib/gsc/index-check'
 
 export type ActionResult = { success: true } | { success: false; error: string }
 
+export type RevisionRow = {
+  id: string
+  version_num: number
+  snapshot: Record<string, unknown>
+  created_at: string
+}
+
 export type ContentSection = {
   heading: string
   level: number
@@ -769,4 +776,37 @@ export async function checkIndexStatus(
   if (updateError) return { success: false, error: 'Sonuç kaydedilemedi.' }
 
   return { success: true, status }
+}
+
+export async function getRevisions(
+  projectId: string,
+  pageId: string
+): Promise<{ success: true; revisions: RevisionRow[] } | { success: false; error: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Oturum bulunamadı.' }
+
+  const project = await verifyOwnership(supabase, projectId, user.id)
+  if (!project) return { success: false, error: 'Proje bulunamadı.' }
+
+  // Resolve package_id from page_id
+  const { data: pkg } = await supabase
+    .from('page_packages')
+    .select('id')
+    .eq('page_id', pageId)
+    .eq('project_id', projectId)
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  if (!pkg) return { success: true, revisions: [] }
+
+  const { data, error } = await supabase
+    .from('page_package_revisions')
+    .select('id, version_num, snapshot, created_at')
+    .eq('package_id', pkg.id)
+    .order('version_num', { ascending: false })
+
+  if (error) return { success: false, error: 'Revizyon geçmişi yüklenemedi.' }
+
+  return { success: true, revisions: (data ?? []) as RevisionRow[] }
 }
