@@ -145,7 +145,7 @@ export function GeneratePagesDialog({
 
             <div className="max-h-96 overflow-y-auto">
               {rows.map((r, idx) => {
-                const rowState = state[idx]
+                const rowState = state[idx] ?? { pageName: r.proposedName, pageType: r.proposedType, include: !r.alreadyExists }
                 const rowBg = r.alreadyExists ? 'bg-amber-500/10' : ''
                 return (
                   <div
