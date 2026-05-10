@@ -387,13 +387,17 @@ export async function reorderPage(
   const current = siblingList[idx]
   const neighbor = siblingList[neighborIdx]
 
-  // sort_order takası — 3 adımlı sentinel swap (WR-01)
+  // sort_order takası — 3 adımlı sentinel swap (WR-04)
   // Step 1: move current to sentinel -1 (cannot collide with valid sort_order >= 0)
-  await supabase
+  const r1 = await supabase
     .from('pages')
     .update({ sort_order: -1 })
     .eq('id', current.id)
     .eq('user_id', user.id)
+
+  if (r1.error) {
+    return { success: false, error: 'Sıralama güncellenemedi.' }
+  }
 
   // Step 2: move neighbor to current's old position
   const r2 = await supabase
