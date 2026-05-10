@@ -3,7 +3,7 @@ import {
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
-import type { PageMetricRow } from '@/lib/monitoring/aggregation'
+import type { PageMetricRow, ImportedPageRow } from '@/lib/monitoring/aggregation'
 
 function formatNumber(n: number): string {
   return n.toLocaleString('tr-TR')
@@ -19,11 +19,24 @@ function formatDelta(delta: number | null): string {
   return delta.toFixed(1)
 }
 
-export function PageMetricsTable({ pages }: { pages: PageMetricRow[] }) {
-  if (pages.length === 0) {
+export function PageMetricsTable({
+  pages,
+  importedPages = [],
+  gscConnected = true,
+}: {
+  pages: PageMetricRow[]
+  importedPages?: ImportedPageRow[]
+  gscConnected?: boolean
+}) {
+  if (pages.length === 0 && importedPages.length === 0) {
     return (
       <div className="rounded-lg border border-border bg-card p-8 text-center">
-        <p className="text-sm text-muted-foreground">GSC verisi bulunamadı</p>
+        <p className="text-base font-semibold">Henüz sayfa verisi yok</p>
+        {!gscConnected && (
+          <p className="text-sm text-muted-foreground mt-2">
+            GSC bağlantısı yok — yalnızca içe aktarılan sayfalar listelenir.
+          </p>
+        )}
       </div>
     )
   }
@@ -71,6 +84,20 @@ export function PageMetricsTable({ pages }: { pages: PageMetricRow[] }) {
               ) : (
                 <span className="text-muted-foreground text-xs">—</span>
               )}
+            </TableCell>
+          </TableRow>
+        ))}
+        {importedPages.map((p) => (
+          <TableRow key={p.pageId} className="hover:bg-muted/50 transition-colors">
+            <TableCell className="text-sm">{p.pageUrl || p.title}</TableCell>
+            <TableCell className="text-right text-sm tabular-nums text-muted-foreground">—</TableCell>
+            <TableCell className="text-right text-sm tabular-nums text-muted-foreground">—</TableCell>
+            <TableCell className="text-right text-sm tabular-nums text-muted-foreground">—</TableCell>
+            <TableCell className="text-right text-sm tabular-nums text-muted-foreground">—</TableCell>
+            <TableCell>
+              <Badge className="bg-blue-500/15 text-blue-400 border border-blue-500/30 text-xs rounded-full px-2 py-0.5">
+                İçe Aktarıldı
+              </Badge>
             </TableCell>
           </TableRow>
         ))}
