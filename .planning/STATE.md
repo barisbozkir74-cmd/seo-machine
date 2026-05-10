@@ -25,9 +25,9 @@ See: .planning/PROJECT.md (updated 2026-05-08)
 
 ## Current Position
 
-Phase: 21 — IN PROGRESS (discuss complete, 0/2 plans done)
-Status: 21-CONTEXT.md yazıldı — "Sistemi Kur" keyword stratejisi sayfasında, approved clusters dialog, overwrite=update, blueprint'e yönlendir
-Last activity: 2026-05-10 — Phase 21 discuss complete
+Phase: 21 — PLANNED (2/2 plans ready, not yet executed)
+Status: 21-01 + 21-02 PLAN.md hazır — plan checker 12/12 passed; UI-SPEC 6/6 approved
+Last activity: 2026-05-10 — Phase 21 planned
 
 Progress: [████████░░] 60%
 
@@ -90,10 +90,8 @@ Carried forward from v3.0 (now mapped to Phase 22):
 
 ## Session Continuity
 
-Last session: 2026-05-10T09:40:00.000Z
-Stopped at: Phase 21 discuss complete — 21-CONTEXT.md yazıldı; 5 karar alındı
-Next action: /gsd-plan-phase 21 → 21-01-PLAN.md (server action overwrite) + 21-02-PLAN.md (dialog + toolbar + page.tsx)
+Last session: 2026-05-10T10:30:00.000Z
+Stopped at: Phase 21 planned — 21-01 + 21-02 PLAN.md hazır, UI-SPEC 6/6, plan checker 12/12
+Next action: /gsd-execute-phase 21 → Wave 1 (server action overwrite) → Wave 2 (UI: dialog + toolbar + page.tsx)
 
-**Phase 21 context ready:** Kararlar — "Sistemi Kur" keyword-stratejisi sayfasında; approved cluster'lar GeneratePagesDialog'da; overwrite=true → UPDATE (sil değil); router.push blueprint'e; alreadyExists interaktif (D-03).
-- Wave 0 (21-01): generatePagesFromClusters overwrite desteği + GenerateResult.updated + vitest
-- Wave 1 (21-02): GeneratePagesDialog güncelleme + KeywordStratejisiToolbar "Sistemi Kur" + page.tsx approvedDialogRows
+**Phase 21 plans ready:** 2 plan, 2 wave — generatePagesFromClusters overwrite + GeneratePagesDialog alreadyExists interactive + KeywordStratejisiToolbar "Sistemi Kur" + keyword-stratejisi/page.tsx approvedDialogRows. BLUE-06 tam kapsandı.
