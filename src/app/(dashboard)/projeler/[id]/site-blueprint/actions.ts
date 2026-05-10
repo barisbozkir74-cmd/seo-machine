@@ -153,10 +153,11 @@ export type GenerateRowInput = {
   pageName: string      // kullanıcının dialog'ta düzenlediği başlık (trim)
   pageType: string      // hizmet | blog | ana-sayfa | kategori | urun | landing ...
   focusKeywordId: string | null  // cluster'ın primary_keyword_id (null olabilir)
+  overwrite?: boolean   // D-03: true → UPDATE mevcut sayfayı (title, page_type, focus_keyword_id)
 }
 
 export type GenerateResult =
-  | { success: true; created: number; skipped: number }
+  | { success: true; created: number; updated: number; skipped: number }
   | { success: false; error: string }
 
 /**
@@ -176,7 +177,7 @@ export async function generatePagesFromClusters(
     return { success: false, error: 'Geçersiz satır listesi.' }
   }
   if (rows.length === 0) {
-    return { success: true, created: 0, skipped: 0 }
+    return { success: true, created: 0, updated: 0, skipped: 0 }
   }
   // Her cluster_id UUID doğrula (T-07-03 tampering önlemi)
   for (const r of rows) {
@@ -240,13 +241,31 @@ export async function generatePagesFromClusters(
       0
     )) + 1
 
-  // Insert payload'ları hazırla — skip'leri tespit et
+  // Insert payload'ları hazırla — skip / overwrite ayrımı (D-03)
   let skipped = 0
   const payloads: Array<Record<string, unknown>> = []
+  const updatePayloads: Array<{ id: string; fields: Record<string, unknown> }> = []
 
   for (const r of rows) {
     if (takenClusterIds.has(r.clusterId)) {
-      skipped++
+      if (r.overwrite) {
+        // D-03: mevcut sayfayı UPDATE et (sil değil)
+        const existingPage = (existingPages ?? []).find(
+          (p: { cluster_id: string | null; id: string }) => p.cluster_id === r.clusterId
+        )
+        if (existingPage) {
+          updatePayloads.push({
+            id: existingPage.id,
+            fields: {
+              title: r.pageName.trim(),
+              page_type: r.pageType || 'blog',
+              focus_keyword_id: r.focusKeywordId,
+            },
+          })
+        }
+      } else {
+        skipped++
+      }
       continue
     }
     const slug = slugify(r.pageName.trim(), Array.from(existingSlugs))
@@ -278,8 +297,20 @@ export async function generatePagesFromClusters(
     created = (inserted ?? []).length
   }
 
+  // D-03: overwrite UPDATE'leri çalıştır
+  let updated = 0
+  for (const u of updatePayloads) {
+    const { error } = await supabase
+      .from('pages')
+      .update(u.fields)
+      .eq('id', u.id)
+      .eq('project_id', projectId)
+      .eq('user_id', user.id)
+    if (!error) updated++
+  }
+
   revalidatePath(`/projeler/${projectId}/site-blueprint`)
-  return { success: true, created, skipped }
+  return { success: true, created, updated, skipped }
 }
 
 // ─── Phase 7: Reorder Page ─────────────────────────────────────────────────
