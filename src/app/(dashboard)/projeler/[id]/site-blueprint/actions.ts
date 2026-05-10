@@ -306,7 +306,10 @@ export async function generatePagesFromClusters(
       .eq('id', u.id)
       .eq('project_id', projectId)
       .eq('user_id', user.id)
-    if (!error) updated++
+    if (error) {
+      return { success: false, error: 'Bazı sayfalar güncellenemedi.' }
+    }
+    updated++
   }
 
   revalidatePath(`/projeler/${projectId}/site-blueprint`)
