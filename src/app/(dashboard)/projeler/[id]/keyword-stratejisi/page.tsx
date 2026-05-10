@@ -20,11 +20,23 @@ import { ProjectPageShell } from '../ProjectPageShell'
 import { MasterSeoMap } from './MasterSeoMap'
 import { AiSuggestButton } from './AiSuggestButton'
 import { KeywordStratejisiToolbar } from './KeywordStratejisiToolbar'
+import { intentToPageType } from '../site-blueprint/page-utils'
+import { type DialogRow } from '../site-blueprint/GeneratePagesDialog'
 
 function kdColor(kd: number): { dot: string; label: string } {
   if (kd < 30) return { dot: 'bg-emerald-400', label: 'Kolay' }
   if (kd <= 60) return { dot: 'bg-amber-400', label: 'Orta' }
   return { dot: 'bg-red-400', label: 'Zor' }
+}
+
+// D-05: inline copy (3-line helper, DRY feda edilebilir per D-05)
+function stripIntentSuffix(name: string): string {
+  return name
+    .replace(/\s*\((commercial|informational|navigational|transactional|unknown)\)\s*$/i, '')
+    .trim()
+    .split(/\s+/)
+    .map((w) => (w.length > 0 ? w[0].toUpperCase() + w.slice(1).toLowerCase() : ''))
+    .join(' ')
 }
 
 function formatVolume(v: number): string {
@@ -106,6 +118,18 @@ export default async function KeywordStratejisiPage({
 
   const clusters = clustersRaw ?? []
 
+  // D-06: alreadyExists hesabı — cluster_id'si bir sayfaya bağlı olanları bul
+  const { data: pagesWithClusters } = await supabase
+    .from('pages')
+    .select('cluster_id')
+    .eq('project_id', id)
+    .eq('user_id', user.id)
+    .not('cluster_id', 'is', null)
+
+  const clusterIdsWithPages = new Set(
+    (pagesWithClusters ?? []).map((p: { cluster_id: string }) => p.cluster_id)
+  )
+
   const clusterMap: Record<string, string> = {}
   for (const c of clusters) {
     clusterMap[c.id] = c.cluster_name
@@ -124,6 +148,27 @@ export default async function KeywordStratejisiPage({
     status: (c as unknown as { status: string | null }).status ?? null,  // YENİ
     keywords: clusterKeywordMap[c.id] ?? [],
   }))
+
+  // Zero-query approach: keyword metni zaten keywords[] içinde — yeni sorgu yok
+  const keywordIdToText = new Map<string, string>()
+  for (const kw of keywords) {
+    keywordIdToText.set(kw.id, kw.keyword)
+  }
+
+  // D-02: sadece approved + primary_keyword_id olan cluster'lar dialog'a girer
+  const approvedDialogRows: DialogRow[] = clustersWithKeywords
+    .filter((c) => c.status === 'approved' && c.primary_keyword_id !== null)
+    .map((c) => ({
+      clusterId: c.id,
+      clusterName: c.cluster_name,
+      proposedName: stripIntentSuffix(c.cluster_name),
+      proposedType: intentToPageType(c.intent),
+      focusKeyword: c.primary_keyword_id
+        ? (keywordIdToText.get(c.primary_keyword_id) ?? null)
+        : null,
+      focusKeywordId: c.primary_keyword_id,
+      alreadyExists: clusterIdsWithPages.has(c.id),
+    }))
 
   const allClusters = clusters.map((c) => ({
     id: c.id,
@@ -175,6 +220,7 @@ export default async function KeywordStratejisiPage({
                 hasExistingClusters={totalClusters > 0}
                 hasApprovedCluster={clusters.some((c) => (c as unknown as { status: string }).status === 'approved')}
                 isStrategyApproved={(project as unknown as { keyword_strategy_approved: boolean | null }).keyword_strategy_approved ?? false}
+                approvedDialogRows={approvedDialogRows}
               />
             </>
           )}
