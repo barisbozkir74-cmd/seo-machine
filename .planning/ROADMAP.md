@@ -52,7 +52,7 @@ Archive: `.planning/milestones/v3.0-ROADMAP.md`
 - [x] **Phase 18: Project Launch Gate & Sector Research** - Proje bilgileri tamamlanınca "Projeyi Başlat" aktifleşir ve sektör araştırmasını otomatik tetikler (completed 2026-05-08)
 - [x] **Phase 19: AI Keyword Data Acquisition** - DataForSEO ile rakip keywordleri çekme, CSV akışıyla birleştirme, birleşik keyword havuzu oluşturma (completed 2026-05-09)
 - [x] **Phase 20: AI Keyword Clustering & Approval** - Keyword havuzunu AI ile gruplama, kullanıcı onay/red/düzenleme akışı, onaylananları sisteme işleme (completed 2026-05-10)
-- [ ] **Phase 21: Site Blueprint Auto-Generation Gate** - Onaylanan keyword stratejisinden "Sistemi Kur" tetiklenince site blueprint otomatik oluşturulması
+- [x] **Phase 21: Site Blueprint Auto-Generation Gate** - Onaylanan keyword stratejisinden "Sistemi Kur" tetiklenince site blueprint otomatik oluşturulması (completed 2026-05-10)
 - [ ] **Phase 22: Polish & Carry-overs** - Monitoring + imported pages entegrasyonu ve revision history
 - [ ] **Phase 23: Keyword Strategy AI Intelligence Layer** - Proaktif SEO Strategist + Traffic Architect AI, cross-module context, Second Review AI sistemi, cluster decision memory propagation
 
@@ -110,6 +110,7 @@ Plans:
 **Goal**: Kullanıcı keyword stratejisini onayladıktan sonra "Sistemi Kur" tetiklenince site blueprint onaylanan gruplardan otomatik olarak oluşturulur
 **Depends on**: Phase 20
 **Requirements**: BLUE-06
+**Status**: Complete (2026-05-10)
 **Success Criteria** (what must be TRUE):
   1. Keyword stratejisi onaylanmadan "Sistemi Kur" butonu erişilemez (disabled) durumdadır
   2. "Sistemi Kur" tetiklenince onaylanan keyword gruplarından site blueprint otomatik oluşturulur
@@ -117,7 +118,7 @@ Plans:
 **Plans**: 2 plans
 Plans:
 - [x] 21-01-PLAN.md — generatePagesFromClusters overwrite desteği + GenerateResult.updated + vitest testleri (completed 2026-05-10)
-- [ ] 21-02-PLAN.md — GeneratePagesDialog alreadyExists interaktif + KeywordStratejisiToolbar "Sistemi Kur" + keyword-stratejisi/page.tsx approvedDialogRows
+- [x] 21-02-PLAN.md — GeneratePagesDialog alreadyExists interaktif + KeywordStratejisiToolbar "Sistemi Kur" + keyword-stratejisi/page.tsx approvedDialogRows (completed 2026-05-10)
 **UI hint**: yes
 
 ### Phase 23: Keyword Strategy AI Intelligence Layer
