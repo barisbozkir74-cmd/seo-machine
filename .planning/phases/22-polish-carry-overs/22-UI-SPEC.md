@@ -1,7 +1,7 @@
 ---
 phase: 22
 slug: polish-carry-overs
-status: draft
+status: approved
 shadcn_initialized: true
 preset: base-mira / slate / hugeicons
 created: 2026-05-10
@@ -217,9 +217,9 @@ Açıklama: GSC bağlantısı yok — yalnızca içe aktarılan sayfalar listele
 
 **Footer aksiyonları:**
 ```
-[İptal]    [Bunu Yükle]
+[Kapat]    [Bunu Yükle]
 ```
-- İptal: `variant="ghost" size="sm"` — `DialogClose` wrapper
+- Kapat: `variant="ghost" size="sm"` — `DialogClose` wrapper
 - Bunu Yükle: `variant="default" size="sm"` — primary CTA, modal kapanır ve
   revision verisi editor state'e yüklenir (D-06 gereği — kaydedilmez)
 
@@ -296,7 +296,7 @@ Bu akış UI'da görünmez — arka planda sessizce gerçekleşir.
 | PageMetricsTable boş durum (MON-03) | `Henüz sayfa verisi yok` |
 | PageMetricsTable boş durum açıklama (GSC yok) | `GSC bağlantısı yok — yalnızca içe aktarılan sayfalar listelenir.` |
 | Imported sayfa Durum rozeti | `İçe Aktarıldı` |
-| İptal butonu | `İptal` |
+| Kapat butonu | `Kapat` |
 
 **Yıkıcı aksiyonlar:** Bu fazda yıkıcı aksiyon yok. Revision yükleme (Bunu Yükle)
 yıkıcı değildir — editor state'e yükler, kaydetmez; kullanıcı her zaman iptal edebilir.
@@ -349,11 +349,11 @@ npx shadcn add sheet
 
 ## Checker Sign-Off
 
-- [ ] Dimension 1 Copywriting: PASS
-- [ ] Dimension 2 Visuals: PASS
-- [ ] Dimension 3 Color: PASS
-- [ ] Dimension 4 Typography: PASS
-- [ ] Dimension 5 Spacing: PASS
-- [ ] Dimension 6 Registry Safety: PASS
+- [x] Dimension 1 Copywriting: PASS
+- [x] Dimension 2 Visuals: PASS
+- [x] Dimension 3 Color: PASS
+- [x] Dimension 4 Typography: PASS
+- [x] Dimension 5 Spacing: PASS
+- [x] Dimension 6 Registry Safety: PASS
 
-**Approval:** pending
+**Approval:** approved 2026-05-10
