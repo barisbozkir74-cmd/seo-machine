@@ -27,6 +27,18 @@ export type PageMetricRow = {
   isDecayed: boolean           // deltaPosition !== null && deltaPosition >= 5 && impressions > 10
 }
 
+export type ImportedPageRow = {
+  pageId: string        // project_imported_pages.id
+  pageUrl: string       // link || `/${slug}` fallback
+  title: string
+  clicks: null
+  impressions: null
+  avgPosition: null
+  deltaPosition: null
+  isDecayed: false
+  rowType: 'imported'   // discriminant for PageMetricsTable rendering
+}
+
 // ---------------------------------------------------------------------------
 // Date helpers (replicated from src/app/api/gsc/sync/route.ts pattern)
 // ---------------------------------------------------------------------------
@@ -282,4 +294,31 @@ export async function getPageMetrics(
   result.sort((a, b) => b.clicks - a.clicks)
 
   return result
+}
+
+// ---------------------------------------------------------------------------
+// getImportedPageMetrics
+// ---------------------------------------------------------------------------
+
+export async function getImportedPageMetrics(
+  supabase: SupabaseClient,
+  projectId: string
+): Promise<ImportedPageRow[]> {
+  const { data } = await supabase
+    .from('project_imported_pages')
+    .select('id, title, link, slug')
+    .eq('project_id', projectId)
+    .order('title')
+
+  return (data ?? []).map((p: { id: string; title: string; link: string | null; slug: string | null }) => ({
+    pageId: p.id,
+    pageUrl: p.link ?? (p.slug ? `/${p.slug}` : ''),
+    title: p.title,
+    clicks: null,
+    impressions: null,
+    avgPosition: null,
+    deltaPosition: null,
+    isDecayed: false as const,
+    rowType: 'imported' as const,
+  }))
 }
