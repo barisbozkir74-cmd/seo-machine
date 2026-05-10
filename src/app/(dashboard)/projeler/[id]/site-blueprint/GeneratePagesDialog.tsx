@@ -57,7 +57,6 @@ export function GeneratePagesDialog({
 }) {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
-  const [successMsg, setSuccessMsg] = useState<string | null>(null)
   const router = useRouter()
 
   // Her satır için form state — satır index'iyle eşleşir
@@ -81,7 +80,6 @@ export function GeneratePagesDialog({
     if (!next) {
       setState(initialState)
       setError(null)
-      setSuccessMsg(null)
     }
     onOpenChange(next)
   }
@@ -117,16 +115,7 @@ export function GeneratePagesDialog({
         setError(result.error)
         return
       }
-      handleOpenChange(false)
-      // D-04: toast + navigate to blueprint
-      const { created, updated } = result
-      const msg =
-        created > 0 && updated > 0
-          ? `${created} sayfa oluşturuldu, ${updated} güncellendi`
-          : created > 0
-          ? `${created} sayfa oluşturuldu`
-          : `${updated} sayfa güncellendi`
-      setSuccessMsg(msg)
+      onOpenChange(false)
       router.push(`/projeler/${projectId}/site-blueprint`)
     })
   }
@@ -223,7 +212,6 @@ export function GeneratePagesDialog({
         )}
 
         {error && <p className="text-sm text-destructive">{error}</p>}
-        {successMsg && <p className="text-sm text-emerald-400">{successMsg}</p>}
 
         <DialogFooter className="sm:justify-between">
           <span className="text-sm text-muted-foreground self-center">
