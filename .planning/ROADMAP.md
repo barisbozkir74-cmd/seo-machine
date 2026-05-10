@@ -114,7 +114,10 @@ Plans:
   1. Keyword stratejisi onaylanmadan "Sistemi Kur" butonu erişilemez (disabled) durumdadır
   2. "Sistemi Kur" tetiklenince onaylanan keyword gruplarından site blueprint otomatik oluşturulur
   3. Oluşturulan blueprint kullanıcı tarafından mevcut site blueprint arayüzünde görüntülenebilir ve düzenlenebilir
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 21-01-PLAN.md — generatePagesFromClusters overwrite desteği + GenerateResult.updated + vitest testleri
+- [ ] 21-02-PLAN.md — GeneratePagesDialog alreadyExists interaktif + KeywordStratejisiToolbar "Sistemi Kur" + keyword-stratejisi/page.tsx approvedDialogRows
 **UI hint**: yes
 
 ### Phase 23: Keyword Strategy AI Intelligence Layer
@@ -166,6 +169,6 @@ Plans:
 | 18. Project Launch Gate & Sector Research | v4.0 | 3/3 | Complete    | 2026-05-08 |
 | 19. AI Keyword Data Acquisition | v4.0 | 3/3 | Complete | 2026-05-09 |
 | 20. AI Keyword Clustering & Approval | v4.0 | 3/3 | Complete | 2026-05-10 |
-| 21. Site Blueprint Auto-Generation Gate | v4.0 | 0/TBD | Not started | - |
+| 21. Site Blueprint Auto-Generation Gate | v4.0 | 0/2 | Not started | - |
 | 22. Polish & Carry-overs | v4.0 | 0/TBD | Not started | - |
 | 23. Keyword Strategy AI Intelligence Layer | v4.0 | 0/TBD | Not started | - |
