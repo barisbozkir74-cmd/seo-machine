@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { getClusterMetrics, getPageMetrics, type MonitoringPeriod } from '@/lib/monitoring/aggregation'
+import { getClusterMetrics, getPageMetrics, type MonitoringPeriod, type ImportedPageRow } from '@/lib/monitoring/aggregation'
 import { getRecoveryTasks } from '@/lib/monitoring/recovery-tasks'
 import { ProjectNav } from '../ProjectNav'
 import { PeriodTabBar } from './period-tab-bar'
@@ -47,6 +47,27 @@ export default async function IzlemePage({
   const gscConnected =
     project.gsc_property_url !== null && project.gsc_property_url !== ''
 
+  // Always fetch imported pages — independent of GSC connection (D-02)
+  const { data: importedPagesRaw } = await supabase
+    .from('project_imported_pages')
+    .select('id, title, link, slug')
+    .eq('project_id', id)
+    .order('title')
+
+  const importedPages: ImportedPageRow[] = (importedPagesRaw ?? []).map(
+    (p: { id: string; title: string; link: string | null; slug: string | null }) => ({
+      pageId: p.id,
+      pageUrl: p.link ?? (p.slug ? `/${p.slug}` : ''),
+      title: p.title,
+      clicks: null,
+      impressions: null,
+      avgPosition: null,
+      deltaPosition: null,
+      isDecayed: false as const,
+      rowType: 'imported' as const,
+    })
+  )
+
   // Parallel fetch: only when GSC connected (recovery tasks may exist independently —
   // imported_page source does not require GSC, but page_package source does — we still
   // gate on gscConnected because the izleme page itself is GSC-centered. Recovery tab
@@ -79,7 +100,17 @@ export default async function IzlemePage({
         </div>
 
         <div className="flex-1 min-w-0 overflow-y-auto p-8">
-          {!gscConnected ? (
+          {/* Pages tab: always accessible regardless of GSC connection (D-02) */}
+          {activeTab === 'pages' ? (
+            <div className="space-y-8">
+              <PeriodTabBar projectId={id} active={period} />
+              <ContentTabBar projectId={id} active={activeTab} period={period} />
+              <section>
+                <h2 className="text-base font-semibold mb-4">Sayfa Performansı</h2>
+                <PageMetricsTable pages={pages} importedPages={importedPages} gscConnected={gscConnected} />
+              </section>
+            </div>
+          ) : !gscConnected ? (
             <div className="rounded-lg border border-border bg-card p-8 text-center">
               <p className="text-base font-semibold">GSC verisi bulunamadı</p>
               <p className="text-sm text-muted-foreground mt-2">
@@ -101,13 +132,6 @@ export default async function IzlemePage({
                 <section>
                   <h2 className="text-base font-semibold mb-4">Cluster Performansı</h2>
                   <ClusterSummaryTable clusters={clusters} />
-                </section>
-              )}
-
-              {activeTab === 'pages' && (
-                <section>
-                  <h2 className="text-base font-semibold mb-4">Sayfa Performansı</h2>
-                  <PageMetricsTable pages={pages} />
                 </section>
               )}
 
