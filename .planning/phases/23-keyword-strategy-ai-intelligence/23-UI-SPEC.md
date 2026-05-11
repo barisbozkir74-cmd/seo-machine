@@ -43,10 +43,13 @@ Declared values (multiples of 4):
 | 3xl | 64px | Page-level spacing |
 
 Exceptions:
-- Chat header: `px-3 py-2` (12px / 8px) — matches existing KeywordChat header pattern
-- Chat messages: `p-3 space-y-3` — matches existing KeywordChat message area
-- Chat input wrapper: `p-2` — matches existing KeywordChat input area
-- Yenile button: `px-2.5 py-1.5` — matches existing AiSuggestButton pattern for inline toolbar actions
+
+| Exception | Value | Justification |
+|-----------|-------|---------------|
+| Chat header `px-3 py-2` | 12px / 8px | 12px = Tailwind's 3-unit step (px-3); carry-forward from existing KeywordChat.tsx — grandfathered exception |
+| Chat messages `p-3 space-y-3` | 12px | 12px = Tailwind's 3-unit step (p-3/space-y-3); carry-forward from existing KeywordChat.tsx — grandfathered exception |
+| Chat input wrapper `p-2` | 8px | On-grid (sm). Matches existing KeywordChat input area |
+| Yenile button `px-2 py-1` | 8px / 4px | On-grid (sm/xs). Matches header button density |
 
 Source: Existing `KeywordChat.tsx` and `AiSuggestButton.tsx` measured values, carried forward unchanged.
 
@@ -77,11 +80,11 @@ Source: `KeywordChat.tsx` lines 129, 149, 172–182 measured.
 |------|-------|-------|
 | Dominant (60%) | `#020817` (Slate 950) — `var(--background)` | Page background, chat panel background |
 | Secondary (30%) | `#0f172a` (Slate 900) — `var(--card)` / `#1e293b` (Slate 800) — `var(--secondary)` | Chat message area, input field border, hover states |
-| Accent — Violet (10%) | `#8b5cf6` / Tailwind `violet-400` / `violet-500` | AI identity color: Yenile button, AI chat icon, AI message indicators |
+| Accent — Violet (10%) | `#8b5cf6` / Tailwind `violet-400` / `violet-500` | AI identity color: Stratejiyi Yenile button, AI chat icon, AI message indicators |
 | Destructive | `#ef4444` (Red 500) — `var(--destructive)` | Error states only |
 
 Accent reserved for:
-1. Yenile button border, background tint, and text (`border-violet-500/30 bg-violet-500/10 text-violet-400`) — matches AiSuggestButton pattern exactly
+1. Stratejiyi Yenile button border, background tint, and text (`border-violet-500/30 bg-violet-500/10 text-violet-400`) — matches AiSuggestButton pattern exactly
 2. KeywordChat header icon (`text-violet-400`) — existing pattern, unchanged
 3. Thinking/streaming indicator dots (inside AI message bubble when content is empty)
 4. "Review AI" message prefix label (e.g. small `text-violet-400` badge or label "Denetim")
@@ -99,19 +102,19 @@ This phase extends existing components. No new shadcn components are installed.
 
 ### New Component: `KeywordChatHeader` (part of KeywordChat refactor)
 
-The existing KeywordChat panel header gains a "Yenile" button. The header row currently renders:
+The existing KeywordChat panel header gains a "Stratejiyi Yenile" button. The header row currently renders:
 ```
 [chat icon] AI Asistan          [collapse chevron]
 ```
 
 After Phase 23 it renders:
 ```
-[chat icon] AI Asistan     [Yenile btn]  [collapse chevron]
+[chat icon] AI Asistan     [Stratejiyi Yenile btn]  [collapse chevron]
 ```
 
-**Yenile Button Spec:**
+**Stratejiyi Yenile Button Spec:**
 - Element: `<button>` (no shadcn Button — keeps weight consistent with existing icon buttons in the header)
-- Label: "Yenile" — text only, no icon (fits compact header space)
+- Label: "Stratejiyi Yenile" — text only, no icon (fits compact header space)
 - Idle state: `text-xs text-violet-400 hover:text-violet-300 transition-colors`
 - Loading/streaming state: button disabled + label changes to "Analiz ediliyor..." + spinning SVG replaces label (same spinner pattern used in AiAcquireButton)
 - Position: between the title and the collapse chevron
@@ -147,10 +150,10 @@ When the page first loads and analysis has not yet run (or data changed since la
 | State | UI Appearance |
 |-------|--------------|
 | `idle` (no messages, no analysis run) | Existing starters panel |
-| `analyzing-primary` | Starters panel hidden; first assistant message visible with streaming dots; Yenile button disabled (label: "Analiz ediliyor...") |
-| `analyzing-review` | Primary message complete; second assistant message appended with streaming dots; Yenile button disabled |
-| `complete` | Both messages rendered; Yenile button re-enabled |
-| `error` | Single assistant message with text: "Analiz başarısız oldu. Yenile butonuna tıklayarak tekrar dene." |
+| `analyzing-primary` | Starters panel hidden; first assistant message visible with streaming dots; Stratejiyi Yenile button disabled (label: "Analiz ediliyor...") |
+| `analyzing-review` | Primary message complete; second assistant message appended with streaming dots; Stratejiyi Yenile button disabled |
+| `complete` | Both messages rendered; Stratejiyi Yenile button re-enabled |
+| `error` | Single assistant message with text: "Analiz başarısız oldu. Stratejiyi Yenile butonuna tıklayarak tekrar dene." |
 
 ---
 
@@ -158,14 +161,14 @@ When the page first loads and analysis has not yet run (or data changed since la
 
 | Element | Copy |
 |---------|------|
-| Primary CTA (Yenile button — idle) | "Yenile" |
-| Primary CTA (Yenile button — loading) | "Analiz ediliyor..." |
+| Primary CTA (Stratejiyi Yenile button — idle) | "Stratejiyi Yenile" |
+| Primary CTA (Stratejiyi Yenile button — loading) | "Analiz ediliyor..." |
 | AI analysis auto-trigger (no visible copy) | Silent — no toast, no banner |
 | Primary AI message opening | "Keyword stratejini analiz ettim. İşte bulgularım:" (followed by AI-generated content) |
 | Review AI message prefix | "Denetim: " (followed by AI-generated review content) |
 | Empty state (no messages, never analyzed) | "Keyword stratejin hakkında soru sor." (existing — unchanged) |
-| Error state | "Analiz başarısız oldu. Yenile butonuna tıklayarak tekrar dene." |
-| Yenile button tooltip (title attr) | "Stratejiyi yeniden analiz et" |
+| Error state | "Analiz başarısız oldu. Stratejiyi Yenile butonuna tıklayarak tekrar dene." |
+| Stratejiyi Yenile button tooltip (title attr) | "Stratejiyi yeniden analiz et" |
 | Collapsed panel label | "AI Asistan" (existing — unchanged) |
 
 Source: D-02 + D-04 from 23-CONTEXT.md. Error copy follows existing pattern (imperative + action path).
@@ -183,9 +186,9 @@ Destructive actions: None in this phase. No confirmation dialogs required.
 3. Trigger calls server action → streams Primary AI response as first message → streams Review AI response as second message → stores `last_analyzed_at` in localStorage
 4. User sees no loading screen — first message streaming dots appear in the chat panel naturally
 
-### Yenile Button Trigger
+### Stratejiyi Yenile Button Trigger
 
-1. User clicks "Yenile"
+1. User clicks "Stratejiyi Yenile"
 2. Existing messages are cleared from state
 3. Analysis pipeline re-runs identically to first-load trigger
 4. `last_analyzed_at` in localStorage is updated on completion
@@ -200,14 +203,14 @@ Destructive actions: None in this phase. No confirmation dialogs required.
 ### Focus Management
 
 - No focus trap changes
-- Yenile button is keyboard-accessible (`button` element, natural tab order in header)
+- Stratejiyi Yenile button is keyboard-accessible (`button` element, natural tab order in header)
 - Input `textarea` remains focusable during streaming but `disabled` prop set to true (existing `isStreaming` guard)
 
 ---
 
 ## Accessibility
 
-- Yenile button: `title="Stratejiyi yeniden analiz et"` for screen reader context
+- Stratejiyi Yenile button: `title="Stratejiyi yeniden analiz et"` for screen reader context
 - Streaming assistant messages: no explicit `aria-live` region added (matches existing pattern — the chat area is not a live region)
 - Disabled states: use `disabled` attribute on button elements (not CSS-only)
 - Color: violet-400 on dark background meets WCAG 3:1 contrast for non-text UI (decorative role); message text uses `text-foreground` (#f8fafc on #020817) which exceeds WCAG AA
