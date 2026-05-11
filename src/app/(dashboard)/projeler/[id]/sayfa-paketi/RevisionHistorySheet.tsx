@@ -34,7 +34,13 @@ export function RevisionHistorySheet({
 
   async function handleOpenChange(nextOpen: boolean) {
     onOpenChange(nextOpen)
-    if (!nextOpen) return
+    if (!nextOpen) {
+      // Reset so next open always starts clean — prevents stale data flicker
+      // and error state persisting across re-opens
+      setState('idle')
+      setRevisions([])
+      return
+    }
     setState('loading')
     const result = await getRevisions(projectId, pageId)
     if (!result.success) {
