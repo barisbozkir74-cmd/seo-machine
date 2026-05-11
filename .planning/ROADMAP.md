@@ -53,7 +53,7 @@ Archive: `.planning/milestones/v3.0-ROADMAP.md`
 - [x] **Phase 19: AI Keyword Data Acquisition** - DataForSEO ile rakip keywordleri çekme, CSV akışıyla birleştirme, birleşik keyword havuzu oluşturma (completed 2026-05-09)
 - [x] **Phase 20: AI Keyword Clustering & Approval** - Keyword havuzunu AI ile gruplama, kullanıcı onay/red/düzenleme akışı, onaylananları sisteme işleme (completed 2026-05-10)
 - [x] **Phase 21: Site Blueprint Auto-Generation Gate** - Onaylanan keyword stratejisinden "Sistemi Kur" tetiklenince site blueprint otomatik oluşturulması (completed 2026-05-10)
-- [ ] **Phase 22: Polish & Carry-overs** - Monitoring + imported pages entegrasyonu ve revision history
+- [x] **Phase 22: Polish & Carry-overs** - Monitoring + imported pages entegrasyonu ve revision history (completed 2026-05-11)
 - [ ] **Phase 23: Keyword Strategy AI Intelligence Layer** - Proaktif SEO Strategist + Traffic Architect AI, cross-module context, Second Review AI sistemi, cluster decision memory propagation
 
 ## Phase Details
@@ -144,10 +144,10 @@ Plans:
   3. Yeni kayıt yapıldığında önceki versiyon otomatik olarak revision history'ye eklenir
 **Plans**: 4 plans
 Plans:
-- [ ] 22-01-PLAN.md — shadcn Sheet kurulumu + page_package_revisions migration + supabase db push [BLOCKING]
-- [ ] 22-02-PLAN.md — MON-03: ImportedPageRow type + getImportedPageMetrics + PageMetricsTable importedPages + izleme/page.tsx GSC gate split
-- [ ] 22-03-PLAN.md — PAGE-05: updatePagePackage revision insert + getRevisions server action + RevisionRow type
-- [ ] 22-04-PLAN.md — PAGE-05 UI: RevisionHistorySheet + RevisionPreviewDialog + PagePackageEditor "Geçmiş" button wiring
+- [x] 22-01-PLAN.md — shadcn Sheet kurulumu + page_package_revisions migration + supabase db push [BLOCKING] (completed 2026-05-11)
+- [x] 22-02-PLAN.md — MON-03: ImportedPageRow type + getImportedPageMetrics + PageMetricsTable importedPages + izleme/page.tsx GSC gate split (completed 2026-05-11)
+- [x] 22-03-PLAN.md — PAGE-05: updatePagePackage revision insert + getRevisions server action + RevisionRow type (completed 2026-05-11)
+- [x] 22-04-PLAN.md — PAGE-05 UI: RevisionHistorySheet + RevisionPreviewDialog + PagePackageEditor "Geçmiş" button wiring (completed 2026-05-11)
 **UI hint**: yes
 
 ## Progress
@@ -175,6 +175,6 @@ Plans:
 | 18. Project Launch Gate & Sector Research | v4.0 | 3/3 | Complete    | 2026-05-08 |
 | 19. AI Keyword Data Acquisition | v4.0 | 3/3 | Complete | 2026-05-09 |
 | 20. AI Keyword Clustering & Approval | v4.0 | 3/3 | Complete | 2026-05-10 |
-| 21. Site Blueprint Auto-Generation Gate | v4.0 | 0/2 | Not started | - |
-| 22. Polish & Carry-overs | v4.0 | 0/4 | Not started | - |
+| 21. Site Blueprint Auto-Generation Gate | v4.0 | 2/2 | Complete | 2026-05-10 |
+| 22. Polish & Carry-overs | v4.0 | 4/4 | Complete | 2026-05-11 |
 | 23. Keyword Strategy AI Intelligence Layer | v4.0 | 0/TBD | Not started | - |
