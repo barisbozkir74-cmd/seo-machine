@@ -811,6 +811,7 @@ export async function getRevisions(
     .from('page_package_revisions')
     .select('id, version_num, snapshot, created_at')
     .eq('package_id', pkg.id)
+    .eq('user_id', user.id)   // belt-and-suspenders: RLS is the primary guard, this is defence-in-depth
     .order('version_num', { ascending: false })
 
   if (error) return { success: false, error: 'Revizyon geçmişi yüklenemedi.' }
