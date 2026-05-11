@@ -314,14 +314,21 @@ export async function updatePagePackage(
     const versionNum = (count ?? 0) + 1
 
     // 3. Insert revision — non-fatal: do not block save on failure
-    await supabase.from('page_package_revisions').insert({
-      package_id: currentPkg.id,
-      page_id: pageId,
-      project_id: projectId,
-      user_id: user.id,
-      snapshot: currentPkg,
-      version_num: versionNum,
-    })
+    // ignoreDuplicates: true handles COUNT→INSERT race condition: if two concurrent
+    // saves compute the same version_num, the second upsert is silently skipped.
+    await supabase
+      .from('page_package_revisions')
+      .upsert(
+        {
+          package_id: currentPkg.id,
+          page_id: pageId,
+          project_id: projectId,
+          user_id: user.id,
+          snapshot: currentPkg,
+          version_num: versionNum,
+        },
+        { onConflict: 'package_id,version_num', ignoreDuplicates: true }
+      )
     // Note: no error check — revision failure does not block save
   }
 

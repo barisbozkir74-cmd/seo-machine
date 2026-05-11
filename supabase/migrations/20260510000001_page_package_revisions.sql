@@ -14,6 +14,9 @@ CREATE TABLE IF NOT EXISTS public.page_package_revisions (
   created_at  TIMESTAMPTZ DEFAULT now()
 );
 
+CREATE UNIQUE INDEX IF NOT EXISTS uq_package_revision
+  ON public.page_package_revisions(package_id, version_num);
+
 CREATE INDEX IF NOT EXISTS idx_page_package_revisions_package_id
   ON public.page_package_revisions(package_id, version_num DESC);
 
