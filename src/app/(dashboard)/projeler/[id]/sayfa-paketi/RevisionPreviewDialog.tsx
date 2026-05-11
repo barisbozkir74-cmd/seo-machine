@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import {
@@ -25,8 +24,6 @@ export function RevisionPreviewDialog({
   onClose: () => void
   onLoadRevision: (snapshot: Record<string, unknown>) => void
 }) {
-  const [isLoading, setIsLoading] = useState(false)
-
   if (!revision) return null
 
   const formattedDate = new Date(revision.created_at).toLocaleString('tr-TR', {
@@ -38,9 +35,7 @@ export function RevisionPreviewDialog({
   })
 
   const handleLoadRevision = () => {
-    setIsLoading(true)
     onLoadRevision(revision.snapshot)
-    setIsLoading(false)
     onClose()
   }
 
@@ -109,8 +104,8 @@ export function RevisionPreviewDialog({
         </div>
         <DialogFooter>
           <DialogClose render={<Button variant="ghost" size="sm">Kapat</Button>} />
-          <Button size="sm" onClick={handleLoadRevision} disabled={isLoading}>
-            {isLoading ? 'Yükleniyor...' : 'Bunu Yükle'}
+          <Button size="sm" onClick={handleLoadRevision}>
+            Bunu Yükle
           </Button>
         </DialogFooter>
       </DialogContent>
