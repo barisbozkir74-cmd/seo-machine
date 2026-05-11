@@ -55,6 +55,7 @@ function buildDateRanges(period: MonitoringPeriod) {
 
   return {
     fmt,
+    today,
     currentStart,
     priorStart,
     priorEnd,
@@ -70,7 +71,7 @@ export async function getClusterMetrics(
   projectId: string,
   period: MonitoringPeriod
 ): Promise<ClusterMetricRow[]> {
-  const { fmt, currentStart } = buildDateRanges(period)
+  const { fmt, today, currentStart } = buildDateRanges(period)
 
   // 1. Fetch gsc_metrics for current period
   const { data: metricsData } = await supabase
@@ -78,6 +79,7 @@ export async function getClusterMetrics(
     .select('page_id, clicks, impressions, avg_position')
     .eq('project_id', projectId)
     .gte('date', fmt(currentStart))
+    .lte('date', fmt(today))  // upper bound prevents including same-day sync rows beyond window
 
   const metrics: Array<{
     page_id: string
@@ -177,7 +179,7 @@ export async function getPageMetrics(
   projectId: string,
   period: MonitoringPeriod
 ): Promise<PageMetricRow[]> {
-  const { fmt, currentStart, priorStart, priorEnd } = buildDateRanges(period)
+  const { fmt, today, currentStart, priorStart, priorEnd } = buildDateRanges(period)
 
   // 1. Two parallel SELECTs on gsc_metrics (current + prior periods)
   const [currentResult, priorResult] = await Promise.all([
@@ -185,7 +187,8 @@ export async function getPageMetrics(
       .from('gsc_metrics')
       .select('page_id, clicks, impressions, avg_position')
       .eq('project_id', projectId)
-      .gte('date', fmt(currentStart)),
+      .gte('date', fmt(currentStart))
+      .lte('date', fmt(today)),  // upper bound prevents including same-day sync rows beyond window
     supabase
       .from('gsc_metrics')
       .select('page_id, clicks, impressions, avg_position')
