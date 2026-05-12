@@ -3,7 +3,7 @@
 ## Milestones
 
 - ✅ **v3.0 Autonomous Growth Layer** — Phases 12–17 (shipped 2026-05-08)
-- 🚧 **v4.0 AI-Powered Project Intelligence Layer** — Phases 18–22 (in progress)
+- 🚧 **v4.0 AI-Powered Project Intelligence Layer** — Phases 18–23 (in progress)
 
 ## Phases
 
@@ -45,7 +45,7 @@ Archive: `.planning/milestones/v3.0-ROADMAP.md`
 
 </details>
 
-### 🚧 v4.0 AI-Powered Project Intelligence Layer (Phases 18–22)
+### 🚧 v4.0 AI-Powered Project Intelligence Layer (Phases 18–23)
 
 **Milestone Goal:** Proje bilgilerinden otomatik başlayan, sektör araştırması yapan ve keyword stratejisi kuran AI-driven akış — site blueprint'e kadar uçtan uca.
 
@@ -131,7 +131,12 @@ Plans:
   3. Her cluster için 12-attribute structured output üretilir (page type, difficulty, traffic potential, blueprint impact, internal link map, topical authority contribution)
   4. Second Review AI sistemi: Primary AI öneri üretir → Review AI intent çakışması + cannibalization + missing commercial pages analizi yapar → karşılaştırma ekranı → human approval
   5. Keyword modülünde alınan cluster kararları decision memory'ye yazılır ve blueprint / page package / internal link modüllerine otomatik olarak yansır
-**Plans**: TBD
+**Plans**: 4 plans
+Plans:
+- [ ] 23-01-PLAN.md — ai_memory migration + supabase db push [BLOCKING]
+- [ ] 23-02-PLAN.md — /api/keywords/analyze streaming endpoint (Anthropic, Primary→Review AI, iki aşamalı pipeline)
+- [ ] 23-03-PLAN.md — KeywordChat extension (Stratejiyi Yenile butonu + auto-trigger + dual-message state machine)
+- [ ] 23-04-PLAN.md — approveStrategy propagation genişletmesi (4 modüle batch yayılma, non-fatal)
 **UI hint**: yes
 
 ### Phase 22: Polish & Carry-overs
@@ -177,4 +182,4 @@ Plans:
 | 20. AI Keyword Clustering & Approval | v4.0 | 3/3 | Complete | 2026-05-10 |
 | 21. Site Blueprint Auto-Generation Gate | v4.0 | 2/2 | Complete | 2026-05-10 |
 | 22. Polish & Carry-overs | v4.0 | 4/4 | Complete | 2026-05-11 |
-| 23. Keyword Strategy AI Intelligence Layer | v4.0 | 0/TBD | Not started | - |
+| 23. Keyword Strategy AI Intelligence Layer | v4.0 | 0/4 | Not started | - |
