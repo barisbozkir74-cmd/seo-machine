@@ -8,6 +8,16 @@ Bir web tasarım & SEO ajansının yeni gelen her website projesini uçtan uca y
 
 Her website projesi için sıfırdan açılıp kurgulanan, tüm kararları kaydeden ve stage bazlı ilerleyen **tek merkezi proje yönetim sistemi** — ajans çalışanı sistemi yönetir, sistem kendi başına rastgele akmaz.
 
+## Previous Milestone: v4.0 AI-Powered Project Intelligence Layer — COMPLETE (2026-05-12)
+
+**Shipped features:**
+- Project Launch Gate — "Projeyi Başlat" gate, sektör araştırması tetikleme *(Phase 18)*
+- AI Keyword Data Acquisition — DataForSEO rakip keyword genişletme, CSV import *(Phase 19)*
+- AI Keyword Clustering & Approval — AI gruplama, kullanıcı onay overlay, cluster stratejisi *(Phase 20)*
+- Site Blueprint Auto-Generation Gate — onaylı keyword stratejisinden otomatik blueprint *(Phase 21)*
+- Polish & Carry-overs — Monitoring + imported pages (MON-03), Revision history (PAGE-05) *(Phase 22)*
+- Keyword Strategy AI Intelligence — Primary + Review AI analiz, ai_memory, 4-modül propagation *(Phase 23)*
+
 ## Previous Milestone: v3.0 Autonomous Growth Layer — COMPLETE (2026-05-08)
 
 **Shipped features:**
@@ -19,17 +29,23 @@ Her website projesi için sıfırdan açılıp kurgulanan, tüm kararları kayde
 - Recovery Engine — n8n webhook daily decay tespiti + recovery task açma *(Phase 16)*
 - Keyword Intelligence — Niche score + cluster-to-revenue sınıflandırması *(Phase 17)*
 
-## Current Milestone: v4.0 — AI-Powered Project Intelligence Layer
+## Current Milestone: v5.0 — Keyword Strategy Command Center
 
-**Goal:** Proje bilgilerinden otomatik başlayan, sektör araştırması yapan ve keyword stratejisi kuran AI-driven akış — site blueprint'e kadar uçtan uca.
+**Goal:** Keyword modülünü "keyword management screen"den tam anlamıyla SEO Strategy Command Center'a dönüştür — autonomous clustering, competitor intelligence, DataForSEO validation, blueprint architecture transfer ve strategic decision locking ile.
 
 **Target features:**
-- "Projeyi Başlat" gate — Tüm bilgiler eksiksiz girildikten sonra aktif; araştırmayı otomatik tetikler (yeni proje + WP import)
-- Otomatik Sektör Araştırması — Google arama tabanlı; pazar büyüklüğü, rakip konumları, sektör açıkları, hazır rapor
-- AI Keyword Stratejisi — CSV import korunur + DataForSEO rakip keyword genişletme + AI gruplama önerileri + kullanıcı onay akışı
-- "Sistemi Kur" gate — Onaylanan keyword stratejisinden site blueprint otomatik oluşturulması
-- MON-03: Monitoring dashboard + imported pages entegrasyonu (carry-over)
-- PAGE-05: Revision history (carry-over)
+- DataForSEO Validation Layer — Cache-first, 3-level analysis (light/standard/deep), user-triggered, cost-aware execution
+- Autonomous Clustering Engine — Intent-aware clustering, SERP overlap, cannibalization detection, diff preview + human approval
+- Competitor Keyword Intelligence — Research module integration + manual URL add, keyword gaps, opportunity maps
+- Traffic Opportunity & Priority Engine — Starred keyword: AI proposes + explains → user approves → locked priority
+- Keyword → Blueprint Architecture Engine — Real entity transfer with diff engine (merge/replace/keep/ignore)
+- Strategic Decision Locking System — `strategy_decisions` table, locked SEO decisions, cluster priorities, authority structure
+- Cluster Diff Preview & Governance UI — Visual diff (moved/new/merged/split/deleted), full human approval workflow
+
+**Architectural constraints:**
+- Hiçbir AI action silent destructive update yapmaz — analyze → explain → diff → approve → apply
+- DataForSEO: user-triggered, cache-first, cost-aware
+- `strategy_decisions` tablosu `ai_memory`'den ayrı tutulur
 
 ## Requirements
 
@@ -59,11 +75,27 @@ Her website projesi için sıfırdan açılıp kurgulanan, tüm kararları kayde
 - ✓ Recovery Engine — daily decay tespiti + recovery task (REC-01–03) — v3.0
 - ✓ Keyword Intelligence — niche score + cluster-to-revenue (NICH-01–02, RVEN-01–02) — v3.0
 
+### Validated
+
+#### v4.0 — AI-Powered Project Intelligence Layer (Phases 18–23)
+- ✓ PROJ-06, PROJ-07: Proje başlatma gate ve sektör araştırması tetikleme — v4.0
+- ✓ SRCH-01–03: Otomatik sektör araştırması — v4.0
+- ✓ KWST-01–05: AI keyword acquisition, clustering, approval — v4.0
+- ✓ BLUE-06: Site blueprint auto-generation gate — v4.0
+- ✓ MON-03: Monitoring + imported pages entegrasyonu — v4.0
+- ✓ PAGE-05: Revision history — v4.0
+- ✓ KWST-06–07: Keyword Strategy AI Intelligence Layer (ai_memory, analyze route, KeywordChat, propagation) — v4.0
+
 ### Active
 
-#### v4.0 — Next Milestone (Planning)
-- [ ] MON-03: Monitoring dashboard + imported pages entegrasyonu
-- [ ] PAGE-05: Revision history — her sayfa paketinin geçmiş versiyonları
+#### v5.0 — Keyword Strategy Command Center (Planning)
+- [ ] DFS-01–08: DataForSEO Validation Layer (cache, queue, 3-level analysis)
+- [ ] CLU-01–10: Autonomous Clustering Engine (intent-aware, diff preview, human approval)
+- [ ] CMP-01–06: Competitor Keyword Intelligence (research integration, keyword gaps)
+- [ ] TRF-01–05: Traffic Opportunity & Priority Engine (starred keywords, priority locking)
+- [ ] BPT-01–06: Keyword → Blueprint Architecture Engine (entity transfer, diff engine)
+- [ ] STR-01–05: Strategic Decision Locking System (strategy_decisions table)
+- [ ] GOV-01–06: Cluster Diff Preview & Governance UI
 
 ### Out of Scope
 
@@ -153,4 +185,4 @@ This document evolves at phase transitions and milestone boundaries.
 - 30 deferred UAT/verification items — STATE.md Deferred Items
 
 ---
-*Last updated: 2026-05-08 after v3.0 milestone — Autonomous Growth Layer SHIPPED*
+*Last updated: 2026-05-12 after v4.0 milestone — AI-Powered Project Intelligence Layer SHIPPED | v5.0 Keyword Strategy Command Center started*
