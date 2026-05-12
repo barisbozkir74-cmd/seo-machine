@@ -877,6 +877,104 @@ export async function updateClusterStatus(
   return { success: true }
 }
 
+async function propagateClusterDecisions(
+  projectId: string,
+  userId: string,
+  supabase: Awaited<ReturnType<typeof createClient>>
+): Promise<void> {
+  // D-09: Onaylı cluster'ları çek
+  const { data: approvedClusters } = await supabase
+    .from('keyword_clusters')
+    .select('id, cluster_name, intent, revenue_type, total_volume, primary_keyword_id')
+    .eq('project_id', projectId)
+    .eq('user_id', userId)
+    .eq('status', 'approved')
+
+  if (!approvedClusters || approvedClusters.length === 0) return
+
+  // Blueprint sayfalarını çek — cluster eşleşmeleri için
+  const { data: blueprintPages } = await supabase
+    .from('pages')
+    .select('id, title, slug, page_type, cluster_id')
+    .eq('project_id', projectId)
+    .eq('user_id', userId)
+
+  // D-08: 4 modül için ai_memory UPSERT'leri hazırla
+  const now = new Date().toISOString()
+  const clusterSnapshot = approvedClusters.map((c) => ({
+    id: c.id,
+    name: c.cluster_name,
+    intent: c.intent,
+    revenue_type: c.revenue_type,
+    total_volume: c.total_volume,
+  }))
+
+  const blueprintSnapshot = (blueprintPages ?? []).map((p) => ({
+    id: p.id,
+    title: p.title,
+    slug: p.slug,
+    page_type: p.page_type,
+    cluster_id: p.cluster_id,
+  }))
+
+  // Cluster'lara atanmış sayfa ID'leri — iç link işaretleme için
+  const clusterPageIds = (blueprintPages ?? [])
+    .filter((p) => approvedClusters.some((c) => c.id === p.cluster_id))
+    .map((p) => p.id)
+
+  // D-10: Batch UPSERT — 4 modül
+  await supabase
+    .from('ai_memory')
+    .upsert(
+      [
+        // 1. Site Blueprint — onaylı cluster'lara göre blueprint snapshot
+        {
+          user_id: userId,
+          project_id: projectId,
+          module: 'blueprint',
+          key: 'approved_cluster_pages',
+          value: { pages: blueprintSnapshot, updated_at: now },
+          updated_at: now,
+        },
+        // 2. Sayfa Paketi — cluster'a atanmış sayfalar (öneri/işaretleme — D-09 deferred: otomatik oluşturma yok)
+        {
+          user_id: userId,
+          project_id: projectId,
+          module: 'page_packages',
+          key: 'cluster_page_map',
+          value: { cluster_page_ids: clusterPageIds, suggested_at: now },
+          updated_at: now,
+        },
+        // 3. İç Link Haritası — cluster intent bazlı iç link önerileri
+        {
+          user_id: userId,
+          project_id: projectId,
+          module: 'internal_links',
+          key: 'cluster_link_suggestions',
+          value: {
+            clusters: approvedClusters.map((c) => ({
+              cluster_id: c.id,
+              cluster_name: c.cluster_name,
+              intent: c.intent,
+              suggested_at: now,
+            })),
+          },
+          updated_at: now,
+        },
+        // 4. Monitoring — onaylı cluster snapshot (izleme için referans noktası)
+        {
+          user_id: userId,
+          project_id: projectId,
+          module: 'clusters',
+          key: 'approved_snapshot',
+          value: { clusters: clusterSnapshot, approved_at: now },
+          updated_at: now,
+        },
+      ],
+      { onConflict: 'project_id,module,key' }
+    )
+}
+
 export async function approveStrategy(
   projectId: string,
   approved: boolean
@@ -907,6 +1005,16 @@ export async function approveStrategy(
     .eq('user_id', user.id)
 
   if (error) return { success: false, error: 'Strateji onayı kaydedilemedi.' }
+
+  // D-09 + D-10: Strateji onaylandıysa 4 modüle batch yayılma (non-fatal)
+  if (approved) {
+    try {
+      await propagateClusterDecisions(projectId, user.id, supabase)
+    } catch (propagationErr) {
+      // D-10: Yayılma hatası strateji onayını bloklamaz — sadece logla
+      console.error('[approveStrategy] propagation failed:', propagationErr)
+    }
+  }
 
   revalidatePath(`/projeler/${projectId}/keyword-stratejisi`)
   return { success: true }
