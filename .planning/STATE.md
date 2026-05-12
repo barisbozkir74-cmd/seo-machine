@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v5.0
 milestone_name: Keyword Strategy Command Center
-status: defining_requirements
-stopped_at: Milestone started — defining requirements and roadmap
+status: roadmap_ready
+stopped_at: ROADMAP.md written — ready to plan Phase 24
 last_updated: "2026-05-12T00:00:00.000Z"
-last_activity: 2026-05-12 — v5.0 Keyword Strategy Command Center milestone started
+last_activity: 2026-05-12 — v5.0 ROADMAP.md created (Phases 24–30)
 progress:
   total_phases: 7
   completed_phases: 0
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-12)
 
 **Core value:** Her website projesi için sıfırdan açılıp kurgulanan, tüm kararları kaydeden ve stage bazlı ilerleyen tek merkezi proje yönetim sistemi
-**Current focus:** v5.0 — Keyword Strategy Command Center — defining requirements
+**Current focus:** v5.0 — Keyword Strategy Command Center — roadmap ready, Phase 24 next
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: Not started (roadmap complete)
 Plan: —
-Status: Defining requirements for v5.0
-Last activity: 2026-05-12 — v5.0 Keyword Strategy Command Center milestone started
+Status: Roadmap written — ready for /gsd-plan-phase 24
+Last activity: 2026-05-12 — ROADMAP.md created for v5.0 (Phases 24–30)
 
 Progress: [░░░░░░░░░░░░░░] 0% (v5.0, 7 phases planned)
 
@@ -37,12 +37,12 @@ Progress: [░░░░░░░░░░░░░░] 0% (v5.0, 7 phases planne
 | Phase | Name | Requirements | Status |
 |-------|------|--------------|--------|
 | 24 | DataForSEO Validation Layer | DFS-01–08 | Planned |
-| 25 | Autonomous Clustering Engine | CLU-01–10 | Planned |
-| 26 | Competitor Keyword Intelligence | CMP-01–06 | Planned |
-| 27 | Traffic Opportunity & Priority Engine | TRF-01–05 | Planned |
-| 28 | Keyword → Blueprint Architecture Engine | BPT-01–06 | Planned |
+| 25 | Competitor Keyword Intelligence | CMP-01–06 | Planned |
+| 26 | Autonomous Clustering Engine | CLU-01–10 | Planned |
+| 27 | Keyword → Blueprint Architecture Engine | BPT-01–06 | Planned |
+| 28 | Cluster Diff Preview & Governance UI | GOV-01–06 | Planned |
 | 29 | Strategic Decision Locking System | STR-01–05 | Planned |
-| 30 | Cluster Diff Preview & Governance UI | GOV-01–06 | Planned |
+| 30 | Traffic Opportunity & Priority Engine | TRF-01–05 | Planned |
 
 ## v4.0 Phase Summary (Archive)
 
@@ -82,6 +82,11 @@ Recent decisions affecting current work:
 - 21-02: approvedDialogRows computed in page.tsx SSR — clusters already queried, zero extra network cost
 - 21-02: alreadyExists computed server-side via pages Set (D-06) — zero extra query (reuses keywords[])
 - 21-discuss: Site Blueprint "Kümelerden Oluştur" dokunulmaz (D-07 — manuel fallback korunur)
+- v5.0: strategy_decisions is authoritative over keyword_clusters.status, arch_status, keyword_strategy_approved — precedence rule must be documented in Phase 24 migration
+- v5.0: competitor_keywords goes to staging table first, never directly to keywords pool — explicit "Strateji'ye Ekle" required
+- v5.0: diff baseline = last approved snapshot (not mixed draft+approved state) — both sides date-labelled in UI
+- v5.0: primary apply operations use Postgres transactions (not non-fatal pattern) — partial success is not acceptable
+- v5.0: diff@9.0.0 + @types/diff added in Phase 26 only
 
 ### Code Review Debt (Phase 22)
 
@@ -94,6 +99,7 @@ All 5 warnings fixed by /gsd-code-review-fix 21 (2026-05-10). No open debt.
 ### Roadmap Evolution
 
 - Phase 23 added: Keyword Strategy AI Intelligence Layer — proaktif SEO Strategist + Traffic Architect AI, cross-module context aggregation, Second Review AI sistemi, cluster decision memory propagation (2026-05-10)
+- v5.0 Phases 24–30 added: Keyword Strategy Command Center — cache-first DataForSEO, autonomous clustering with diff preview, competitor intelligence, blueprint transfer engine, governance UI, decision locking, traffic priority engine (2026-05-12)
 
 ### Pending Todos
 
@@ -109,8 +115,8 @@ All v3.0 carry-overs delivered in Phase 22:
 
 | Category | Item | Status |
 |----------|------|--------|
-| Carry-over | MON-03: Monitoring + imported pages | ✅ Delivered Phase 22 (2026-05-11) |
-| Carry-over | PAGE-05: Revision history | ✅ Delivered Phase 22 (2026-05-11) |
+| Carry-over | MON-03: Monitoring + imported pages | Complete Phase 22 (2026-05-11) |
+| Carry-over | PAGE-05: Revision history | Complete Phase 22 (2026-05-11) |
 
 ## Human UAT Pending
 
@@ -121,5 +127,5 @@ All v3.0 carry-overs delivered in Phase 22:
 ## Session Continuity
 
 Last session: 2026-05-12T00:00:00.000Z
-Stopped at: Phase 23 planning complete — 4 plans (23-01 migration, 23-02 analyze route, 23-03 KeywordChat, 23-04 propagation), verification passed
-Next action: /gsd-execute-phase 23
+Stopped at: v5.0 ROADMAP.md written — 7 phases (24–30), 40/40 requirements mapped
+Next action: /gsd-plan-phase 24
