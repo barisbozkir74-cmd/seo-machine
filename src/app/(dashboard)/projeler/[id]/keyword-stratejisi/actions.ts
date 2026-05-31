@@ -10,6 +10,44 @@ import { parseKeywordText } from '@/lib/keywords/parser'
 import { clusterKeywords, clusterKeywordsWithAI } from '@/lib/keywords/clustering'
 import { calculateOpportunityScore, buildScoringContext } from '@/lib/keywords/scoring'
 import { calculateNicheScore, classifyRevenueType } from '@/lib/keywords/niche-scoring'
+import { withEnvelope } from '@/core/api/with-envelope'
+import { EnvelopeError } from '@/core/api/errors'
+import type { ApiEnvelope } from '@/core/api/envelope'
+
+// ─── Keyword Flag + Role Computation ─────────────────────────────────────────
+
+function computeKeywordFlags(
+  keyword: string,
+  intent?: string | null,
+  location?: string | null
+): { long_tail_flag: boolean; faq_flag: boolean; comparison_flag: boolean; local_flag: boolean } {
+  const lower = keyword.toLowerCase()
+  const words = lower.split(/\s+/).filter(Boolean)
+  const long_tail_flag = words.length >= 4
+  const faqTextTriggers = ['nedir', 'nasıl', 'ne zaman', 'nerede', 'neden', 'hangi', 'kaç', 'what ', 'how ', 'why ', 'when ', 'where ', 'which ', 'who ']
+  const faq_flag = faqTextTriggers.some((t) => lower.includes(t)) || intent === 'informational'
+  const comparisonTriggers = [' vs ', ' vs.', 'versus', 'karşılaştırma', 'alternatif', 'mi yoksa', ' farkı', 'fark nedir', 'comparison']
+  const comparison_flag = comparisonTriggers.some((t) => lower.includes(t))
+  const local_flag = location ? lower.includes(location.toLowerCase()) : false
+  return { long_tail_flag, faq_flag, comparison_flag, local_flag }
+}
+
+function computeKeywordRole(
+  keyword: string,
+  intent?: string | null,
+  location?: string | null,
+  precomputed?: { long_tail_flag: boolean; faq_flag: boolean; comparison_flag: boolean; local_flag: boolean }
+): string {
+  const flags = precomputed ?? computeKeywordFlags(keyword, intent, location)
+  if (flags.comparison_flag) return 'comparison'
+  if (flags.faq_flag) return 'question'
+  if (flags.local_flag) return 'local'
+  if (flags.long_tail_flag) return 'long_tail'
+  const lower = keyword.toLowerCase()
+  const commercialTriggers = ['fiyat', 'satın', 'hizmet', 'paket', 'ücret', 'teklif', 'kampanya', 'indirim', 'price', 'buy ', 'cost', 'service', 'quote', 'hire', 'cheap', 'affordable', 'deal', 'offer', 'discount']
+  if (commercialTriggers.some((t) => lower.includes(t)) || intent === 'commercial' || intent === 'transactional') return 'commercial'
+  return 'supporting'
+}
 
 export type ImportKeywordsResult =
   | { success: true; clusterCount: number; keywordCount: number; enrichedCount: number }
@@ -289,7 +327,8 @@ export type ClusterAndScoreResult =
   | { success: false; error: string }
 
 export async function clusterAndScoreKeywords(
-  projectId: string
+  projectId: string,
+  strategy: 'semantic' | 'intent' | 'commercial' = 'semantic'
 ): Promise<ClusterAndScoreResult> {
   if (!projectId || !/^[0-9a-f-]{36}$/i.test(projectId)) {
     return { success: false, error: 'Geçersiz proje ID.' }
@@ -1357,4 +1396,364 @@ export async function triggerDeepAnalysisAction(projectId: string): Promise<Deep
 
   revalidatePath(`/projeler/${projectId}/keyword-stratejisi`)
   return { success: true, workflowRunId: workflowRun.id }
+}
+
+// ─── Missing exports restored from v5.0 working tree ────────────────────────
+
+// ─── D-01: Cluster Reddetme + kw_deferred_clusters kararı ────────────────────
+
+const VALID_DEFER_REASONS = ['low_volume', 'high_difficulty', 'out_of_scope', 'seasonal', 'budget_deferred'] as const
+type DeferReason = typeof VALID_DEFER_REASONS[number]
+
+export async function rejectClusterWithReason(
+  clusterId: string,
+  projectId: string,
+  reason: string
+): Promise<{ success: true } | { success: false; error: string }> {
+  if (!VALID_DEFER_REASONS.includes(reason as DeferReason)) {
+    return { success: false, error: 'Geçersiz red gerekçesi.' }
+  }
+  const uuidRegex = /^[0-9a-f-]{36}$/i
+  if (!uuidRegex.test(clusterId) || !uuidRegex.test(projectId)) {
+    return { success: false, error: 'Geçersiz ID.' }
+  }
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Oturum bulunamadı.' }
+
+  const { data: cluster } = await supabase
+    .from('keyword_clusters')
+    .select('id, cluster_name')
+    .eq('id', clusterId)
+    .eq('project_id', projectId)
+    .eq('user_id', user.id)
+    .single()
+  if (!cluster) return { success: false, error: 'Küme bulunamadı.' }
+
+  // Kümeyi reddet
+  await supabase
+    .from('keyword_clusters')
+    .update({ status: 'rejected' })
+    .eq('id', clusterId)
+    .eq('user_id', user.id)
+
+  // Mevcut kw_deferred_clusters kararını oku (biriktir — her red ayrı bir kayıt değil)
+  const { data: existing } = await supabase
+    .from('project_decisions')
+    .select('id, decision')
+    .eq('project_id', projectId)
+    .eq('user_id', user.id)
+    .eq('section', 'keyword-stratejisi')
+    .eq('decision_type', 'kw_deferred_clusters')
+    .eq('is_active', true)
+    .maybeSingle()
+
+  const reasonLabels: Record<DeferReason, string> = {
+    low_volume: 'Düşük hacim',
+    high_difficulty: 'Yüksek KD',
+    out_of_scope: 'Kapsam dışı',
+    seasonal: 'Mevsimsel',
+    budget_deferred: 'Bütçe ertelendi',
+  }
+  const entry = `${cluster.cluster_name} [${reasonLabels[reason as DeferReason]}]`
+
+  if (existing) {
+    const updated = `${existing.decision}; ${entry}`
+    await supabase
+      .from('project_decisions')
+      .update({ decision: updated })
+      .eq('id', existing.id)
+  } else {
+    await supabase.from('project_decisions').insert({
+      user_id: user.id,
+      project_id: projectId,
+      section: 'keyword-stratejisi',
+      scope_type: 'project',
+      decision_type: 'kw_deferred_clusters',
+      decision: `Ertelenen kümeler: ${entry}`,
+      reason: 'Kullanıcı red gerekçesi — ileride yeniden değerlendirilebilir',
+      is_active: true,
+      created_at: new Date().toISOString(),
+    })
+  }
+
+  revalidatePath(`/projeler/${projectId}/keyword-stratejisi`)
+  revalidatePath(`/control-center/projects/${projectId}`, 'layout')
+  return { success: true }
+}
+
+
+// ─── Cluster Rename ───────────────────────────────────────────────────────────
+
+export async function updateClusterName(
+  clusterId: string,
+  newName: string,
+  projectId: string
+): Promise<{ success: boolean; error?: string }> {
+  const trimmed = newName.trim()
+  if (!trimmed || trimmed.length > 100) return { success: false, error: 'Geçersiz küme adı.' }
+
+  const uuidRegex = /^[0-9a-f-]{36}$/i
+  if (!uuidRegex.test(clusterId) || !uuidRegex.test(projectId)) {
+    return { success: false, error: 'Geçersiz ID.' }
+  }
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Oturum bulunamadı.' }
+
+  const { error } = await supabase
+    .from('keyword_clusters')
+    .update({ cluster_name: trimmed })
+    .eq('id', clusterId)
+    .eq('project_id', projectId)
+    .eq('user_id', user.id)
+
+  if (error) return { success: false, error: 'Küme adı kaydedilemedi.' }
+  return { success: true }
+}
+
+// ─── Bulk Delete Keywords ──────────────────────────────────────────────────────
+
+export type BulkDeleteKeywordsResult =
+  | { success: true; deleted: number }
+  | { success: false; error: string }
+
+export async function bulkDeleteKeywords(
+  projectId: string,
+  keywordIds: string[]
+): Promise<BulkDeleteKeywordsResult> {
+  const uuidRegex = /^[0-9a-f-]{36}$/i
+  if (!uuidRegex.test(projectId)) return { success: false, error: 'Geçersiz ID.' }
+  if (keywordIds.length === 0) return { success: false, error: 'Seçili keyword yok.' }
+  if (keywordIds.length > 500) return { success: false, error: 'En fazla 500 keyword silinebilir.' }
+  if (keywordIds.some((id) => !uuidRegex.test(id))) return { success: false, error: 'Geçersiz ID formatı.' }
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Oturum bulunamadı.' }
+
+  const { data: project } = await supabase
+    .from('projects')
+    .select('id')
+    .eq('id', projectId)
+    .eq('user_id', user.id)
+    .single()
+  if (!project) return { success: false, error: 'Proje bulunamadı.' }
+
+  // Fetch with ownership check — only delete keywords that belong to this project+user
+  const { data: kwToDelete } = await supabase
+    .from('keywords')
+    .select('id, cluster_id')
+    .in('id', keywordIds)
+    .eq('project_id', projectId)
+    .eq('user_id', user.id)
+
+  const validIds = (kwToDelete ?? []).map((k) => k.id)
+  if (validIds.length === 0) return { success: false, error: 'Silinecek keyword bulunamadı.' }
+
+  const affectedClusterIds = [...new Set(
+    (kwToDelete ?? []).map((k) => k.cluster_id).filter(Boolean) as string[]
+  )]
+
+  const { error: deleteError } = await supabase
+    .from('keywords')
+    .delete()
+    .in('id', validIds)
+    .eq('user_id', user.id)
+
+  if (deleteError) return { success: false, error: 'Silme başarısız.' }
+
+  // Cleanup: delete clusters that now have 0 keywords
+  for (const clusterId of affectedClusterIds) {
+    const { count } = await supabase
+      .from('keywords')
+      .select('id', { count: 'exact', head: true })
+      .eq('cluster_id', clusterId)
+    if ((count ?? 0) === 0) {
+      await supabase
+        .from('keyword_clusters')
+        .delete()
+        .eq('id', clusterId)
+        .eq('user_id', user.id)
+    }
+  }
+
+  revalidatePath(`/projeler/${projectId}/keyword-stratejisi`)
+  revalidatePath(`/control-center/projects/${projectId}`, 'layout')
+  return { success: true, deleted: validIds.length }
+}
+
+// ─── Task 3: Add AI-suggested keywords from expand overlay ───────────────────
+
+export type AddSuggestedKeywordsResult =
+  | { success: true; count: number }
+  | { success: false; error: string }
+
+export async function addSuggestedKeywords(
+  projectId: string,
+  keywords: string[]
+): Promise<AddSuggestedKeywordsResult> {
+  const uuidRegex = /^[0-9a-f-]{36}$/i
+  if (!uuidRegex.test(projectId)) return { success: false, error: 'Geçersiz ID.' }
+  if (!keywords.length) return { success: false, error: 'Keyword listesi boş.' }
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Oturum bulunamadı.' }
+
+  const { data: project } = await supabase
+    .from('projects')
+    .select('id')
+    .eq('id', projectId)
+    .eq('user_id', user.id)
+    .single()
+  if (!project) return { success: false, error: 'Proje bulunamadı.' }
+
+  const rows = keywords
+    .map(k => k.trim())
+    .filter(Boolean)
+    .map(keyword => {
+      const flags = computeKeywordFlags(keyword)
+      return {
+        user_id: user.id,
+        project_id: projectId,
+        keyword,
+        source: 'expansion' as const,
+        is_ai_suggested: true,
+        ...flags,
+        keyword_role: computeKeywordRole(keyword, null, null, flags),
+      }
+    })
+
+  const { error } = await supabase
+    .from('keywords')
+    .upsert(rows, { onConflict: 'project_id,keyword', ignoreDuplicates: true })
+
+  if (error) return { success: false, error: 'Kayıt başarısız.' }
+
+  revalidatePath(`/projeler/${projectId}/keyword-stratejisi`)
+  revalidatePath(`/control-center/projects/${projectId}`, 'layout')
+  return { success: true, count: rows.length }
+}
+
+// ─── Role Assignment ──────────────────────────────────────────────────────────
+
+export async function assignKeywordRoles(
+  projectId: string
+): Promise<{ assigned: number }> {
+  if (!projectId || !/^[0-9a-f-]{36}$/i.test(projectId)) return { assigned: 0 }
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { assigned: 0 }
+
+  const { data: keywords } = await supabase
+    .from('keywords')
+    .select('id, keyword, search_intent, parent_keyword_id')
+    .eq('project_id', projectId)
+    .eq('user_id', user.id)
+    .is('keyword_role', null)
+    .limit(1000)
+  if (!keywords?.length) return { assigned: 0 }
+
+  const { data: clusters } = await supabase
+    .from('keyword_clusters')
+    .select('primary_keyword_id')
+    .eq('project_id', projectId)
+    .eq('user_id', user.id)
+  const primaryIds = new Set(
+    (clusters ?? []).map((c) => c.primary_keyword_id).filter(Boolean) as string[]
+  )
+
+  let assigned = 0
+  await Promise.all(
+    keywords.map(async (kw) => {
+      const role = primaryIds.has(kw.id)
+        ? 'focus'
+        : kw.parent_keyword_id
+        ? 'long_tail'
+        : computeKeywordRole(kw.keyword, kw.search_intent)
+      const { error } = await supabase
+        .from('keywords')
+        .update({ keyword_role: role })
+        .eq('id', kw.id)
+        .eq('user_id', user.id)
+      if (!error) assigned++
+    })
+  )
+  revalidatePath(`/projeler/${projectId}/keyword-stratejisi`)
+  revalidatePath(`/control-center/projects/${projectId}`, 'layout')
+  return { assigned }
+}
+
+// ─── Cluster-based keyword insertion ─────────────────────────────────────────
+
+export type AddExpandedResult = { success: true; count: number } | { success: false; error: string }
+
+export async function addExpandedClusterKeywords(
+  projectId: string,
+  clusterId: string,
+  keywords: { keyword: string; keyword_role: string }[]
+): Promise<AddExpandedResult> {
+  const uuidRegex = /^[0-9a-f-]{36}$/i
+  if (!uuidRegex.test(projectId) || !uuidRegex.test(clusterId)) {
+    return { success: false, error: 'Geçersiz ID.' }
+  }
+  if (!keywords.length) return { success: false, error: 'Keyword listesi boş.' }
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Oturum bulunamadı.' }
+
+  const { data: cluster } = await supabase
+    .from('keyword_clusters')
+    .select('id')
+    .eq('id', clusterId)
+    .eq('project_id', projectId)
+    .eq('user_id', user.id)
+    .single()
+  if (!cluster) return { success: false, error: 'Küme bulunamadı.' }
+
+  const rows = keywords
+    .filter(({ keyword }) => keyword.trim())
+    .map(({ keyword: raw, keyword_role }) => {
+      const keyword = raw.trim()
+      const flags = computeKeywordFlags(keyword)
+      return {
+        user_id: user.id,
+        project_id: projectId,
+        keyword,
+        cluster_id: clusterId,
+        source: 'expansion' as const,
+        is_ai_suggested: true,
+        keyword_role,
+        ...flags,
+      }
+    })
+
+  const { error } = await supabase
+    .from('keywords')
+    .upsert(rows, { onConflict: 'project_id,keyword', ignoreDuplicates: true })
+  if (error) return { success: false, error: 'Kayıt başarısız.' }
+
+  revalidatePath(`/projeler/${projectId}/keyword-stratejisi`)
+  revalidatePath(`/control-center/projects/${projectId}`, 'layout')
+  return { success: true, count: rows.length }
+}
+
+// DraftCluster: clusterAndScoreKeywords'ün overlay'e döneceği tip
+
+export async function approveStrategyWithEnvelope(
+  projectId: string,
+  approved: boolean
+): Promise<ApiEnvelope<{ success: true }>> {
+  return withEnvelope(async () => {
+    const result = await approveStrategy(projectId, approved)
+    if (!result.success) {
+      const code = result.error.includes('cluster') ? 'CLUSTER_REQUIRED' : 'ORCHESTRATION_FAILED'
+      throw new EnvelopeError(code, { original: result.error })
+    }
+    return result
+  })
 }

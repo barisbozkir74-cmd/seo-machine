@@ -84,7 +84,9 @@ type ClusterWithKeywords = {
   primary_keyword_id: string | null
   opportunity_score: number | null
   revenue_type: string | null
-  status: string | null  // YENİ — D-07
+  status: string | null
+  cannibalization_status: string | null
+  link_tier: string | null
   keywords: KeywordRow[]
 }
 
@@ -180,7 +182,9 @@ export default async function KeywordStratejisiPage({
 
   const clustersWithKeywords: ClusterWithKeywords[] = clusters.map((c) => ({
     ...c,
-    status: (c as unknown as { status: string | null }).status ?? null,  // YENİ
+    status: (c as unknown as { status: string | null }).status ?? null,
+    cannibalization_status: (c as unknown as { cannibalization_status: string | null }).cannibalization_status ?? null,
+    link_tier: (c as unknown as { link_tier: string | null }).link_tier ?? null,
     keywords: clusterKeywordMap[c.id] ?? [],
   }))
 
@@ -215,6 +219,18 @@ export default async function KeywordStratejisiPage({
   const totalKeywords = keywords.length
   const totalClusters = clusters.length
   const pendingEnrichment = keywords.filter((kw) => !kw.enriched_at).length
+
+  // Readiness checks for KeywordStratejisiToolbar
+  const approvedClusters = clustersWithKeywords.filter((c) => c.status === 'approved')
+  const readinessChecks: Record<string, boolean> = {
+    hasApprovedCluster: approvedClusters.length > 0,
+    allHavePrimary: approvedClusters.length > 0 && approvedClusters.every((c) => c.primary_keyword_id !== null),
+    hasCommercial: approvedClusters.some((c) => c.revenue_type === 'ticari'),
+    noUnresolvedCannibalization: approvedClusters.every((c) => c.cannibalization_status !== 'warning'),
+    enrichmentDone: keywords.length > 0 && pendingEnrichment === 0,
+  }
+  const readinessScore = Object.values(readinessChecks).filter(Boolean).length
+  const readinessTotal = Object.keys(readinessChecks).length
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
@@ -256,6 +272,9 @@ export default async function KeywordStratejisiPage({
                 hasApprovedCluster={clustersWithKeywords.some((c) => c.status === 'approved')}
                 isStrategyApproved={(project as unknown as { keyword_strategy_approved: boolean | null }).keyword_strategy_approved ?? false}
                 approvedDialogRows={approvedDialogRows}
+                readinessScore={readinessScore}
+                readinessTotal={readinessTotal}
+                readinessChecks={readinessChecks}
               />
               {/* Phase 24: DataForSEO analiz butonları — separator + cyan buton grubu */}
               <span className="h-4 w-px bg-border/50 shrink-0" />
@@ -362,7 +381,7 @@ export default async function KeywordStratejisiPage({
                 </div>
               )}
               <ClusterPanel
-                clusters={clustersWithKeywords}
+                clusters={clustersWithKeywords as unknown as Parameters<typeof ClusterPanel>[0]['clusters']}
                 allClusters={allClusters}
                 projectId={id}
               />
