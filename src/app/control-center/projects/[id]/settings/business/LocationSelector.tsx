@@ -5,95 +5,97 @@ import { useRouter } from 'next/navigation'
 import { addBusinessEntity, deleteBusinessEntity } from '@/app/(dashboard)/projeler/[id]/isletme/actions'
 import type { BusinessEntity } from '@/app/(dashboard)/projeler/[id]/isletme/actions'
 
-// ─── Türkiye 81 İl listesi ────────────────────────────────────────────────────
-const TR_PROVINCES = [
-  'Adana','Adıyaman','Afyonkarahisar','Ağrı','Amasya','Ankara','Antalya','Artvin',
-  'Aydın','Balıkesir','Bilecik','Bingöl','Bitlis','Bolu','Burdur','Bursa','Çanakkale',
-  'Çankırı','Çorum','Denizli','Diyarbakır','Edirne','Elazığ','Erzincan','Erzurum',
-  'Eskişehir','Gaziantep','Giresun','Gümüşhane','Hakkari','Hatay','Isparta','Mersin',
-  'İstanbul','İzmir','Kars','Kastamonu','Kayseri','Kırklareli','Kırşehir','Kocaeli',
-  'Konya','Kütahya','Malatya','Manisa','Kahramanmaraş','Mardin','Muğla','Muş',
-  'Nevşehir','Niğde','Ordu','Rize','Sakarya','Samsun','Siirt','Sinop','Sivas',
-  'Tekirdağ','Tokat','Trabzon','Tunceli','Şanlıurfa','Uşak','Van','Yozgat','Zonguldak',
-  'Aksaray','Bayburt','Karaman','Kırıkkale','Batman','Şırnak','Bartın','Ardahan',
-  'Iğdır','Yalova','Karabük','Kilis','Osmaniye','Düzce',
+// ─── Veri ──────────────────────────────────────────────────────────────────────
+
+const COUNTRIES = [
+  { code: 'TR', label: 'Türkiye' },
+  { code: 'DE', label: 'Almanya' },
+  { code: 'NL', label: 'Hollanda' },
+  { code: 'GB', label: 'Birleşik Krallık' },
+  { code: 'AT', label: 'Avusturya' },
+  { code: 'CH', label: 'İsviçre' },
+  { code: 'BE', label: 'Belçika' },
+  { code: 'FR', label: 'Fransa' },
+  { code: 'AE', label: 'BAE' },
+  { code: 'OTHER', label: 'Diğer' },
 ]
 
-// ─── Bölge grupları ───────────────────────────────────────────────────────────
-const REGION_SHORTCUTS = [
-  { label: 'Marmara',          iller: ['İstanbul','Bursa','Kocaeli','Tekirdağ','Edirne','Kırklareli','Balıkesir','Çanakkale','Bilecik','Yalova','Sakarya'] },
-  { label: 'Ege',              iller: ['İzmir','Aydın','Denizli','Manisa','Muğla','Kütahya','Afyonkarahisar','Uşak'] },
-  { label: 'Akdeniz',         iller: ['Antalya','Adana','Mersin','Hatay','Burdur','Isparta','Kahramanmaraş','Osmaniye'] },
-  { label: 'İç Anadolu',      iller: ['Ankara','Konya','Kayseri','Sivas','Eskişehir','Aksaray','Karaman','Kırıkkale','Niğde','Nevşehir','Kırşehir','Çankırı','Yozgat'] },
-  { label: 'Karadeniz',       iller: ['Trabzon','Samsun','Ordu','Rize','Giresun','Zonguldak','Bartın','Karabük','Kastamonu','Sinop','Tokat','Amasya','Çorum','Gümüşhane','Artvin','Bayburt','Düzce','Bolu'] },
-  { label: 'Doğu Anadolu',   iller: ['Erzurum','Van','Malatya','Elazığ','Erzincan','Bingöl','Muş','Bitlis','Hakkari','Tunceli','Ağrı','Ardahan','Iğdır','Kars'] },
-  { label: 'Güneydoğu',      iller: ['Gaziantep','Diyarbakır','Şanlıurfa','Mardin','Siirt','Batman','Şırnak','Kilis','Adıyaman'] },
+const TR_PROVINCES = [
+  'Adana','Adıyaman','Afyonkarahisar','Ağrı','Amasya','Ankara','Antalya','Ardahan',
+  'Artvin','Aydın','Balıkesir','Bartın','Batman','Bayburt','Bilecik','Bingöl','Bitlis',
+  'Bolu','Burdur','Bursa','Çanakkale','Çankırı','Çorum','Denizli','Diyarbakır','Düzce',
+  'Edirne','Elazığ','Erzincan','Erzurum','Eskişehir','Gaziantep','Giresun','Gümüşhane',
+  'Hakkari','Hatay','Iğdır','Isparta','İstanbul','İzmir','Kahramanmaraş','Karabük',
+  'Karaman','Kars','Kastamonu','Kayseri','Kilis','Kırıkkale','Kırklareli','Kırşehir',
+  'Kocaeli','Konya','Kütahya','Malatya','Manisa','Mardin','Mersin','Muğla','Muş',
+  'Nevşehir','Niğde','Ordu','Osmaniye','Rize','Sakarya','Samsun','Siirt','Sinop',
+  'Sivas','Şanlıurfa','Şırnak','Tekirdağ','Tokat','Trabzon','Tunceli','Uşak','Van',
+  'Yalova','Yozgat','Zonguldak',
 ]
+
+// ─── Tip ───────────────────────────────────────────────────────────────────────
 
 interface LocationSelectorProps {
-  projectId: string
-  existingAreas: BusinessEntity[]   // mevcut service_area entity'leri
+  projectId:     string
+  existingAreas: BusinessEntity[]
 }
 
+// Kaydedilen lokasyonun yapısını attribute'dan okur
+function parseLocation(entity: BusinessEntity) {
+  const attrs = entity.attributes as Record<string, string> | null
+  return {
+    country:  attrs?.country  ?? '',
+    province: attrs?.province ?? '',
+    district: attrs?.district ?? '',
+    radius:   attrs?.radius   ?? '',
+  }
+}
+
+// ─── Bileşen ──────────────────────────────────────────────────────────────────
+
 export function LocationSelector({ projectId, existingAreas }: LocationSelectorProps) {
-  const router  = useRouter()
+  const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
-  // Mevcut il adlarını set olarak tut
-  const existingNames = new Set(existingAreas.map(e => e.name.replace(/\s*\(.*\)/, '').trim()))
+  const [country,  setCountry]  = useState('TR')
+  const [province, setProvince] = useState('')
+  const [district, setDistrict] = useState('')
+  const [radius,   setRadius]   = useState('')
+  const [error,    setError]    = useState('')
 
-  // Yarıçap formu
-  const [radiusCity, setRadiusCity] = useState('')
-  const [radiusKm, setRadiusKm]     = useState('25')
-  const [feedback, setFeedback]     = useState<string | null>(null)
-
-  function flash(msg: string) {
-    setFeedback(msg)
-    setTimeout(() => setFeedback(null), 2500)
+  function buildName(): string {
+    const countryLabel = COUNTRIES.find(c => c.code === country)?.label ?? country
+    const parts = [countryLabel]
+    if (province) parts.push(province)
+    if (district) parts.push(district)
+    if (radius)   parts.push(`(${radius}km çevresi)`)
+    return parts.join(' › ')
   }
 
-  function addProvince(province: string) {
-    if (existingNames.has(province)) return
-    startTransition(async () => {
-      await addBusinessEntity(projectId, {
-        type:       'service_area',
-        name:       province,
-        seo_intent: 'local',
-      })
-      router.refresh()
-    })
-  }
-
-  function addRegion(iller: string[]) {
-    const toAdd = iller.filter(il => !existingNames.has(il))
-    if (toAdd.length === 0) { flash('Bu bölgedeki tüm iller zaten ekli.'); return }
-    startTransition(async () => {
-      await Promise.all(toAdd.map(il => addBusinessEntity(projectId, { type: 'service_area', name: il, seo_intent: 'local' })))
-      router.refresh()
-    })
-  }
-
-  function addRadius() {
-    const city = radiusCity.trim()
-    const km   = parseInt(radiusKm, 10)
-    if (!city)       { flash('Şehir adı boş olamaz.'); return }
-    if (!km || km < 1) { flash('Geçerli km girin.'); return }
-    const label = `${city} (${km}km çevresi)`
+  function handleAdd() {
+    if (!province && country === 'TR') {
+      setError('Lütfen bir il seçin.')
+      return
+    }
+    setError('')
+    const name = buildName()
     startTransition(async () => {
       await addBusinessEntity(projectId, {
         type:        'service_area',
-        name:        label,
+        name,
         seo_intent:  'local',
-        description: `${city} merkezinden ${km}km yarıçaplı hizmet alanı`,
-        attributes:  { radius_km: km, center_city: city },
+        description: radius ? `${province || country} merkezinden ${radius}km yarıçaplı hizmet alanı` : undefined,
+        attributes:  { country, province, district, radius },
       })
+      // Formu sıfırla (ülke koru)
+      setProvince('')
+      setDistrict('')
+      setRadius('')
       router.refresh()
-      setRadiusCity('')
-      setRadiusKm('25')
     })
   }
 
-  function removeArea(id: string) {
+  function handleRemove(id: string) {
     startTransition(async () => {
       await deleteBusinessEntity(projectId, id)
       router.refresh()
@@ -103,139 +105,159 @@ export function LocationSelector({ projectId, existingAreas }: LocationSelectorP
   return (
     <div className="space-y-5">
 
-      {/* ── Seçili bölgeler ── */}
-      {existingAreas.length > 0 && (
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/40 mb-2">
-            Seçili Lokasyonlar ({existingAreas.length})
-          </p>
-          <div className="flex flex-wrap gap-1.5">
-            {existingAreas.map(area => (
-              <span
-                key={area.id}
-                className="flex items-center gap-1 rounded-full border border-emerald-500/25 bg-emerald-500/8 px-2.5 py-1 text-[11px] text-emerald-400/80"
-              >
-                {area.name}
-                <button
-                  onClick={() => removeArea(area.id)}
-                  disabled={isPending}
-                  className="text-emerald-400/40 hover:text-red-400/70 transition-colors ml-0.5 leading-none"
-                  title="Kaldır"
-                >
-                  ×
-                </button>
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* ── Ekleme formu ── */}
+      <div className="rounded-xl border border-border/40 bg-secondary/10 p-5 space-y-4">
+        <p className="text-xs font-semibold text-foreground/70">Yeni Hizmet Bölgesi Ekle</p>
 
-      {/* ── Bölge kısayolları ── */}
-      <div>
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/40 mb-2">
-          Bölgeye Göre Toplu Ekle
-        </p>
-        <div className="flex flex-wrap gap-1.5">
-          {REGION_SHORTCUTS.map(r => (
-            <button
-              key={r.label}
-              onClick={() => addRegion(r.iller)}
-              disabled={isPending}
-              className="rounded border border-border/40 px-2.5 py-1 text-[11px] text-muted-foreground/60 hover:border-blue-500/30 hover:text-blue-400/70 hover:bg-blue-500/5 transition-colors disabled:opacity-40"
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+
+          {/* Ülke */}
+          <div className="space-y-1">
+            <label className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground/50">
+              Ülke
+            </label>
+            <select
+              value={country}
+              onChange={e => { setCountry(e.target.value); setProvince(''); setDistrict('') }}
+              className="w-full rounded-lg border border-border/40 bg-background/60 px-3 py-2 text-sm outline-none focus:border-border/80 transition-colors"
             >
-              {r.label}
-            </button>
-          ))}
-          <button
-            onClick={() => {
-              const all = TR_PROVINCES.filter(p => !existingNames.has(p))
-              if (all.length === 0) { flash('Tüm iller zaten ekli.'); return }
-              startTransition(async () => {
-                await Promise.all(all.map(p => addBusinessEntity(projectId, { type: 'service_area', name: p, seo_intent: 'local' })))
-                router.refresh()
-              })
-            }}
-            disabled={isPending}
-            className="rounded border border-border/30 px-2.5 py-1 text-[11px] text-muted-foreground/40 hover:text-muted-foreground/60 transition-colors disabled:opacity-40"
-          >
-            Tüm Türkiye
-          </button>
-        </div>
-      </div>
+              {COUNTRIES.map(c => (
+                <option key={c.code} value={c.code}>{c.label}</option>
+              ))}
+            </select>
+          </div>
 
-      {/* ── 81 İl listesi ── */}
-      <div>
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/40 mb-2">
-          İl Seç
-        </p>
-        <div className="flex flex-wrap gap-1">
-          {TR_PROVINCES.map(province => {
-            const selected = existingNames.has(province)
-            return (
-              <button
-                key={province}
-                onClick={() => addProvince(province)}
-                disabled={isPending || selected}
-                title={selected ? 'Zaten eklendi' : `${province} ekle`}
-                className={[
-                  'rounded px-2 py-0.5 text-[11px] transition-colors border',
-                  selected
-                    ? 'border-emerald-500/20 bg-emerald-500/8 text-emerald-400/60 cursor-default'
-                    : 'border-border/30 text-muted-foreground/50 hover:border-blue-500/25 hover:text-blue-400/70 hover:bg-blue-500/5',
-                ].join(' ')}
+          {/* İl — Türkiye ise dropdown, diğerleri text input */}
+          <div className="space-y-1">
+            <label className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground/50">
+              İl / Şehir
+            </label>
+            {country === 'TR' ? (
+              <select
+                value={province}
+                onChange={e => { setProvince(e.target.value); setDistrict('') }}
+                className="w-full rounded-lg border border-border/40 bg-background/60 px-3 py-2 text-sm outline-none focus:border-border/80 transition-colors"
               >
-                {province}
-              </button>
-            )
-          })}
-        </div>
-      </div>
+                <option value="">İl seçin…</option>
+                {TR_PROVINCES.map(p => (
+                  <option key={p} value={p}>{p}</option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type="text"
+                value={province}
+                onChange={e => setProvince(e.target.value)}
+                placeholder="Şehir girin…"
+                className="w-full rounded-lg border border-border/40 bg-background/60 px-3 py-2 text-sm outline-none focus:border-border/80 transition-colors placeholder:text-muted-foreground/30"
+              />
+            )}
+          </div>
 
-      {/* ── Yarıçap ile ekle ── */}
-      <div>
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/40 mb-2">
-          Yarıçap ile Ekle
-        </p>
-        <div className="flex items-center gap-2 flex-wrap">
-          <input
-            type="text"
-            value={radiusCity}
-            onChange={e => setRadiusCity(e.target.value)}
-            placeholder="Şehir / Merkez nokta"
-            className="flex-1 min-w-[140px] rounded-md border border-border/40 bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground/30 outline-none focus:border-border/70 transition-colors"
-          />
-          <div className="flex items-center gap-1.5 rounded-md border border-border/40 bg-transparent px-3 py-2">
+          {/* İlçe — isteğe bağlı */}
+          <div className="space-y-1">
+            <label className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground/50">
+              İlçe <span className="text-muted-foreground/30 normal-case">(isteğe bağlı)</span>
+            </label>
             <input
-              type="number"
-              value={radiusKm}
-              onChange={e => setRadiusKm(e.target.value)}
-              min="1"
-              max="500"
-              className="w-12 bg-transparent text-sm text-center outline-none"
+              type="text"
+              value={district}
+              onChange={e => setDistrict(e.target.value)}
+              placeholder="İlçe girin…"
+              className="w-full rounded-lg border border-border/40 bg-background/60 px-3 py-2 text-sm outline-none focus:border-border/80 transition-colors placeholder:text-muted-foreground/30"
             />
-            <span className="text-[11px] text-muted-foreground/50">km</span>
+          </div>
+
+          {/* Yarıçap — isteğe bağlı */}
+          <div className="space-y-1">
+            <label className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground/50">
+              Yarıçap <span className="text-muted-foreground/30 normal-case">(isteğe bağlı)</span>
+            </label>
+            <div className="flex items-center rounded-lg border border-border/40 bg-background/60 overflow-hidden focus-within:border-border/80 transition-colors">
+              <input
+                type="number"
+                value={radius}
+                onChange={e => setRadius(e.target.value)}
+                placeholder="30"
+                min="1"
+                max="500"
+                className="flex-1 bg-transparent px-3 py-2 text-sm outline-none placeholder:text-muted-foreground/30"
+              />
+              <span className="px-3 text-[11px] text-muted-foreground/40 border-l border-border/30 select-none">km</span>
+            </div>
+          </div>
+
+        </div>
+
+        {/* Önizleme + hata + ekle */}
+        <div className="flex items-center justify-between gap-3 pt-1">
+          <div className="min-w-0">
+            {error ? (
+              <p className="text-[11px] text-amber-400/70">{error}</p>
+            ) : (province || country !== 'TR') ? (
+              <p className="text-[11px] text-muted-foreground/50 truncate">
+                <span className="text-muted-foreground/30">Önizleme: </span>
+                {buildName()}
+              </p>
+            ) : null}
           </div>
           <button
-            onClick={addRadius}
+            onClick={handleAdd}
             disabled={isPending}
-            className="rounded-md border border-border/40 bg-secondary/30 px-3 py-2 text-[11px] text-muted-foreground/70 hover:bg-secondary/50 transition-colors disabled:opacity-40"
+            className="flex-shrink-0 rounded-lg border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-[12px] font-medium text-blue-400/80 hover:bg-blue-500/15 transition-colors disabled:opacity-40"
           >
-            Ekle
+            {isPending ? 'Ekleniyor…' : '+ Bölge Ekle'}
           </button>
         </div>
-        <p className="text-[10px] text-muted-foreground/30 mt-1.5">
-          Örnek: "İstanbul" + 30km → "İstanbul (30km çevresi)"
-        </p>
       </div>
 
-      {/* Feedback */}
-      {feedback && (
-        <p className="text-[11px] text-amber-400/70">{feedback}</p>
+      {/* ── Eklenen bölgeler ── */}
+      {existingAreas.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/40">
+            Hizmet Bölgeleri ({existingAreas.length})
+          </p>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {existingAreas.map(area => {
+              const loc = parseLocation(area)
+              return (
+                <div
+                  key={area.id}
+                  className="flex items-center gap-3 rounded-lg border border-border/40 bg-secondary/10 px-4 py-3 group"
+                >
+                  {/* İkon */}
+                  <span className="text-base shrink-0 text-muted-foreground/40" aria-hidden="true">📍</span>
+
+                  {/* Metin */}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground/80 truncate">{area.name}</p>
+                    {loc.radius && (
+                      <p className="text-[10px] text-muted-foreground/40">{loc.radius}km yarıçap</p>
+                    )}
+                  </div>
+
+                  {/* Sil */}
+                  <button
+                    onClick={() => handleRemove(area.id)}
+                    disabled={isPending}
+                    title="Kaldır"
+                    className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground/30 hover:text-red-400/70 text-lg leading-none"
+                  >
+                    ×
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+        </div>
       )}
 
-      {isPending && (
-        <p className="text-[11px] text-muted-foreground/40">Kaydediliyor…</p>
+      {existingAreas.length === 0 && (
+        <p className="text-[11px] text-muted-foreground/30 text-center py-4">
+          Henüz hizmet bölgesi eklenmedi. Yukarıdan ülke, il ve ilçe seçerek ekleyin.
+        </p>
       )}
+
     </div>
   )
 }
