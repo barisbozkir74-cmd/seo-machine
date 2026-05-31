@@ -11,6 +11,7 @@ import { AiExpandButton } from '@/app/(dashboard)/projeler/[id]/keyword-strateji
 import { KeywordStratejisiToolbar } from '@/app/(dashboard)/projeler/[id]/keyword-stratejisi/KeywordStratejisiToolbar'
 import { LockedModuleBanner } from '@/components/control-center/LockedModuleBanner'
 import { ModuleAIPanel } from '@/components/control-center/ModuleAIPanel'
+import { SplitPane } from '@/components/control-center/SplitPane'
 import { intentToPageType } from '@/app/(dashboard)/projeler/[id]/site-blueprint/page-utils'
 import type { DialogRow } from '@/app/(dashboard)/projeler/[id]/site-blueprint/GeneratePagesDialog'
 
@@ -367,100 +368,110 @@ export default async function KeywordsPage({
         </div>
       )}
 
-      <ModuleAIPanel
-        title="Keyword Stratejisi"
-        managerName="Keyword Stratejisti"
-        hint="Keyword kümeleri analiz eder, dil uyumunu kontrol eder, cluster önerileri üretir ve strateji boşluklarını tespit eder."
-        contextItems={[
-          { label: 'Keywords',     value: `${totalKeywords} adet`,           status: totalKeywords > 0 ? 'ok' : 'missing' },
-          { label: 'Kümeler',      value: `${totalClusters} küme`,           status: totalClusters > 0 ? 'ok' : 'missing' },
-          { label: 'Onaylı Küme', value: `${approvedClusters.length} onaylı`, status: approvedClusters.length > 0 ? 'ok' : 'warning' },
-          { label: 'Strateji',     value: isStrategyApproved ? 'Kilitli' : 'Taslak', status: isStrategyApproved ? 'ok' : 'warning' },
-        ]}
-        nextStep={
-          totalKeywords === 0
-            ? 'Keyword ekleyin veya CSV ile içe aktarın'
-            : totalClusters === 0
-            ? 'Kümeleme başlatın'
-            : approvedClusters.length === 0
-            ? 'Kümeleri gözden geçirin ve onaylayın'
-            : !isStrategyApproved
-            ? 'Stratejiyi kilitleyin'
-            : 'Strateji onaylandı. Blueprint oluşturabilirsiniz.'
+      <SplitPane
+        storageKey="keyword-stratejisi"
+        defaultRightWidth={288}
+        minRightWidth={180}
+        maxRightWidth={520}
+        right={
+          <ModuleAIPanel
+            variant="sidebar"
+            title="Keyword Stratejisi"
+            managerName="Keyword Stratejisti"
+            hint="Keyword kümeleri analiz eder, dil uyumunu kontrol eder, cluster önerileri üretir ve strateji boşluklarını tespit eder."
+            section="keyword-stratejisi"
+            contextItems={[
+              { label: 'Keywords',     value: `${totalKeywords} adet`,           status: totalKeywords > 0 ? 'ok' : 'missing' },
+              { label: 'Kümeler',      value: `${totalClusters} küme`,           status: totalClusters > 0 ? 'ok' : 'missing' },
+              { label: 'Onaylı Küme', value: `${approvedClusters.length} onaylı`, status: approvedClusters.length > 0 ? 'ok' : 'warning' },
+              { label: 'Strateji',     value: isStrategyApproved ? 'Kilitli' : 'Taslak', status: isStrategyApproved ? 'ok' : 'warning' },
+            ]}
+            nextStep={
+              totalKeywords === 0
+                ? 'Keyword ekleyin veya CSV ile içe aktarın'
+                : totalClusters === 0
+                ? 'Kümeleme başlatın'
+                : approvedClusters.length === 0
+                ? 'Kümeleri gözden geçirin ve onaylayın'
+                : !isStrategyApproved
+                ? 'Stratejiyi kilitleyin'
+                : 'Strateji onaylandı. Blueprint oluşturabilirsiniz.'
+            }
+            actions={[
+              { label: 'Keyword Ekle',   href: `${base}?view=flat`,            variant: totalKeywords === 0 ? 'primary' : 'default' },
+              { label: 'Küme Görünümü',  href: `${base}?view=cluster` },
+              { label: 'Harita Görünümü', href: `${base}?view=map` },
+              { label: 'Site Blueprint', href: blueprintBase, disabled: !isStrategyApproved, disabledReason: 'Stratejiyi kilitleyin' },
+            ]}
+          />
         }
-        actions={[
-          { label: 'Keyword Ekle',   href: `${base}?view=flat`,            variant: totalKeywords === 0 ? 'primary' : 'default' },
-          { label: 'Küme Görünümü',  href: `${base}?view=cluster` },
-          { label: 'Harita Görünümü', href: `${base}?view=map` },
-          { label: 'Site Blueprint', href: blueprintBase, disabled: !isStrategyApproved, disabledReason: 'Stratejiyi kilitleyin' },
-        ]}
-      />
-
-      {/* Content area */}
-      <div className="flex-1 min-h-0 overflow-y-auto">
-        {keywords.length === 0 ? (
-          <div className="flex h-full items-center justify-center py-20">
-            <div className="text-center max-w-xs space-y-3">
-              <p className="text-sm font-medium text-foreground/80">Henüz keyword eklenmemiş</p>
-              <p className="text-xs text-muted-foreground">
-                Araştırmadan aktarılan taslaklar veya AI ile keyword çekerek başlayın. Kümeler oluşturulduktan sonra strateji onaylanabilir.
-              </p>
-            </div>
-          </div>
-        ) : isMapView ? (
-          <MasterSeoMap
-            projectId={id}
-            clusters={clusters.map((c) => ({
-              id:           c.id,
-              cluster_name: c.cluster_name,
-              page_type:    (c as unknown as Record<string, string | null>).page_type ?? null,
-              target_url:   (c as unknown as Record<string, string | null>).target_url ?? null,
-              arch_status:  (c as unknown as Record<string, string | null>).arch_status ?? null,
-              ai_reasoning: (c as unknown as Record<string, string | null>).ai_reasoning ?? null,
-              priority_rank:(c as unknown as Record<string, number | null>).priority_rank ?? null,
-              content_month:(c as unknown as Record<string, number | null>).content_month ?? null,
-              intent:        c.intent ?? null,
-              total_volume:  (c as unknown as Record<string, number | null>).total_volume ?? null,
-              keyword_count: (clusterKeywordMap[c.id] ?? []).length,
-            }))}
-            archSummary={(project as unknown as Record<string, string | null>).seo_arch_summary ?? null}
-            archBuiltAt={(project as unknown as Record<string, string | null>).seo_arch_built_at ?? null}
-          />
-        ) : isFlatView ? (
-          <KeywordFlatList
-            keywords={keywords}
-            projectId={id}
-            clusterMap={clusterMap}
-            localeFlaggedIds={localeFlaggedIds}
-          />
-        ) : (
-          <div className="p-4">
-            {clustersWithKeywords.length > 0 && (
-              <div className="mb-3 flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">
-                  {clustersWithKeywords.length} küme
-                </span>
-                {(() => {
-                  const isActive = sort === 'niche_score'
-                  const nextDir  = isActive && dir === 'desc' ? 'asc' : isActive && dir === 'asc' ? undefined : 'desc'
-                  const href     = nextDir ? `${base}?sort=niche_score&dir=${nextDir}` : base
-                  return (
-                    <Link href={href} className="text-xs text-muted-foreground transition-colors hover:text-foreground">
-                      Niche Skoru{isActive && dir === 'desc' ? ' ↓' : isActive && dir === 'asc' ? ' ↑' : ''}
-                    </Link>
-                  )
-                })()}
+      >
+        {/* Content area */}
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          {keywords.length === 0 ? (
+            <div className="flex h-full items-center justify-center py-20">
+              <div className="text-center max-w-xs space-y-3">
+                <p className="text-sm font-medium text-foreground/80">Henüz keyword eklenmemiş</p>
+                <p className="text-xs text-muted-foreground">
+                  Araştırmadan aktarılan taslaklar veya AI ile keyword çekerek başlayın. Kümeler oluşturulduktan sonra strateji onaylanabilir.
+                </p>
               </div>
-            )}
-            <ClusterTree
-              clusters={clustersWithKeywords}
-              allClusters={allClusters}
+            </div>
+          ) : isMapView ? (
+            <MasterSeoMap
               projectId={id}
+              clusters={clusters.map((c) => ({
+                id:           c.id,
+                cluster_name: c.cluster_name,
+                page_type:    (c as unknown as Record<string, string | null>).page_type ?? null,
+                target_url:   (c as unknown as Record<string, string | null>).target_url ?? null,
+                arch_status:  (c as unknown as Record<string, string | null>).arch_status ?? null,
+                ai_reasoning: (c as unknown as Record<string, string | null>).ai_reasoning ?? null,
+                priority_rank:(c as unknown as Record<string, number | null>).priority_rank ?? null,
+                content_month:(c as unknown as Record<string, number | null>).content_month ?? null,
+                intent:        c.intent ?? null,
+                total_volume:  (c as unknown as Record<string, number | null>).total_volume ?? null,
+                keyword_count: (clusterKeywordMap[c.id] ?? []).length,
+              }))}
+              archSummary={(project as unknown as Record<string, string | null>).seo_arch_summary ?? null}
+              archBuiltAt={(project as unknown as Record<string, string | null>).seo_arch_built_at ?? null}
+            />
+          ) : isFlatView ? (
+            <KeywordFlatList
+              keywords={keywords}
+              projectId={id}
+              clusterMap={clusterMap}
               localeFlaggedIds={localeFlaggedIds}
             />
-          </div>
-        )}
-      </div>
+          ) : (
+            <div className="p-4">
+              {clustersWithKeywords.length > 0 && (
+                <div className="mb-3 flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">
+                    {clustersWithKeywords.length} küme
+                  </span>
+                  {(() => {
+                    const isActive = sort === 'niche_score'
+                    const nextDir  = isActive && dir === 'desc' ? 'asc' : isActive && dir === 'asc' ? undefined : 'desc'
+                    const href     = nextDir ? `${base}?sort=niche_score&dir=${nextDir}` : base
+                    return (
+                      <Link href={href} className="text-xs text-muted-foreground transition-colors hover:text-foreground">
+                        Niche Skoru{isActive && dir === 'desc' ? ' ↓' : isActive && dir === 'asc' ? ' ↑' : ''}
+                      </Link>
+                    )
+                  })()}
+                </div>
+              )}
+              <ClusterTree
+                clusters={clustersWithKeywords}
+                allClusters={allClusters}
+                projectId={id}
+                localeFlaggedIds={localeFlaggedIds}
+              />
+            </div>
+          )}
+        </div>
+      </SplitPane>
     </div>
   )
 }
