@@ -20,8 +20,22 @@ import { ProjectPageShell } from '../ProjectPageShell'
 import { MasterSeoMap } from './MasterSeoMap'
 import { AiSuggestButton } from './AiSuggestButton'
 import { KeywordStratejisiToolbar } from './KeywordStratejisiToolbar'
+import { AnalysisButtons } from './AnalysisButtons'
 import { intentToPageType } from '../site-blueprint/page-utils'
 import { type DialogRow } from '../site-blueprint/GeneratePagesDialog'
+
+// ─── Phase 24: dfs_fetched_at helper fonksiyonları ───────────────────────────
+
+function isDfsStale(dfs_fetched_at: string, ttlDays: number): boolean {
+  const diffMs = Date.now() - new Date(dfs_fetched_at).getTime()
+  return diffMs > ttlDays * 24 * 60 * 60 * 1000
+}
+
+function formatDfsDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' })
+}
+
+const DFS_TTL_DAYS = 3 // standard TTL default
 
 function kdColor(kd: number): { dot: string; label: string } {
   if (kd < 30) return { dot: 'bg-emerald-400', label: 'Kolay' }
@@ -53,6 +67,7 @@ type KeywordRow = {
   difficulty: number | null
   search_intent: string | null
   enriched_at: string | null
+  dfs_fetched_at: string | null  // Phase 24: DFS-07
   cluster_id: string | null
   opportunity_score: number | null
   source: 'manual' | 'competitor' | 'expansion'
@@ -99,7 +114,7 @@ export default async function KeywordStratejisiPage({
 
   const { data: keywordsRaw } = await supabase
     .from('keywords')
-    .select('id, keyword, volume, cpc, difficulty, search_intent, enriched_at, cluster_id, opportunity_score, source, parent_keyword_id, is_starred, is_ai_suggested')
+    .select('id, keyword, volume, cpc, difficulty, search_intent, enriched_at, dfs_fetched_at, cluster_id, opportunity_score, source, parent_keyword_id, is_starred, is_ai_suggested')
     .eq('project_id', id)
     .eq('user_id', user.id)
     .order('volume', { ascending: false, nullsFirst: false })
@@ -117,6 +132,25 @@ export default async function KeywordStratejisiPage({
     .order(sortColumn, { ascending, nullsFirst: false })
 
   const clusters = clustersRaw ?? []
+
+  // Phase 24: workflow_runs — aktif deep analysis var mı? (SSR)
+  const { data: activeWorkflow } = await supabase
+    .from('workflow_runs')
+    .select('id, status, created_at')
+    .eq('project_id', id)
+    .eq('user_id', user.id)
+    .eq('workflow_type', 'dfs_deep_analysis')
+    .in('status', ['pending', 'running'])
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  // Phase 24: cluster sayısı — AnalysisButtons standardDisabled kontrolü için
+  const { count: clusterCount } = await supabase
+    .from('keyword_clusters')
+    .select('*', { count: 'exact', head: true })
+    .eq('project_id', id)
+    .eq('user_id', user.id)
 
   // D-06: alreadyExists hesabı — cluster_id'si bir sayfaya bağlı olanları bul
   const { data: pagesWithClusters } = await supabase
@@ -221,6 +255,14 @@ export default async function KeywordStratejisiPage({
                 hasApprovedCluster={clustersWithKeywords.some((c) => c.status === 'approved')}
                 isStrategyApproved={(project as unknown as { keyword_strategy_approved: boolean | null }).keyword_strategy_approved ?? false}
                 approvedDialogRows={approvedDialogRows}
+              />
+              {/* Phase 24: DataForSEO analiz butonları — separator + cyan buton grubu */}
+              <span className="h-4 w-px bg-border/50 shrink-0" />
+              <AnalysisButtons
+                projectId={id}
+                keywordCount={keywords.length}
+                clusterCount={clusterCount ?? 0}
+                isAnalysisRunning={!!activeWorkflow}
               />
             </>
           )}
@@ -333,6 +375,8 @@ export default async function KeywordStratejisiPage({
                     <TableHead className="text-xs w-32 py-2">Küme</TableHead>
                     <TableHead className="text-xs text-right w-14 py-2">Skor</TableHead>
                     <TableHead className="text-xs w-24 py-2">Intent</TableHead>
+                    {/* Phase 24: DFS Tarihi sütunu */}
+                    <TableHead className="text-xs w-28 py-2 text-cyan-400/70">DFS Tarihi</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -406,6 +450,25 @@ export default async function KeywordStratejisiPage({
                             </svg>
                           ) : (
                             <IntentBadge intent={kw.search_intent} />
+                          )}
+                        </TableCell>
+                        {/* Phase 24: DFS Tarihi hücresi — 3 state: never/stale/fresh */}
+                        <TableCell className="py-1 w-28">
+                          {kw.dfs_fetched_at === null ? (
+                            <Badge className="bg-secondary text-muted-foreground/50 text-[10px] border-0 px-1.5 py-0">
+                              Veri yok
+                            </Badge>
+                          ) : isDfsStale(kw.dfs_fetched_at, DFS_TTL_DAYS) ? (
+                            <Badge className="bg-amber-500/20 text-amber-400 text-[10px] border-0 px-1.5 py-0">
+                              Güncel değil
+                            </Badge>
+                          ) : (
+                            <span
+                              className="text-[11px] text-muted-foreground"
+                              title={`Son güncelleme: ${kw.dfs_fetched_at} · ${Math.floor((Date.now() - new Date(kw.dfs_fetched_at).getTime()) / (1000 * 60 * 60 * 24))} gün önce`}
+                            >
+                              {formatDfsDate(kw.dfs_fetched_at)}
+                            </span>
                           )}
                         </TableCell>
                       </TableRow>
