@@ -9,7 +9,7 @@ import {
   DialogDescription,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { lightAnalysisAction, standardAnalysisAction } from './actions'
+import { lightAnalysisAction, standardAnalysisAction, triggerDeepAnalysisAction } from './actions'
 import type { LightAnalysisResult, StandardAnalysisResult } from './actions'
 
 type AnalysisLevel = 'light' | 'standard' | 'deep'
@@ -37,13 +37,14 @@ export function AnalysisButtons({
   const router = useRouter()
   const [isPendingLight, startLightTransition] = useTransition()
   const [isPendingStandard, startStandardTransition] = useTransition()
+  const [isPendingDeep, startDeepTransition] = useTransition()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [pendingLevel, setPendingLevel] = useState<AnalysisLevel | null>(null)
   const [isConfirming, setIsConfirming] = useState(false)
   const [resultMsg, setResultMsg] = useState<ResultMessage | null>(null)
 
   const noKeywords = keywordCount === 0
-  const anyConcurrent = isAnalysisRunning || isPendingLight || isPendingStandard
+  const anyConcurrent = isAnalysisRunning || isPendingLight || isPendingStandard || isPendingDeep
 
   // Maliyet tahmini hesapla (~1 unit/keyword)
   const costEstimate = keywordCount > 0 ? keywordCount : 1
@@ -95,7 +96,14 @@ export function AnalysisButtons({
       })
     } else if (pendingLevel === 'deep') {
       setIsConfirming(false)
-      onDeepAnalysisStart?.()
+      startDeepTransition(async () => {
+        const result = await triggerDeepAnalysisAction(projectId)
+        if (!result.success) {
+          setResultMsg({ type: 'error', text: result.error })
+        } else {
+          router.refresh() // DeepAnalysisPoller SSR'dan mount edilir
+        }
+      })
     }
     setPendingLevel(null)
   }
@@ -155,11 +163,19 @@ export function AnalysisButtons({
           variant="outline"
           size="sm"
           className={deepDisabled ? disabledBtnClass : baseBtnClass}
-          disabled={deepDisabled}
+          disabled={deepDisabled || isPendingDeep}
           title={noKeywords ? 'Önce keyword ekleyin' : anyConcurrent ? 'Analiz devam ediyor' : 'Derinlemesine Analiz'}
           onClick={() => openDialog('deep')}
         >
-          Derinlemesine Analiz
+          {isPendingDeep ? (
+            <span className="flex items-center gap-2">
+              <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              Başlatılıyor...
+            </span>
+          ) : 'Derinlemesine Analiz'}
         </Button>
       </div>
 
