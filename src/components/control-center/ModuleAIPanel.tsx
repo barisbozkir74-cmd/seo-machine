@@ -75,11 +75,6 @@ export function ModuleAIPanel({
 
       {open && (
         <div className="bg-secondary/5 px-6 pb-4 pt-1 space-y-3">
-          {managerName && (
-            <p className="text-[10px] text-muted-foreground/40 select-none">
-              {title}
-            </p>
-          )}
           {hint && (
             <p className="text-[11px] text-muted-foreground/50 leading-relaxed">{hint}</p>
           )}
