@@ -10,10 +10,10 @@ export default async function DecisionsPage({
   searchParams,
 }: {
   params:       Promise<{ id: string }>
-  searchParams: Promise<{ tab?: string }>
+  searchParams: Promise<{ tab?: string; section?: string }>
 }) {
-  const { id }  = await params
-  const { tab } = await searchParams
+  const { id }              = await params
+  const { tab, section }    = await searchParams
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -52,7 +52,48 @@ export default async function DecisionsPage({
   const activeDecisions   = allDecisions.filter((d) => d.is_active)
   const inactiveDecisions = allDecisions.filter((d) => !d.is_active)
 
-  const displayDecisions = showHistory ? inactiveDecisions : activeDecisions
+  // Unique section count (from active decisions)
+  const uniqueSections      = [...new Set(activeDecisions.map((d) => d.section).filter(Boolean))]
+  const uniqueSectionCount  = uniqueSections.length
+
+  // Base decisions for current tab, then optionally filter by ?section=
+  const tabDecisions     = showHistory ? inactiveDecisions : activeDecisions
+  const displayDecisions = section
+    ? tabDecisions.filter((d) => d.section === section)
+    : tabDecisions
+
+  // Panel context items
+  const panelContextItems = [
+    {
+      label: 'Aktif Karar',
+      value: `${activeDecisions.length} adet`,
+      status: (activeDecisions.length > 0 ? 'ok' : 'warning') as 'ok' | 'warning',
+    },
+    {
+      label: 'Karar Geçmişi',
+      value: `${inactiveDecisions.length} geçmiş`,
+      status: 'ok' as const,
+    },
+    {
+      label: 'Bölüm',
+      value: `${uniqueSectionCount} bölüm`,
+      status: (uniqueSectionCount > 0 ? 'ok' : 'missing') as 'ok' | 'missing',
+    },
+  ]
+
+  const panelNextStep =
+    activeDecisions.length === 0
+      ? 'Henüz karar alınmamış. AI modülleri karar ürettiğinde burada görünür.'
+      : `${activeDecisions.length} aktif karar, ${uniqueSectionCount} bölümde kayıtlı.`
+
+  const decisionsBase = `${base}/decisions`
+
+  const panelActions = [
+    { label: 'Aktif Kararlar',      href: decisionsBase,                           variant: 'primary' as const },
+    { label: 'Karar Geçmişi',       href: `${decisionsBase}?tab=gecmis` },
+    { label: 'Araştırma Kararları', href: `${decisionsBase}?section=arastirma` },
+    { label: 'Keyword Kararları',   href: `${decisionsBase}?section=keyword-stratejisi` },
+  ]
 
   return (
     <div className="flex flex-col min-h-0">
@@ -61,6 +102,9 @@ export default async function DecisionsPage({
         title="Karar Havuzu"
         managerName="Karar Yöneticisi"
         hint="Tüm bölüm kararlarını izler. AI aksiyonları bu havuzu okur ve yeni kararları buraya yazar."
+        contextItems={panelContextItems}
+        nextStep={panelNextStep}
+        actions={panelActions}
       />
 
       {/* Tab bar */}
