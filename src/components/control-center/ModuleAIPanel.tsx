@@ -53,6 +53,20 @@ const STATUS_DOT: Record<NonNullable<PanelContextItem['status']>, string> = {
 const PLACEHOLDER_RESPONSE =
   'Bu özellik yakında aktif olacak. Şu an için bağlam bilgilerini ve hızlı aksiyonları kullanabilirsiniz.'
 
+// ─── Task status types ────────────────────────────────────────────────────────
+
+type TaskStatus = 'pending' | 'done' | 'failed' | 'approval' | 'researched'
+
+const TASK_STATUS_CONFIG: Record<TaskStatus, { label: string; dot: string; text: string }> = {
+  pending:    { label: 'Bekliyor',           dot: 'bg-muted-foreground/30', text: 'text-muted-foreground/50' },
+  done:       { label: 'Tamamlandı',         dot: 'bg-emerald-400/70',      text: 'text-emerald-400/80' },
+  failed:     { label: 'Yapılmadı',          dot: 'bg-red-400/60',          text: 'text-red-400/70' },
+  approval:   { label: 'Onay Bekliyor',      dot: 'bg-amber-400/70',        text: 'text-amber-400/80' },
+  researched: { label: 'Araştırma Yapıldı',  dot: 'bg-blue-400/60',         text: 'text-blue-400/70' },
+}
+
+const STATUS_ORDER: TaskStatus[] = ['pending', 'done', 'failed', 'approval', 'researched']
+
 // ─── Tasks tab ────────────────────────────────────────────────────────────────
 
 function TasksTab({ storageKey }: { storageKey: string }) {
@@ -107,6 +121,148 @@ function TasksTab({ storageKey }: { storageKey: string }) {
   )
 }
 
+// ─── Report tab ───────────────────────────────────────────────────────────────
+
+function ReportTab({ storageKey, managerName }: { storageKey: string; managerName?: string }) {
+  const [tasks, setTasks] = useState<string[]>([])
+  const [statuses, setStatuses] = useState<Record<number, TaskStatus>>({})
+  const [masterApproved, setMasterApproved] = useState(false)
+
+  // Görevler sekmesindeki metni parse et
+  useEffect(() => {
+    const raw = localStorage.getItem(`tasks:${storageKey}`) ?? ''
+    const lines = raw.split('\n').map(l => l.trim()).filter(Boolean)
+    setTasks(lines)
+
+    const savedStatuses = localStorage.getItem(`tasks:${storageKey}:status`)
+    if (savedStatuses) {
+      try { setStatuses(JSON.parse(savedStatuses)) } catch { /* ignore */ }
+    }
+
+    const approved = localStorage.getItem(`tasks:${storageKey}:master-approved`)
+    setMasterApproved(approved === 'true')
+  }, [storageKey])
+
+  function setStatus(idx: number, status: TaskStatus) {
+    const next = { ...statuses, [idx]: status }
+    setStatuses(next)
+    localStorage.setItem(`tasks:${storageKey}:status`, JSON.stringify(next))
+  }
+
+  function cycleStatus(idx: number) {
+    const current = statuses[idx] ?? 'pending'
+    const nextIdx = (STATUS_ORDER.indexOf(current) + 1) % STATUS_ORDER.length
+    setStatus(idx, STATUS_ORDER[nextIdx])
+  }
+
+  function toggleMasterApproval() {
+    const next = !masterApproved
+    setMasterApproved(next)
+    localStorage.setItem(`tasks:${storageKey}:master-approved`, String(next))
+  }
+
+  const counts = STATUS_ORDER.reduce((acc, s) => {
+    acc[s] = Object.values(statuses).filter(v => v === s).length
+    return acc
+  }, {} as Record<TaskStatus, number>)
+
+  const doneCount = counts.done
+  const total = tasks.length
+
+  return (
+    <div className="flex flex-col h-full">
+
+      {/* Özet şerit */}
+      {total > 0 && (
+        <div className="flex-shrink-0 px-4 py-2.5 border-b border-border/20 flex items-center gap-3 flex-wrap">
+          <span className="text-[10px] text-muted-foreground/50">
+            {doneCount}/{total} tamamlandı
+          </span>
+          {Object.entries(counts).filter(([, n]) => n > 0).map(([s, n]) => {
+            const cfg = TASK_STATUS_CONFIG[s as TaskStatus]
+            return (
+              <span key={s} className={`flex items-center gap-1 text-[10px] ${cfg.text}`}>
+                <span className={`h-1.5 w-1.5 rounded-full ${cfg.dot}`} />
+                {n} {cfg.label}
+              </span>
+            )
+          })}
+        </div>
+      )}
+
+      {/* Görev listesi */}
+      <div className="flex-1 min-h-0 overflow-y-auto px-3 py-2 space-y-1">
+        {tasks.length === 0 ? (
+          <p className="text-[11px] text-muted-foreground/30 text-center pt-6 select-none px-2">
+            Henüz görev yok.{' '}
+            <span className="underline decoration-dotted">Görevler</span>{' '}
+            sekmesine gidin ve her satıra bir görev yazın.
+          </p>
+        ) : (
+          tasks.map((task, idx) => {
+            const status = statuses[idx] ?? 'pending'
+            const cfg = TASK_STATUS_CONFIG[status]
+            return (
+              <div key={idx}
+                className="flex items-start gap-2 rounded-md px-2 py-2 hover:bg-secondary/20 group cursor-default"
+              >
+                {/* Durum dot — tıklayınca cycle */}
+                <button
+                  onClick={() => cycleStatus(idx)}
+                  title={`Durum: ${cfg.label} — tıkla değiştir`}
+                  className={`mt-0.5 h-2 w-2 rounded-full shrink-0 ${cfg.dot} hover:opacity-80 transition-opacity`}
+                />
+
+                {/* Görev metni */}
+                <span className="flex-1 text-[11px] text-foreground/70 leading-relaxed min-w-0">
+                  {task}
+                </span>
+
+                {/* Durum etiketi — select */}
+                <select
+                  value={status}
+                  onChange={e => setStatus(idx, e.target.value as TaskStatus)}
+                  className="shrink-0 bg-transparent text-[9px] text-muted-foreground/40 border-0 outline-none cursor-pointer hover:text-muted-foreground/70 transition-colors"
+                  title="Durumu değiştir"
+                >
+                  {STATUS_ORDER.map(s => (
+                    <option key={s} value={s}>{TASK_STATUS_CONFIG[s].label}</option>
+                  ))}
+                </select>
+              </div>
+            )
+          })
+        )}
+      </div>
+
+      {/* Master AI onay alanı */}
+      <div className="flex-shrink-0 border-t border-border/20 px-4 py-3">
+        <button
+          onClick={toggleMasterApproval}
+          className={[
+            'w-full flex items-center justify-between rounded-lg px-3 py-2.5 text-[11px] font-medium transition-colors border',
+            masterApproved
+              ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400/80'
+              : 'border-border/35 bg-secondary/20 text-muted-foreground/50 hover:bg-secondary/40',
+          ].join(' ')}
+        >
+          <span className="flex items-center gap-2">
+            <span className={`h-1.5 w-1.5 rounded-full ${masterApproved ? 'bg-emerald-400/70' : 'bg-muted-foreground/30'}`} />
+            {masterApproved ? 'Master AI onayı verildi' : 'Master AI onayı bekleniyor'}
+          </span>
+          <span className="text-[9px] opacity-60">{masterApproved ? 'Kaldır' : 'Onayla'}</span>
+        </button>
+        {managerName && (
+          <p className="text-[9px] text-muted-foreground/25 text-center mt-1.5 select-none">
+            {managerName} raporu
+          </p>
+        )}
+      </div>
+
+    </div>
+  )
+}
+
 // ─── Sidebar variant ──────────────────────────────────────────────────────────
 
 function SidebarPanel({
@@ -118,7 +274,7 @@ function SidebarPanel({
   actions,
   section,
 }: Omit<ModuleAIPanelProps, 'title' | 'variant'>) {
-  const [activeTab, setActiveTab] = useState<'ai' | 'tasks'>('ai')
+  const [activeTab, setActiveTab] = useState<'ai' | 'tasks' | 'report'>('ai')
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -158,20 +314,24 @@ function SidebarPanel({
         aria-label={managerName ?? 'AI Yönetici'}
         className="flex-shrink-0 flex border-b border-border/30"
       >
-        {(['ai', 'tasks'] as const).map(tab => (
+        {([
+          { id: 'ai',     label: 'AI Yöneticisi' },
+          { id: 'tasks',  label: 'Görevler' },
+          { id: 'report', label: 'Biten Görevler' },
+        ] as const).map(tab => (
           <button
-            key={tab}
+            key={tab.id}
             role="tab"
-            aria-selected={activeTab === tab}
-            onClick={() => setActiveTab(tab)}
+            aria-selected={activeTab === tab.id}
+            onClick={() => setActiveTab(tab.id)}
             className={[
               'flex-1 py-2.5 text-[11px] font-medium transition-colors select-none',
-              activeTab === tab
+              activeTab === tab.id
                 ? 'text-foreground/80 border-b-2 border-blue-400/60 -mb-px'
                 : 'text-muted-foreground/35 hover:text-muted-foreground/55',
             ].join(' ')}
           >
-            {tab === 'ai' ? 'AI Yöneticisi' : 'Görevler'}
+            {tab.label}
           </button>
         ))}
       </div>
@@ -282,6 +442,13 @@ function SidebarPanel({
       {activeTab === 'tasks' && (
         <div className="flex-1 min-h-0" role="tabpanel" aria-label="Görevler">
           <TasksTab storageKey={storageKey} />
+        </div>
+      )}
+
+      {/* ── Biten Görevler sekmesi ── */}
+      {activeTab === 'report' && (
+        <div className="flex-1 min-h-0" role="tabpanel" aria-label="Biten Görevler">
+          <ReportTab storageKey={storageKey} managerName={managerName} />
         </div>
       )}
 
