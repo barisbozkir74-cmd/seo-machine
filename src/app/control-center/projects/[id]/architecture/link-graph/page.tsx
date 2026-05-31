@@ -120,6 +120,62 @@ export default async function LinkGraphPage({
 
   const lastJob: LastCrawlJob | null = lastJobRaw ?? null
 
+  // Compute stats for İç Link Uzmanı panel
+  const linkCount = links.length
+  const pageCount = pages.length
+
+  // Orphan pages: pages with 0 incoming links
+  const targetPageIds = new Set(links.map((l) => l.target_page_id).filter((id): id is string => id != null))
+  const orphanCount = pages.filter((p) => !targetPageIds.has(p.id)).length
+
+  // Hub pages: top 20% by incoming link count (pages with at least 1 incoming link)
+  const incomingCounts = new Map<string, number>()
+  for (const l of links) {
+    if (!l.target_page_id) continue
+    incomingCounts.set(l.target_page_id, (incomingCounts.get(l.target_page_id) ?? 0) + 1)
+  }
+  const sortedCounts = Array.from(incomingCounts.values()).sort((a, b) => b - a)
+  const hubThresholdIndex = Math.max(0, Math.ceil(sortedCounts.length * 0.2) - 1)
+  const hubThreshold = sortedCounts.length > 0 ? sortedCounts[hubThresholdIndex] : 1
+  const hubCount = sortedCounts.filter((c) => c >= hubThreshold).length
+
+  const panelContextItems = [
+    {
+      label: 'İç Link',
+      value: `${linkCount} link`,
+      status: (linkCount > 0 ? 'ok' : 'missing') as 'ok' | 'missing',
+    },
+    {
+      label: 'Yetim Sayfa',
+      value: `${orphanCount} sayfa`,
+      status: (orphanCount === 0 ? 'ok' : 'warning') as 'ok' | 'warning',
+    },
+    {
+      label: 'Hub Sayfa',
+      value: `${hubCount} sayfa`,
+      status: (hubCount > 0 ? 'ok' : 'warning') as 'ok' | 'warning',
+    },
+    {
+      label: 'Toplam Sayfa',
+      value: `${pageCount} sayfa`,
+      status: 'ok' as const,
+    },
+  ]
+
+  const panelNextStep =
+    linkCount === 0
+      ? 'Henüz iç link tanımlanmamış'
+      : orphanCount > 0
+        ? `${orphanCount} yetim sayfa var — iç link eklenebilir`
+        : 'Link haritası oluşturulmuş'
+
+  const base = `/control-center/projects/${id}`
+  const panelActions = [
+    { label: 'Ağ Görünümü', href: '?view=network', variant: 'primary' as const },
+    { label: 'Liste Görünümü', href: '?view=list' },
+    { label: 'Blueprint', href: `${base}/architecture/blueprint` },
+  ]
+
   return (
     <div className="flex flex-1 flex-col min-h-0">
       <div className="flex flex-shrink-0 items-center border-b border-border px-6 py-3">
@@ -134,6 +190,9 @@ export default async function LinkGraphPage({
         title="İç Link Analizi"
         managerName="İç Link Uzmanı"
         hint="Orphan sayfaları tespit eder, link dağılımını analiz eder, pillar-support ilişkilerini doğrular ve anchor text önerir."
+        contextItems={panelContextItems}
+        nextStep={panelNextStep}
+        actions={panelActions}
       />
       <div className="flex-1 min-h-0 flex flex-col">
         <LinkGraphCCShell
