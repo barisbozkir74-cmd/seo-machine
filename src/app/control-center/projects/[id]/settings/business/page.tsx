@@ -5,6 +5,7 @@ import { EntityTable } from '@/app/(dashboard)/projeler/[id]/isletme/EntityTable
 import type { BusinessEntity, EntityType } from '@/app/(dashboard)/projeler/[id]/isletme/actions'
 import { ModuleAIPanel } from '@/components/control-center/ModuleAIPanel'
 import { SplitPane } from '@/components/control-center/SplitPane'
+import { LocationSelector } from './LocationSelector'
 
 type TabConfig = {
   type:       EntityType
@@ -38,17 +39,17 @@ const TABS: TabConfig[] = [
   },
   {
     type:        'service_area',
-    label:       'Servis Alanları',
-    singular:    'Servis Alanı',
-    description: 'Hizmet verilen lokasyonlar. Yerel SEO stratejisi ve şehir/bölge bazlı landing page\'lerin temelidir.',
-    emptyHint:   'Hizmet verdiğiniz şehir, ilçe veya bölgeleri ekleyin. Yerel aramalarda sıralama için kritik.',
+    label:       'Lokasyon Alanları',
+    singular:    'Lokasyon',
+    description: 'Hizmet verilen şehir, ilçe ve bölgeler. Yerel SEO stratejisi, lokasyon bazlı landing page\'ler ve "şehir + hizmet" keyword kümeleri bu veriden üretilir.',
+    emptyHint:   'İl seçerek veya yarıçap belirleyerek hizmet bölgelerinizi tanımlayın. Her eklenen lokasyon için yerel SEO sayfası oluşturulabilir.',
   },
   {
     type:        'persona',
-    label:       'Personalar',
-    singular:    'Persona',
-    description: 'Hedef müşteri profilleri. İçerik tonu, keyword seçimi ve arama intent\'i bu profillerle hizalanır.',
-    emptyHint:   'Ürün/hizmetlerinizi satın alan ya da kullanan kişi profillerini tanımlayın. Araştırma AI bu bilgiyi kullanır.',
+    label:       'Hedef Kitle',
+    singular:    'Hedef Segment',
+    description: 'Hedef kitle segmentleri ve müşteri profilleri. İçerik tonu, keyword seçimi, arama intent\'i ve mesajlaşma stratejisi bu profillerle hizalanır.',
+    emptyHint:   'Ürün/hizmetlerinizi satın alan veya kullanan kişi segmentlerini tanımlayın. Örnek: "Restoran sahipleri", "Otel yöneticileri", "Villa sahibi bireyler".',
   },
   {
     type:        'usp',
@@ -258,13 +259,38 @@ export default async function SettingsBusinessPage({
         {/* ── Content ── */}
         <div className="flex-1 min-h-0 overflow-y-auto p-6 space-y-4">
           <p className="text-xs text-muted-foreground/70 max-w-prose">{activeTab.description}</p>
-          <EntityTable
-            projectId={id}
-            type={activeType}
-            typeLabel={activeTab.singular}
-            emptyHint={activeTab.emptyHint}
-            entities={grouped[activeType]}
-          />
+
+          {/* Lokasyon Alanları: özel seçici + manuel tablo */}
+          {activeType === 'service_area' ? (
+            <>
+              <LocationSelector
+                projectId={id}
+                existingAreas={grouped['service_area']}
+              />
+              {grouped['service_area'].length > 0 && (
+                <div className="pt-2 border-t border-border/20">
+                  <p className="text-[10px] text-muted-foreground/40 mb-3 uppercase tracking-widest font-semibold">
+                    Manuel Düzenle / Sil
+                  </p>
+                  <EntityTable
+                    projectId={id}
+                    type="service_area"
+                    typeLabel="Lokasyon"
+                    emptyHint={activeTab.emptyHint}
+                    entities={grouped['service_area']}
+                  />
+                </div>
+              )}
+            </>
+          ) : (
+            <EntityTable
+              projectId={id}
+              type={activeType}
+              typeLabel={activeTab.singular}
+              emptyHint={activeTab.emptyHint}
+              entities={grouped[activeType]}
+            />
+          )}
 
           {/* ── Grouped entity cards (product / service / category / other) ── */}
           {cardGroups.length > 0 && (
