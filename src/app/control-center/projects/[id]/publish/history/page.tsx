@@ -132,7 +132,15 @@ export default async function PublishHistoryPage({
           </span>
         )}
       </div>
-      <ModuleAIPanel title="Yayın Geçmişi Yöneticisi" hint="Yayın geçmişi analizi ve audit kaydı" />
+      <ModuleAIPanel
+        title="Yayın Geçmişi"
+        managerName="Yayın Yöneticisi"
+        hint="Yayınlanan içerikleri takip eder, performansı izler ve yeniden yayın önerilerinde bulunur."
+        actions={[
+          { label: 'Publish Queue', href: `/control-center/projects/${id}/publish/queue`, variant: 'primary' },
+          { label: 'Monitoring', href: `/control-center/projects/${id}/monitoring/overview` },
+        ]}
+      />
       <div className="flex-1 min-h-0 overflow-y-auto p-6">
         <OnaylarTabs
           projectId={id}

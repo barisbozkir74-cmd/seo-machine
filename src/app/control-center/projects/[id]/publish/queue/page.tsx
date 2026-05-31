@@ -173,7 +173,15 @@ export default async function PublishQueuePage({
           </span>
         )}
       </div>
-      <ModuleAIPanel title="Yayın Yöneticisi" hint="Onay akışı, yayın kuyruğu ve süreç yönetimi" />
+      <ModuleAIPanel
+        title="Yayın Kuyruğu"
+        managerName="Yayın Koordinatörü"
+        hint="Yayın sırasını yönetir, onay bekleyen içerikleri listeler ve yayın takvimine göre önceliklendirir."
+        actions={[
+          { label: 'Yayın Geçmişi', href: `/control-center/projects/${id}/publish/history` },
+          { label: 'İçerik Stüdyosu', href: `/control-center/projects/${id}/content/studio` },
+        ]}
+      />
       <div className="flex-1 min-h-0 overflow-y-auto p-6 space-y-8">
 
         {/* ── Publish Queue Table ─────────────────────────────────────────── */}
