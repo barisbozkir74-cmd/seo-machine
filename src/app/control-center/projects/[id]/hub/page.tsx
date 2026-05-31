@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { KPIGrid } from '@/components/control-center/KPIGrid'
 import { StatePanel } from '@/components/control-center/StatePanel'
+import { ModuleAIPanel } from '@/components/control-center/ModuleAIPanel'
 import Link from 'next/link'
 
 type NextStep = { description: string; cta: string; href: string }
@@ -112,8 +113,75 @@ export default async function ProjectHubPage({
     },
   ]
 
+  // Module status cards data
+  const moduleCards = [
+    {
+      key:    'research',
+      label:  'Araştırma',
+      icon:   '🔬',
+      done:   research,
+      status: research ? 'Onaylandı' : 'Bekliyor',
+      color:  research ? 'emerald' : 'gray',
+      href:   `${base}/intelligence/research`,
+    },
+    {
+      key:    'keywords',
+      label:  'Keyword Stratejisi',
+      icon:   '🔑',
+      done:   strategy,
+      status: strategy ? 'Onaylandı' : 'Strateji bekleniyor',
+      color:  strategy ? 'emerald' : research ? 'amber' : 'gray',
+      href:   `${base}/intelligence/keywords`,
+    },
+    {
+      key:    'competitors',
+      label:  'Rakip Analizi',
+      icon:   '🏢',
+      done:   false,
+      status: research ? 'Devam ediyor' : 'Bekliyor',
+      color:  research ? 'amber' : 'gray',
+      href:   `${base}/intelligence/competitors`,
+    },
+    {
+      key:    'blueprint',
+      label:  'Site Blueprint',
+      icon:   '📐',
+      done:   blueprint,
+      status: blueprint ? 'Onaylandı' : 'Blueprint bekleniyor',
+      color:  blueprint ? 'emerald' : strategy ? 'amber' : 'gray',
+      href:   `${base}/architecture/blueprint`,
+    },
+    {
+      key:    'decisions',
+      label:  'Kararlar',
+      icon:   '📋',
+      done:   false,
+      status: research ? 'Devam ediyor' : 'Bekliyor',
+      color:  research ? 'amber' : 'gray',
+      href:   `${base}/intelligence/decisions`,
+    },
+    {
+      key:    'internal-links',
+      label:  'İç Link Haritası',
+      icon:   '🔗',
+      done:   false,
+      status: blueprint ? 'Devam ediyor' : 'Bekliyor',
+      color:  blueprint ? 'amber' : 'gray',
+      href:   `${base}/architecture/internal-links`,
+    },
+  ] as const
+
   return (
-    <div className="flex flex-col gap-5 p-6">
+    <div className="flex flex-col gap-5">
+      {/* Master AI Manager panel — top of page, full-width, borderless container */}
+      <ModuleAIPanel
+        title="Proje Koordinasyonu"
+        managerName="Master AI Yöneticisi"
+        hint="Tüm bölüm yöneticilerinden durum raporu toplar. Projenin genel sağlığını analiz eder ve öncelikli adımları koordine eder."
+        badge="Koordinasyon Merkezi"
+      />
+
+      <div className="flex flex-col gap-5 px-6 pb-6">
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
@@ -133,6 +201,55 @@ export default async function ProjectHubPage({
       {/* KPIs */}
       <section aria-label="Proje metrikleri">
         <KPIGrid status="live" cards={kpiCards} />
+      </section>
+
+      {/* Bölüm Durumu — module coordination grid */}
+      <section aria-label="Bölüm durumu">
+        <p className="mb-2 text-[9px] font-bold uppercase tracking-[0.12em] text-muted-foreground/35 select-none">
+          Bölüm Durumu
+        </p>
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          {moduleCards.map(({ key, label, icon, done, status, color, href }) => (
+            <div
+              key={key}
+              className="flex items-center gap-3 rounded-lg border border-border/40 bg-secondary/10 px-3.5 py-2.5"
+            >
+              <span className="text-base shrink-0" aria-hidden="true">{icon}</span>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-medium text-foreground/80 truncate">{label}</p>
+                <div className="mt-0.5 flex items-center gap-1.5">
+                  <span
+                    className={`h-1.5 w-1.5 rounded-full shrink-0 ${
+                      color === 'emerald'
+                        ? 'bg-emerald-400'
+                        : color === 'amber'
+                          ? 'bg-amber-400'
+                          : 'bg-muted-foreground/25'
+                    }`}
+                    aria-hidden="true"
+                  />
+                  <span
+                    className={`text-[11px] truncate ${
+                      color === 'emerald'
+                        ? 'text-emerald-400/80'
+                        : color === 'amber'
+                          ? 'text-amber-400/80'
+                          : 'text-muted-foreground/40'
+                    }`}
+                  >
+                    {status}
+                  </span>
+                </div>
+              </div>
+              <Link
+                href={href}
+                className="shrink-0 text-[11px] text-muted-foreground/40 hover:text-foreground transition-colors"
+              >
+                Git →
+              </Link>
+            </div>
+          ))}
+        </div>
       </section>
 
       {/* Next step — only when actionable */}
@@ -320,6 +437,7 @@ export default async function ProjectHubPage({
           </StatePanel>
         </div>
       </section>
+      </div>{/* end px-6 pb-6 inner wrapper */}
     </div>
   )
 }
