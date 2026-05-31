@@ -18,7 +18,7 @@ export default async function StructurePage({
 
   const { data: project } = await supabase
     .from('projects')
-    .select('id, name, domain, site_type, target_country, target_language, section_rules, research_approved, technical_audit_approved')
+    .select('id, name, domain, site_type, target_country, target_language, section_rules, research_approved, technical_audit_approved, strategy_approved')
     .eq('id', projectId)
     .eq('user_id', user.id)
     .single()
@@ -26,6 +26,7 @@ export default async function StructurePage({
 
   const researchApproved = (project as unknown as { research_approved: boolean | null }).research_approved ?? false
   const technicalAudit   = (project as unknown as { technical_audit_approved: boolean | null }).technical_audit_approved ?? false
+  const strategyApproved = (project as unknown as { strategy_approved: boolean | null }).strategy_approved ?? false
 
   if (!researchApproved) {
     return (
@@ -90,7 +91,7 @@ export default async function StructurePage({
       .order('total_volume', { ascending: false }),
     supabase
       .from('keyword_clusters')
-      .select('id, cluster_name')
+      .select('id, cluster_name, status')
       .eq('project_id', projectId)
       .eq('user_id', user.id),
     supabase
@@ -117,6 +118,29 @@ export default async function StructurePage({
   const freshFps         = (fingerprints ?? []).filter((fp) => !fp.is_stale && fp.fetched_at)
   const staleFps         = (fingerprints ?? []).filter((fp) => fp.is_stale)
   const pendingSuggestions = (suggestions ?? []).filter((s) => s.status === 'pending').length
+
+  const approvedClusters = (clusters ?? []).filter((c) => (c as unknown as { status: string | null }).status === 'approved').length
+  const pageCount        = (pages ?? []).length
+
+  const base = `/control-center/projects/${projectId}`
+
+  const panelContextItems = [
+    { label: 'Onaylı Küme',   value: `${approvedClusters} küme`, status: (approvedClusters > 0 ? 'ok' : 'warning') as 'ok' | 'warning' | 'missing' },
+    { label: 'Sayfa Taslağı', value: `${pageCount} sayfa`,       status: (pageCount > 0 ? 'ok' : 'missing')         as 'ok' | 'warning' | 'missing' },
+    { label: 'Strateji',      value: strategyApproved ? 'Onaylandı' : 'Bekliyor', status: (strategyApproved ? 'ok' : 'warning') as 'ok' | 'warning' | 'missing' },
+  ]
+
+  const panelNextStep = !strategyApproved
+    ? 'Önce keyword stratejisini onaylayın'
+    : approvedClusters === 0
+    ? 'Onaylı küme yok — keyword stratejisine dönün'
+    : 'Onaylı kümelerden mimari üretilebilir'
+
+  const panelActions = [
+    { label: 'Keyword Stratejisi', href: `${base}/intelligence/keywords`, variant: (!strategyApproved ? 'primary' : 'default') as 'primary' | 'default' },
+    { label: 'Site Blueprint',     href: `${base}/architecture/blueprint` },
+    { label: 'Küme Haritası',      href: `${base}/intelligence/keywords?view=map` },
+  ]
 
   const keywordMap: Record<string, string> = {}
   for (const kw of keywords ?? []) keywordMap[kw.id] = kw.keyword
@@ -175,6 +199,9 @@ export default async function StructurePage({
         title="Mimari Analiz"
         managerName="Site Mimarı"
         hint="Keyword kümelerinden site yapısını tasarlar, SERP analizinden mimari kararlar üretir ve blueprint ile sorumluluk ayrımını korur."
+        contextItems={panelContextItems}
+        nextStep={panelNextStep}
+        actions={panelActions}
       />
 
       {/* Module purpose + responsibility boundary */}
