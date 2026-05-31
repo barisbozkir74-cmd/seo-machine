@@ -1320,7 +1320,14 @@ export async function triggerDeepAnalysisAction(projectId: string): Promise<Deep
     .select('id')
     .single()
 
-  if (insertError || !workflowRun) return { success: false, error: 'Workflow kaydı oluşturulamadı.' }
+  if (insertError) {
+    // CR-02: 23505 = unique_violation — concurrent guard (workflow_runs_one_active_per_project index)
+    if (insertError.code === '23505') {
+      return { success: false, error: 'Analiz devam ediyor. Tamamlanmasını bekleyin.' }
+    }
+    return { success: false, error: 'Workflow kaydı oluşturulamadı.' }
+  }
+  if (!workflowRun) return { success: false, error: 'Workflow kaydı oluşturulamadı.' }
 
   // 6. n8n webhook — server-only env var (NEXT_PUBLIC değil)
   const n8nUrl = process.env.N8N_DEEP_ANALYSIS_WEBHOOK_URL
