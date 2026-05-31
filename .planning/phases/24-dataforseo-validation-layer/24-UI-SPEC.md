@@ -49,9 +49,9 @@ Exceptions:
 | Toolbar butonları `h-9` | 36px | Mevcut KeywordStratejisiToolbar yüksekliği — grandfathered exception |
 | Tablo satırları `h-9` | 36px | Mevcut KeywordFlatList satır yüksekliği — devralındı |
 | Dialog içi `px-4 py-3` | 16px / 12px | Mevcut ClusteringApprovalOverlay iç dolgu — tutarlılık için |
-| Cost banner `px-4 py-2.5` | 16px / 10px | Mevcut uyarı banner pattern (`gateNotMet` + `pending_approval` banner'larıyla aynı) |
+| Cost banner `px-4 py-2.5` | 16px / **10px (non-grid)** | Codebase-wide grandfathered exception: `px-4 py-2.5` pattern'i `arastirma/page.tsx`, `izleme/page.tsx`, `icerik-studio/page.tsx`, `ic-link-haritasi/page.tsx`, `keyword-stratejisi/page.tsx` dahil 5+ dashboard sayfasında `bg-amber-500/10 border border-amber-500/20` banner'larıyla birlikte kullanılmaktadır. 10px = 4'ün katı değildir; ancak mevcut sistem bütününde tutarlılığı korumak amacıyla bu fazda değiştirilmeden devralınmaktadır. Gelecek bir global spacing refactor'a kadar ertelendi. |
 
-Source: Phase 23 UI-SPEC + mevcut KeywordStratejisiToolbar + KeywordFlatList ölçümü
+Source: Phase 23 UI-SPEC + mevcut KeywordStratejisiToolbar + KeywordFlatList ölçümü + codebase-wide `py-2.5` banner pattern doğrulaması
 
 ---
 
@@ -66,7 +66,7 @@ Source: Phase 23 UI-SPEC + mevcut KeywordStratejisiToolbar + KeywordFlatList öl
 
 Notes:
 - Tüm analiz butonları text-xs — mevcut toolbar yoğunluğuyla uyumlu
-- `dfs_fetched_at` tarih gösterimi text-[11px]: `enriched_at` sütunundan görsel ayrım için bir adım küçük
+- `dfs_fetched_at` tarih gösterimi text-[11px]: `enriched_at` sütununun 12px (text-xs) caption'ından görsel ayrım için bilinçli olarak 1px küçük tutulmuştur. İki sütun yan yana okunduğunda "DFS Tarihi" verisi ikincil meta bilgi olarak algılanmalıdır; aynı boyut kullanılsaydı iki sütunun görsel önceliği eşitlenirdi. Bu ayrım kasıtlıdır ve korunmalıdır.
 - Dialog başlığı text-sm weight 500 — shadcn Dialog varsayılan h3 ile uyumlu
 - Font ağırlıkları: regular (400) ve medium (500) — semibold yok (Phase 23 kararı)
 
@@ -84,6 +84,7 @@ Source: Mevcut `KeywordFlatList.tsx` + `AiAcquireButton.tsx` ölçümleri, Phase
 | Accent — Violet (mevcut) | `#8b5cf6` / `violet-400` | **Sadece** Phase 23 AI aksiyonları — bu fazda dokunulmaz |
 | Destructive | `#ef4444` (Red 500) — `var(--destructive)` | Yalnızca hata state'leri |
 | Uyarı (amber) | `amber-400` | Concurrent guard mesajı, stale data uyarıları |
+| Success (emerald) | `emerald-400` (#34d399) | Yalnızca light/standard analiz success inline mesajı |
 
 ### Cyan Aksanı — Kesin Rezervasyon Listesi
 
@@ -103,6 +104,12 @@ Amber rezervasyonu (mevcut pattern, devralındı):
 - Stale data "Güncel değil" badge: `bg-amber-500/20 text-amber-400`
 
 Source: Phase 23 23-UI-SPEC.md + mevcut `globals.css` dark mode token'ları
+
+---
+
+## Focal Point
+
+Bu ekranın birincil görsel odak noktası cyan renkli analiz buton grubudur (toolbar sağ grubu). Üç buton — "Temel Verileri Al", "Standart Analiz", "Derinlemesine Analiz" — `border-cyan-500/30 bg-cyan-500/10 text-cyan-400` ile biçimlendirilmiş olup mevcut violet AI butonlarından ve ghost toolbar butonlarından renk ile tonlama bakımından ayrışır. Executor, bu grup için görsel ağırlığı ve sırayı koruyacak şekilde yerleşimi uygulayacaktır.
 
 ---
 
@@ -218,17 +225,17 @@ Hem light, hem standart, hem deep analiz tetiklendiğinde bu dialog açılır.
 
 | State | İçerik | Aksiyonlar |
 |-------|--------|-----------|
-| `open-light` | Başlık, tahmini maliyet (~{count} birim), "Gerçek maliyet sonuçta kesinleşir" notu | "Onayla" butonu (cyan) + "İptal" butonu (ghost) |
-| `open-standard` | Başlık, tahmini maliyet, cluster sayısı, yaklaşık süre (5-8 saniye) | "Onayla" + "İptal" |
-| `open-deep` | Başlık + **kırmızı uyarı banner'ı**: "Bu işlem arka planda çalışır. Tamamlanması birkaç dakika sürebilir.", tahmini maliyet, async note | "Başlat" (cyan) + "İptal" (ghost) |
-| `confirming` | "Onayla" butonu spinner + disabled | — |
+| `open-light` | Başlık: "Temel Veri Analizi", tahmini maliyet (~{count} birim), "Gerçek maliyet sonuçta kesinleşir" notu | "Temel Analizi Başlat" butonu (cyan) + "İptal" butonu (ghost) |
+| `open-standard` | Başlık: "Standart Analiz", tahmini maliyet, cluster sayısı, yaklaşık süre (5-8 saniye) | "Standart Analizi Başlat" (cyan) + "İptal" |
+| `open-deep` | Başlık: "Derinlemesine Analiz" + **kırmızı uyarı banner'ı**: "Bu işlem arka planda çalışır. Tamamlanması birkaç dakika sürebilir.", tahmini maliyet, async note | "Derinlemesine Analizi Başlat" (cyan) + "İptal" (ghost) |
+| `confirming` | Onay butonu spinner + disabled | — |
 | `closed` | Dialog kapanır | — |
 
 Dialog spec:
 - shadcn `Dialog` bileşeni kullanılır (mevcut `src/components/ui/dialog.tsx`)
 - `DialogTitle`: analiz seviyesine göre değişir (aşağı copywriting'e bkz.)
 - `DialogDescription`: maliyet tahmini + context
-- "Onayla" butonu: `bg-cyan-500/10 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20`
+- Onay butonu: `bg-cyan-500/10 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20`
 - "İptal" butonu: shadcn `variant="ghost"`
 - Deep analiz'de destructive uyarı: `bg-red-500/10 border border-red-500/20 text-red-400 text-xs rounded px-3 py-2`
 
@@ -309,10 +316,11 @@ Sonuçlar toast değil inline metin (Phase 22 kararı: sonner paketi yok — dev
 | Maliyet notu | "Gerçek maliyet analiz tamamlandıktan sonra kesinleşir." |
 | Standard analiz süre notu | "Tamamlanma süresi yaklaşık 5–8 saniye." |
 | Deep analiz uyarı metni | "Bu işlem arka planda çalışır ve tamamlanması birkaç dakika sürebilir." |
-| Light / Standard onay butonu | "Onayla" |
-| Deep analiz başlatma butonu | "Başlat" |
+| Light analiz onay butonu | "Temel Analizi Başlat" |
+| Standard analiz onay butonu | "Standart Analizi Başlat" |
+| Deep analiz başlatma butonu | "Derinlemesine Analizi Başlat" |
 | İptal butonu (hepsi) | "İptal" |
-| Dialog yükleniyor (confirming) | "Onayla" butonu label: "Başlatılıyor..." |
+| Dialog yükleniyor (confirming) | Onay butonu label: "Başlatılıyor..." |
 
 ### dfs_fetched_at Sütunu
 
@@ -340,7 +348,7 @@ Sonuçlar toast değil inline metin (Phase 22 kararı: sonner paketi yok — dev
 | Partial | "{success} güncellendi, {fail} keyword alınamadı" |
 | Failed (light/standard) | "Analiz başarısız oldu. Tekrar deneyin." |
 | Deep — tamamlandı | "✓ Derinlemesine analiz tamamlandı" |
-| Deep — hata | "Analiz başarısız oldu. İşlem durumu kontrol edildi." |
+| Deep — hata | "Analiz başarısız oldu. Sayfayı yenileyin veya tekrar deneyin." |
 | Deep — timeout | "Analiz yanıt vermedi. Sayfayı yenileyin." |
 
 ### Empty / Gate Mesajları
@@ -361,7 +369,7 @@ Sonuçlar toast değil inline metin (Phase 22 kararı: sonner paketi yok — dev
    - Evet: butona tıklama engellenir (disabled state aktif, tooltip gösterilir)
    - Hayır: devam
 3. Cost approval dialog açılır (`open-light` state)
-4. Kullanıcı "Onayla"ya tıklar → dialog `confirming` state'e geçer
+4. Kullanıcı "Temel Analizi Başlat"a tıklar → dialog `confirming` state'e geçer
 5. Server Action başlatılır (`useTransition`)
 6. `dfs_fetched_at` güncellemesi tablo SSR yenilenmesiyle yansır
 7. Sonuç inline mesajı gösterilir (4 saniye), `router.refresh()` çağrılır
@@ -371,7 +379,7 @@ Sonuçlar toast değil inline metin (Phase 22 kararı: sonner paketi yok — dev
 1. Kullanıcı "Derinlemesine Analiz"e tıklar
 2. Concurrent guard kontrolü
 3. Cost approval dialog açılır (`open-deep` — kırmızı uyarı banner dahil)
-4. Kullanıcı "Başlat"a tıklar
+4. Kullanıcı "Derinlemesine Analizi Başlat"a tıklar
 5. POST `/api/dataforseo/deep-analysis/route.ts` çağrılır
 6. `workflow_runs` tablosuna `status='pending'` satırı INSERT edilir
 7. n8n webhook tetiklenir
@@ -391,7 +399,7 @@ Sonuçlar toast değil inline metin (Phase 22 kararı: sonner paketi yok — dev
 
 - Tüm analiz butonları `<button>` elementi — native tab sırası
 - Dialog açıkken focus trap: shadcn Dialog'ın native Radix UI focus management'ı kullanılır
-- Dialog'da Enter = "Onayla" / "Başlat" butonu aktive edilmez (kazara onay riski) — kullanıcı butonunu tıklamalı
+- Dialog'da Enter = onay butonu aktive edilmez (kazara onay riski) — kullanıcı butonunu tıklamalı
 - `disabled` attribute (CSS-only değil) — tüm guard state'lerinde
 
 ---
