@@ -4,6 +4,7 @@ import { listAuditEntries } from '@/core/audit/trail'
 import { OnaylarTabs } from '@/app/(dashboard)/projeler/[id]/onaylar/OnaylarTabs'
 import { listApprovalHistory } from '@/core/approval/queue'
 import { ModuleAIPanel } from '@/components/control-center/ModuleAIPanel'
+import { SplitPane } from '@/components/control-center/SplitPane'
 import type { AuditEntry } from '@/core/audit/trail'
 import type { ApprovalRequest } from '@/core/approval/queue'
 
@@ -132,32 +133,43 @@ export default async function PublishHistoryPage({
           </span>
         )}
       </div>
-      <ModuleAIPanel
-        title="Yayın Geçmişi"
-        managerName="Yayın Yöneticisi"
-        hint="Yayınlanan içerikleri takip eder, performansı izler ve yeniden yayın önerilerinde bulunur."
-        actions={[
-          { label: 'Publish Queue', href: `/control-center/projects/${id}/publish/queue`, variant: 'primary' },
-          { label: 'Monitoring', href: `/control-center/projects/${id}/monitoring/overview` },
-        ]}
-      />
-      <div className="flex-1 min-h-0 overflow-y-auto p-6">
-        <OnaylarTabs
-          projectId={id}
-          userId={user.id}
-          isProjectOwner={isProjectOwner}
-          initialApprovalPage={{
-            approvals:   approvals,
-            has_more:    approvalResult.has_more,
-            next_cursor: approvalResult.next_cursor,
-          }}
-          initialAuditPage={{
-            entries:     auditEntries,
-            has_more:    auditResult.has_more,
-            next_cursor: auditResult.next_cursor,
-          }}
-        />
-      </div>
+      <SplitPane
+        storageKey="publish-history"
+        defaultRightWidth={288}
+        minRightWidth={180}
+        maxRightWidth={520}
+        right={
+          <ModuleAIPanel
+            variant="sidebar"
+            title="Yayın Geçmişi"
+            managerName="Yayın Yöneticisi"
+            hint="Yayınlanan içerikleri takip eder, performansı izler ve yeniden yayın önerilerinde bulunur."
+            section="publish-history"
+            actions={[
+              { label: 'Publish Queue', href: `/control-center/projects/${id}/publish/queue`, variant: 'primary' },
+              { label: 'Monitoring', href: `/control-center/projects/${id}/monitoring/overview` },
+            ]}
+          />
+        }
+      >
+        <div className="flex-1 min-h-0 overflow-y-auto p-6">
+          <OnaylarTabs
+            projectId={id}
+            userId={user.id}
+            isProjectOwner={isProjectOwner}
+            initialApprovalPage={{
+              approvals:   approvals,
+              has_more:    approvalResult.has_more,
+              next_cursor: approvalResult.next_cursor,
+            }}
+            initialAuditPage={{
+              entries:     auditEntries,
+              has_more:    auditResult.has_more,
+              next_cursor: auditResult.next_cursor,
+            }}
+          />
+        </div>
+      </SplitPane>
     </div>
   )
 }
