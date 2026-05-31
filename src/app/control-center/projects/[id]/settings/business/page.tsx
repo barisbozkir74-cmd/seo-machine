@@ -6,6 +6,7 @@ import type { BusinessEntity, EntityType } from '@/app/(dashboard)/projeler/[id]
 import { ModuleAIPanel } from '@/components/control-center/ModuleAIPanel'
 import { SplitPane } from '@/components/control-center/SplitPane'
 import { LocationSelector } from './LocationSelector'
+import { BulkDeleteBar } from './BulkDeleteBar'
 
 type TabConfig = {
   type:       EntityType
@@ -266,10 +267,11 @@ export default async function SettingsBusinessPage({
                 existingAreas={grouped['service_area']}
               />
               {grouped['service_area'].length > 0 && (
-                <div className="pt-2 border-t border-border/20">
-                  <p className="text-[10px] text-muted-foreground/40 mb-3 uppercase tracking-widest font-semibold">
-                    Manuel Düzenle / Sil
-                  </p>
+                <div className="pt-2 border-t border-border/20 space-y-3">
+                  <BulkDeleteBar
+                    projectId={id}
+                    entities={grouped['service_area']}
+                  />
                   <EntityTable
                     projectId={id}
                     type="service_area"
