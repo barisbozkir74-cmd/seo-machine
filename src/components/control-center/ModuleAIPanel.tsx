@@ -122,13 +122,14 @@ function TasksTab({ storageKey }: { storageKey: string }) {
 }
 
 // ─── Report tab ───────────────────────────────────────────────────────────────
+// Durumlar AI yöneticisi tarafından yazılır. Kullanıcı yalnızca "Tekrar Yap" görebilir.
 
 function ReportTab({ storageKey, managerName }: { storageKey: string; managerName?: string }) {
   const [tasks, setTasks] = useState<string[]>([])
   const [statuses, setStatuses] = useState<Record<number, TaskStatus>>({})
+  const [retrying, setRetrying] = useState<Record<number, boolean>>({})
   const [masterApproved, setMasterApproved] = useState(false)
 
-  // Görevler sekmesindeki metni parse et
   useEffect(() => {
     const raw = localStorage.getItem(`tasks:${storageKey}`) ?? ''
     const lines = raw.split('\n').map(l => l.trim()).filter(Boolean)
@@ -143,16 +144,16 @@ function ReportTab({ storageKey, managerName }: { storageKey: string; managerNam
     setMasterApproved(approved === 'true')
   }, [storageKey])
 
-  function setStatus(idx: number, status: TaskStatus) {
-    const next = { ...statuses, [idx]: status }
+  // "Tekrar Yap" — görevi yeniden denemek üzere işaretle
+  function requestRetry(idx: number) {
+    setRetrying(prev => ({ ...prev, [idx]: true }))
+    // AI yöneticisine sinyal: bu görev yeniden yapılacak (status sıfırla)
+    const next = { ...statuses, [idx]: 'pending' as TaskStatus }
     setStatuses(next)
     localStorage.setItem(`tasks:${storageKey}:status`, JSON.stringify(next))
-  }
-
-  function cycleStatus(idx: number) {
-    const current = statuses[idx] ?? 'pending'
-    const nextIdx = (STATUS_ORDER.indexOf(current) + 1) % STATUS_ORDER.length
-    setStatus(idx, STATUS_ORDER[nextIdx])
+    localStorage.setItem(`tasks:${storageKey}:retry:${idx}`, String(Date.now()))
+    // Kısa süre sonra "yeniden deneniyor" görünümünü temizle
+    setTimeout(() => setRetrying(prev => ({ ...prev, [idx]: false })), 3000)
   }
 
   function toggleMasterApproval() {
@@ -169,21 +170,24 @@ function ReportTab({ storageKey, managerName }: { storageKey: string; managerNam
   const doneCount = counts.done
   const total = tasks.length
 
+  // Görev "tekrar yapılabilir" mi? → done değilse
+  const canRetry = (status: TaskStatus) => status !== 'done'
+
   return (
     <div className="flex flex-col h-full">
 
       {/* Özet şerit */}
       {total > 0 && (
-        <div className="flex-shrink-0 px-4 py-2.5 border-b border-border/20 flex items-center gap-3 flex-wrap">
+        <div className="flex-shrink-0 px-4 py-2 border-b border-border/20 flex items-center gap-2 flex-wrap">
           <span className="text-[10px] text-muted-foreground/50">
             {doneCount}/{total} tamamlandı
           </span>
-          {Object.entries(counts).filter(([, n]) => n > 0).map(([s, n]) => {
-            const cfg = TASK_STATUS_CONFIG[s as TaskStatus]
+          {(Object.entries(counts) as [TaskStatus, number][]).filter(([, n]) => n > 0).map(([s, n]) => {
+            const cfg = TASK_STATUS_CONFIG[s]
             return (
               <span key={s} className={`flex items-center gap-1 text-[10px] ${cfg.text}`}>
                 <span className={`h-1.5 w-1.5 rounded-full ${cfg.dot}`} />
-                {n} {cfg.label}
+                {n}
               </span>
             )
           })}
@@ -194,41 +198,46 @@ function ReportTab({ storageKey, managerName }: { storageKey: string; managerNam
       <div className="flex-1 min-h-0 overflow-y-auto px-3 py-2 space-y-1">
         {tasks.length === 0 ? (
           <p className="text-[11px] text-muted-foreground/30 text-center pt-6 select-none px-2">
-            Henüz görev yok.{' '}
-            <span className="underline decoration-dotted">Görevler</span>{' '}
-            sekmesine gidin ve her satıra bir görev yazın.
+            Henüz görev yok.{' '}
+            <span className="underline decoration-dotted">Görevler</span>
+            {' '}sekmesine gidin ve her satıra bir görev yazın.
           </p>
         ) : (
           tasks.map((task, idx) => {
             const status = statuses[idx] ?? 'pending'
             const cfg = TASK_STATUS_CONFIG[status]
+            const isRetrying = retrying[idx]
+
             return (
-              <div key={idx}
-                className="flex items-start gap-2 rounded-md px-2 py-2 hover:bg-secondary/20 group cursor-default"
-              >
-                {/* Durum dot — tıklayınca cycle */}
-                <button
-                  onClick={() => cycleStatus(idx)}
-                  title={`Durum: ${cfg.label} — tıkla değiştir`}
-                  className={`mt-0.5 h-2 w-2 rounded-full shrink-0 ${cfg.dot} hover:opacity-80 transition-opacity`}
+              <div key={idx} className="flex items-start gap-2 rounded-md px-2 py-2 hover:bg-secondary/20">
+                {/* AI tarafından set edilen durum — sadece gösterim, tıklanamaz */}
+                <span
+                  className={`mt-1 h-2 w-2 rounded-full shrink-0 ${cfg.dot}`}
+                  title={cfg.label}
+                  aria-label={cfg.label}
                 />
 
                 {/* Görev metni */}
-                <span className="flex-1 text-[11px] text-foreground/70 leading-relaxed min-w-0">
-                  {task}
-                </span>
+                <div className="flex-1 min-w-0 space-y-0.5">
+                  <p className="text-[11px] text-foreground/70 leading-relaxed">{task}</p>
+                  <p className={`text-[9px] ${cfg.text}`}>{cfg.label}</p>
+                </div>
 
-                {/* Durum etiketi — select */}
-                <select
-                  value={status}
-                  onChange={e => setStatus(idx, e.target.value as TaskStatus)}
-                  className="shrink-0 bg-transparent text-[9px] text-muted-foreground/40 border-0 outline-none cursor-pointer hover:text-muted-foreground/70 transition-colors"
-                  title="Durumu değiştir"
-                >
-                  {STATUS_ORDER.map(s => (
-                    <option key={s} value={s}>{TASK_STATUS_CONFIG[s].label}</option>
-                  ))}
-                </select>
+                {/* Tekrar Yap — sadece tamamlanmamış görevlerde */}
+                {canRetry(status) && (
+                  <button
+                    onClick={() => requestRetry(idx)}
+                    disabled={isRetrying}
+                    className={[
+                      'flex-shrink-0 rounded px-2 py-1 text-[9px] font-medium transition-colors border',
+                      isRetrying
+                        ? 'border-blue-500/20 text-blue-400/50 cursor-default'
+                        : 'border-border/30 text-muted-foreground/50 hover:border-amber-500/30 hover:text-amber-400/70 hover:bg-amber-500/5',
+                    ].join(' ')}
+                  >
+                    {isRetrying ? 'Deneniyor…' : 'Tekrar Yap'}
+                  </button>
+                )}
               </div>
             )
           })
@@ -258,7 +267,6 @@ function ReportTab({ storageKey, managerName }: { storageKey: string; managerNam
           </p>
         )}
       </div>
-
     </div>
   )
 }
