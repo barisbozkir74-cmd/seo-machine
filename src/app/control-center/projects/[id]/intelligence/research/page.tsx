@@ -10,6 +10,7 @@ import { TransferKeywordsButton } from '@/app/(dashboard)/projeler/[id]/arastirm
 import { SaveResearchDecisionsButton } from '@/app/(dashboard)/projeler/[id]/arastirma/SaveResearchDecisionsButton'
 import Link from 'next/link'
 import { ResearchGroupPanel } from '@/components/control-center/ResearchGroupPanel'
+import { ModuleAIPanel } from '@/components/control-center/ModuleAIPanel'
 import type { ManagerBrief, ResearchMode } from '@/lib/research/sector-research'
 import type { SectionKey } from '@/app/(dashboard)/projeler/[id]/arastirma/actions'
 
@@ -234,26 +235,32 @@ export default async function ResearchPage({
     .filter(g => g.items.length > 0)
 
   return (
-    <div className="flex flex-col gap-5 p-6">
+    <div className="flex flex-col gap-5">
+      {/* AI Manager Panel */}
+      <ModuleAIPanel
+        title="Araştırma Analizi"
+        managerName="Araştırma Uzmanı"
+        hint="Sektör araştırmasını yönetir, rakip verilerini değerlendirir ve araştırma kalitesini denetler."
+      />
+
+      <div className="flex flex-col gap-5 p-6">
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex flex-col gap-2">
           <h1 className="text-base font-semibold text-foreground">Araştırma</h1>
           {/* Inline status chips */}
           <div className="flex items-center gap-2 flex-wrap">
-            {hasResearchData && (
-              isApproved ? (
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-medium text-emerald-400">
-                  <span className="h-1.5 w-1.5 rounded-full bg-current" aria-hidden="true" />
-                  Araştırma Onaylandı
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 text-[11px] font-medium text-amber-400">
-                  <span className="h-1.5 w-1.5 rounded-full bg-current" aria-hidden="true" />
-                  Onay Bekliyor
-                </span>
-              )
-            )}
+            {isApproved ? (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-medium text-emerald-400">
+                <span className="h-1.5 w-1.5 rounded-full bg-current" aria-hidden="true" />
+                Araştırma Tamamlandı
+              </span>
+            ) : hasResearchData ? (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 text-[11px] font-medium text-amber-400">
+                <span className="h-1.5 w-1.5 rounded-full bg-current" aria-hidden="true" />
+                Onay Bekliyor
+              </span>
+            ) : null}
             {researchMode && (
               <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-medium ${
                 researchMode === 'serp_enabled'
@@ -275,9 +282,40 @@ export default async function ResearchPage({
         )}
       </div>
 
-      {/* No data — trigger */}
-      {!hasResearchData && (
-        <ResearchAutoTrigger projectId={id} userId={user.id} />
+      {/* Approved but no data rows — sparse state */}
+      {!hasResearchData && isApproved && (
+        <div className="flex items-center justify-between gap-4 rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-4 py-3">
+          <p className="text-sm text-foreground/70">
+            Araştırma onaylandı. Veriler henüz yüklenmemiş olabilir — sayfa yenilenirse görünür.
+          </p>
+          <Link
+            href={decisionsHref}
+            className="flex-shrink-0 text-xs font-medium text-emerald-400 hover:text-emerald-300 transition-colors"
+          >
+            Kararları İncele →
+          </Link>
+        </div>
+      )}
+
+      {/* No data — status card */}
+      {!hasResearchData && !isApproved && (
+        <div className="rounded-xl border border-amber-500/40 bg-amber-500/5 p-5 space-y-3">
+          <div className="flex items-start gap-3">
+            <span className="mt-0.5 h-2 w-2 rounded-full bg-amber-400 shrink-0" aria-hidden="true" />
+            <div className="space-y-1">
+              <p className="text-sm font-semibold text-foreground">Araştırma Başlatılmadı</p>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Bu proje için henüz araştırma başlatılmamış. Araştırma tamamlanmadan keyword stratejisi ve blueprint oluşturulamaz.
+              </p>
+            </div>
+          </div>
+          <Link
+            href={`/projeler/${id}/arastirma`}
+            className="inline-flex items-center gap-2 rounded-lg bg-amber-500/15 border border-amber-500/30 px-4 py-2 text-sm font-medium text-amber-300 hover:bg-amber-500/20 hover:text-amber-200 transition-colors"
+          >
+            Araştırmayı Başlat
+          </Link>
+        </div>
       )}
 
       {/* Data present */}
@@ -426,6 +464,7 @@ export default async function ResearchPage({
           </div>
         </>
       )}
+      </div>
     </div>
   )
 }
