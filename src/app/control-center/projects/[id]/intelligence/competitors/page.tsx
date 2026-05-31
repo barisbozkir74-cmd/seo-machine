@@ -7,6 +7,7 @@ import { RakiplerDeepAnalysis } from '@/app/(dashboard)/projeler/[id]/rakipler/R
 import { CompetitorDiscoveryDialog } from '@/app/(dashboard)/projeler/[id]/rakipler/CompetitorDiscoveryDialog'
 import { OwnDomainAnalyzeButton } from '@/app/(dashboard)/projeler/[id]/rakipler/OwnDomainAnalyzeButton'
 import { ModuleAIPanel } from '@/components/control-center/ModuleAIPanel'
+import { SplitPane } from '@/components/control-center/SplitPane'
 import { FetchAllButton } from '@/app/(dashboard)/projeler/[id]/rakipler/FetchAllButton'
 import { addCompetitor } from '@/app/(dashboard)/projeler/[id]/rakipler/actions'
 
@@ -178,9 +179,9 @@ export default async function CompetitorsPage({
     .map(e => e.primary_keyword!)
 
   return (
-    <div className="flex flex-col gap-5 p-6">
+    <div className="flex flex-1 flex-col min-h-0">
       {/* Header — includes add-competitor form inline */}
-      <div className="flex items-start justify-between gap-4 flex-wrap">
+      <div className="flex flex-shrink-0 items-start justify-between gap-4 flex-wrap border-b border-border px-6 py-3">
         <div>
           <h1 className="text-base font-semibold text-foreground">Rakipler</h1>
           <p className="mt-0.5 text-xs text-muted-foreground">
@@ -221,94 +222,110 @@ export default async function CompetitorsPage({
         </div>
       </div>
 
-      {/* Business context strip */}
-      {entityGroups.length > 0 && (
-        <div>
-          <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground/35 select-none">
-            İşletme Bağlamı
-          </p>
-          <div className="rounded-lg border border-border/40 bg-secondary/20 px-3 py-2.5 space-y-2">
-            {entityGroups.map(group => (
-              <div key={group.type} className="flex items-start gap-3">
-                <span className="text-[10px] font-medium text-muted-foreground/40 w-24 shrink-0 pt-0.5">
-                  {group.label}
-                </span>
-                <div className="flex flex-wrap gap-1.5">
-                  {group.items.map(entity => (
-                    <span
-                      key={entity.id}
-                      className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] ${
-                        entity.is_primary
-                          ? 'border-amber-500/30 bg-amber-500/10 text-amber-400'
-                          : 'border-border bg-secondary text-foreground/70'
-                      }`}
-                    >
-                      {entity.name}
-                      {entity.is_primary && <span className="text-amber-400/50 text-[9px]">★</span>}
-                    </span>
+      {/* Two-column body with draggable splitter */}
+      <SplitPane
+        storageKey="rakipler"
+        defaultRightWidth={288}
+        minRightWidth={180}
+        maxRightWidth={520}
+        right={
+          <ModuleAIPanel
+            variant="sidebar"
+            title="Rakip Analizi"
+            managerName="Rekabet Analisti"
+            hint="Rakip zayıflıklarını tespit eder, fırsat boşluklarını analiz eder ve rakip keyword'lerinden strateji önerir."
+            section="rakipler"
+          />
+        }
+      >
+        {/* Left: main content */}
+        <div className="overflow-y-auto h-full">
+          <div className="flex flex-col gap-5 p-6">
+            {/* Business context strip */}
+            {entityGroups.length > 0 && (
+              <div>
+                <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground/35 select-none">
+                  İşletme Bağlamı
+                </p>
+                <div className="rounded-lg border border-border/40 bg-secondary/20 px-3 py-2.5 space-y-2">
+                  {entityGroups.map(group => (
+                    <div key={group.type} className="flex items-start gap-3">
+                      <span className="text-[10px] font-medium text-muted-foreground/40 w-24 shrink-0 pt-0.5">
+                        {group.label}
+                      </span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {group.items.map(entity => (
+                          <span
+                            key={entity.id}
+                            className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] ${
+                              entity.is_primary
+                                ? 'border-amber-500/30 bg-amber-500/10 text-amber-400'
+                                : 'border-border bg-secondary text-foreground/70'
+                            }`}
+                          >
+                            {entity.name}
+                            {entity.is_primary && <span className="text-amber-400/50 text-[9px]">★</span>}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
-            ))}
+            )}
+
+            {/* Own-domain analysis prompt — shown when there are competitors but no own data */}
+            {!ownCategoryData && competitors.length > 0 && (
+              <div className="flex items-center justify-between gap-3 rounded-lg border border-amber-500/20 bg-amber-500/5 px-4 py-3">
+                <div>
+                  <p className="text-sm font-medium text-foreground/80">Gap analizi için kendi sitenizi de analiz edin</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    Kendi siteyi analiz etmeden rakip boşlukları karşılaştırılamaz.
+                  </p>
+                </div>
+                <OwnDomainAnalyzeButton projectId={id} domain={project.domain} />
+              </div>
+            )}
+
+            {/* Empty state */}
+            {competitors.length === 0 ? (
+              <div className="rounded-lg border border-dashed border-border/50 py-16">
+                <div className="mx-auto max-w-xs space-y-3 px-4 text-center">
+                  <p className="text-sm font-medium text-foreground/80">Henüz rakip eklenmemiş</p>
+                  <p className="text-xs text-muted-foreground">
+                    Domain ekleyip veri çekin, ardından kendi sitenizi analiz ederek boşluk karşılaştırması yapın.
+                  </p>
+                  <p className="text-xs text-muted-foreground/60">
+                    AI keşfi için "Rakip Keşfi" butonunu kullanın.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              /* Competitor table */
+              <RakiplerTable
+                competitors={competitors}
+                projectId={id}
+                summaryStats={summaryStats}
+                hasOwnData={ownCategoryData !== null}
+              />
+            )}
+
+            {/* Deep analysis — separate section */}
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-3">
+                <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground/40 select-none whitespace-nowrap">
+                  Derin Analiz
+                </p>
+                <span className="h-px flex-1 bg-border/30" aria-hidden="true" />
+              </div>
+              <RakiplerDeepAnalysis
+                projectId={id}
+                initialAnalysis={deepAnalysis as Parameters<typeof RakiplerDeepAnalysis>[0]['initialAnalysis']}
+              />
+            </div>
           </div>
         </div>
-      )}
-
-      {/* Own-domain analysis prompt — shown when there are competitors but no own data */}
-      {!ownCategoryData && competitors.length > 0 && (
-        <div className="flex items-center justify-between gap-3 rounded-lg border border-amber-500/20 bg-amber-500/5 px-4 py-3">
-          <div>
-            <p className="text-sm font-medium text-foreground/80">Gap analizi için kendi sitenizi de analiz edin</p>
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              Kendi siteyi analiz etmeden rakip boşlukları karşılaştırılamaz.
-            </p>
-          </div>
-          <OwnDomainAnalyzeButton projectId={id} domain={project.domain} />
-        </div>
-      )}
-
-      {/* Empty state */}
-      {competitors.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-border/50 py-16">
-          <div className="mx-auto max-w-xs space-y-3 px-4 text-center">
-            <p className="text-sm font-medium text-foreground/80">Henüz rakip eklenmemiş</p>
-            <p className="text-xs text-muted-foreground">
-              Domain ekleyip veri çekin, ardından kendi sitenizi analiz ederek boşluk karşılaştırması yapın.
-            </p>
-            <p className="text-xs text-muted-foreground/60">
-              AI keşfi için "Rakip Keşfi" butonunu kullanın.
-            </p>
-          </div>
-        </div>
-      ) : (
-        /* Competitor table */
-        <RakiplerTable
-          competitors={competitors}
-          projectId={id}
-          summaryStats={summaryStats}
-          hasOwnData={ownCategoryData !== null}
-        />
-      )}
-
-      {/* Deep analysis — separate section */}
-      <div className="flex flex-col gap-3">
-        <div className="flex items-center gap-3">
-          <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground/40 select-none whitespace-nowrap">
-            Derin Analiz
-          </p>
-          <span className="h-px flex-1 bg-border/30" aria-hidden="true" />
-        </div>
-        <RakiplerDeepAnalysis
-          projectId={id}
-          initialAnalysis={deepAnalysis as Parameters<typeof RakiplerDeepAnalysis>[0]['initialAnalysis']}
-        />
-      </div>
-
-      <ModuleAIPanel
-        title="Rakip Analizi"
-        managerName="Rekabet Analisti"
-        hint="Rakip zayıflıklarını tespit eder, fırsat boşluklarını analiz eder ve rakip keyword'lerinden strateji önerir."
-      />
+      </SplitPane>
     </div>
   )
 }
