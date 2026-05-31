@@ -89,6 +89,18 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Project not found' }, { status: 404 })
   }
 
+  // 4b. Verify workflowRunId belongs to this project (CR-03 — cross-project run injection)
+  const { data: runRow } = await serviceClient
+    .from('workflow_runs')
+    .select('id')
+    .eq('id', workflowRunId)
+    .eq('project_id', projectId)
+    .maybeSingle()
+
+  if (!runRow) {
+    return NextResponse.json({ error: 'Workflow run not found' }, { status: 404 })
+  }
+
   // 5. workflow_runs UPDATE
   const now = new Date().toISOString()
   const { error: updateError } = await serviceClient
@@ -109,12 +121,17 @@ export async function POST(request: NextRequest) {
 
   // 6. dfs_fetched_at bulk update (DFS-07 — sadece status='done' ise)
   if (status === 'done' && Array.isArray(keywordIds) && keywordIds.length > 0) {
-    await serviceClient
-      .from('keywords')
-      .update({ dfs_fetched_at: now })
-      .in('id', keywordIds)
-      .eq('project_id', projectId)
-    // Hata non-fatal — workflow başarılı sayılır, sadece freshness güncellenmedi
+    // CR-03: validate each ID is a proper UUID before bulk update
+    const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    const safeKeywordIds = keywordIds.filter(id => UUID_REGEX.test(id))
+    if (safeKeywordIds.length > 0) {
+      await serviceClient
+        .from('keywords')
+        .update({ dfs_fetched_at: now })
+        .in('id', safeKeywordIds)
+        .eq('project_id', projectId)
+      // Hata non-fatal — workflow başarılı sayılır, sadece freshness güncellenmedi
+    }
   }
 
   return NextResponse.json({ ok: true }, { status: 200 })
