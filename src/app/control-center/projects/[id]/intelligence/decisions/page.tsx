@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { listDecisions } from '@/core/decision/list'
 import { LockedModuleBanner } from '@/components/control-center/LockedModuleBanner'
 import { ModuleAIPanel } from '@/components/control-center/ModuleAIPanel'
+import { SplitPane } from '@/components/control-center/SplitPane'
 import { DecisionSectionGroups } from './DecisionSectionGroups'
 
 export default async function DecisionsPage({
@@ -96,17 +97,7 @@ export default async function DecisionsPage({
   ]
 
   return (
-    <div className="flex flex-col min-h-0">
-      {/* AI Panel */}
-      <ModuleAIPanel
-        title="Karar Havuzu"
-        managerName="Karar Yöneticisi"
-        hint="Tüm bölüm kararlarını izler. AI aksiyonları bu havuzu okur ve yeni kararları buraya yazar."
-        contextItems={panelContextItems}
-        nextStep={panelNextStep}
-        actions={panelActions}
-      />
-
+    <div className="flex flex-1 flex-col min-h-0">
       {/* Tab bar */}
       <div className="flex items-center gap-1 border-b border-border/40 px-6 pt-4 pb-0">
         <a
@@ -141,24 +132,43 @@ export default async function DecisionsPage({
         </a>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
-        {displayDecisions.length === 0 ? (
-          <div className="rounded-lg border border-border/40 bg-secondary/20 px-4 py-8 text-center">
-            <p className="text-sm text-muted-foreground">
-              {showHistory
-                ? 'Geçmişte pasif edilmiş karar yok.'
-                : 'Henüz aktif karar bulunmuyor. Araştırma sayfasındaki Kararları Kaydet butonunu kullanın.'}
-            </p>
-          </div>
-        ) : (
-          <DecisionSectionGroups
-            decisions={displayDecisions}
-            projectId={id}
-            showReactivate={showHistory}
+      <SplitPane
+        storageKey="kararlar"
+        defaultRightWidth={288}
+        minRightWidth={180}
+        maxRightWidth={520}
+        right={
+          <ModuleAIPanel
+            variant="sidebar"
+            title="Karar Havuzu"
+            managerName="Karar Yöneticisi"
+            hint="Tüm bölüm kararlarını izler. AI aksiyonları bu havuzu okur ve yeni kararları buraya yazar."
+            section="kararlar"
+            contextItems={panelContextItems}
+            nextStep={panelNextStep}
+            actions={panelActions}
           />
-        )}
-      </div>
+        }
+      >
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          {displayDecisions.length === 0 ? (
+            <div className="rounded-lg border border-border/40 bg-secondary/20 px-4 py-8 text-center">
+              <p className="text-sm text-muted-foreground">
+                {showHistory
+                  ? 'Geçmişte pasif edilmiş karar yok.'
+                  : 'Henüz aktif karar bulunmuyor. Araştırma sayfasındaki Kararları Kaydet butonunu kullanın.'}
+              </p>
+            </div>
+          ) : (
+            <DecisionSectionGroups
+              decisions={displayDecisions}
+              projectId={id}
+              showReactivate={showHistory}
+            />
+          )}
+        </div>
+      </SplitPane>
     </div>
   )
 }
