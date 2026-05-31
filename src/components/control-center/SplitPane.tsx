@@ -23,16 +23,19 @@ export function SplitPane({
   maxRightWidth = 540,
   storageKey,
 }: SplitPaneProps) {
-  const [rightWidth, setRightWidth] = useState(() => {
-    if (storageKey && typeof window !== 'undefined') {
-      const saved = localStorage.getItem(`split-pane:${storageKey}`)
-      if (saved) {
-        const n = parseInt(saved, 10)
-        if (!isNaN(n)) return n
-      }
+  // Sunucu ile istemci aynı başlangıç değerini kullanmalı (hydration mismatch önlemi).
+  // localStorage'ı mount sonrası useEffect içinde okuyoruz.
+  const [rightWidth, setRightWidth] = useState(defaultRightWidth)
+
+  useEffect(() => {
+    if (!storageKey) return
+    const saved = localStorage.getItem(`split-pane:${storageKey}`)
+    if (saved) {
+      const n = parseInt(saved, 10)
+      if (!isNaN(n) && n >= 0) setRightWidth(n)
     }
-    return defaultRightWidth
-  })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const isDragging = useRef(false)
   const startX = useRef(0)
