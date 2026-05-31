@@ -175,7 +175,7 @@ export default async function ResearchPage({
     .single()
   if (!project) notFound()
 
-  const [{ data: reports }, { data: entities }] = await Promise.all([
+  const [{ data: reports }, { data: entities }, { count: competitorCount }] = await Promise.all([
     supabase
       .from('research_reports')
       .select('section, rows')
@@ -188,6 +188,11 @@ export default async function ResearchPage({
       .eq('user_id', user.id)
       .order('is_primary', { ascending: false })
       .order('sort_order', { ascending: true, nullsFirst: false }),
+    supabase
+      .from('competitors')
+      .select('id', { count: 'exact', head: true })
+      .eq('project_id', id)
+      .eq('user_id', user.id),
   ])
 
   const rowsMap: Partial<Record<SectionKey, Record<string, string>[]>> = {}
@@ -223,6 +228,54 @@ export default async function ResearchPage({
 
   const targetKeywords = (project as unknown as { target_keywords: string | null }).target_keywords
   const decisionsHref  = `/control-center/projects/${id}/intelligence/decisions`
+  const base           = `/control-center/projects/${id}`
+
+  // AI panel live context
+  const resolvedCompetitorCount = competitorCount ?? 0
+  const aiSummary               = researchSummaryText
+
+  const panelContextItems = [
+    {
+      label: 'Durum',
+      value: isApproved ? 'Onaylandı' : 'Başlatılmadı',
+      status: (isApproved ? 'ok' : 'missing') as 'ok' | 'missing',
+    },
+    {
+      label: 'Rakipler',
+      value: `${resolvedCompetitorCount} rakip`,
+      status: (resolvedCompetitorCount > 0 ? 'ok' : 'warning') as 'ok' | 'warning',
+    },
+    {
+      label: 'Bağlam',
+      value: aiSummary ? 'Mevcut' : 'Eksik',
+      status: (aiSummary ? 'ok' : 'warning') as 'ok' | 'warning',
+    },
+  ]
+
+  const panelNextStep =
+    !isApproved && resolvedCompetitorCount === 0
+      ? 'Rakipleri ekleyin ve araştırmayı başlatın'
+      : !isApproved
+        ? 'Araştırma başlatılmadı — manuel tetikleyin'
+        : 'Araştırma tamamlandı. Sonuçları inceleyin.'
+
+  const panelActions = [
+    {
+      label: 'Rakipler',
+      href: `${base}/intelligence/competitors`,
+      variant: (resolvedCompetitorCount === 0 ? 'primary' : 'default') as 'primary' | 'default',
+    },
+    {
+      label: 'Kararlar',
+      href: `${base}/intelligence/decisions`,
+    },
+    {
+      label: 'Keyword Stratejisine Geç',
+      href: `${base}/intelligence/keywords`,
+      disabled: !isApproved,
+      disabledReason: 'Önce araştırmayı tamamlayın',
+    },
+  ]
 
   type EntityRow = { id: string; type: string; name: string; is_primary: boolean; primary_keyword: string | null }
   const allEntities = (entities ?? []) as EntityRow[]
@@ -241,6 +294,9 @@ export default async function ResearchPage({
         title="Araştırma Analizi"
         managerName="Araştırma Uzmanı"
         hint="Sektör araştırmasını yönetir, rakip verilerini değerlendirir ve araştırma kalitesini denetler."
+        contextItems={panelContextItems}
+        nextStep={panelNextStep}
+        actions={panelActions}
       />
 
       <div className="flex flex-col gap-5 p-6">
