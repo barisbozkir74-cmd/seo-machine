@@ -150,6 +150,7 @@ export default async function BlueprintPage({
     { data: menusData },
     { data: clustersRaw },
     { data: entities },
+    { data: linkedPageIds },
   ] = await Promise.all([
     supabase
       .from('pages')
@@ -174,10 +175,84 @@ export default async function BlueprintPage({
       .eq('user_id', user.id)
       .order('is_primary', { ascending: false })
       .order('sort_order', { ascending: true, nullsFirst: false }),
+    supabase
+      .from('internal_links')
+      .select('target_page_id')
+      .eq('project_id', id),
   ])
 
   const pages: Page[] = (pagesData ?? []) as Page[]
   const flatPages = flattenTree(pages)
+
+  const blueprintApproved = (project as unknown as { blueprint_approved: boolean | null }).blueprint_approved ?? false
+
+  // Orphan count: root-level pages with no incoming internal link
+  const linkedSet = new Set((linkedPageIds ?? []).map((l: { target_page_id: string }) => l.target_page_id))
+  const pageCount = pages.length
+  const orphanCount = pages.filter((p) => !linkedSet.has(p.id) && p.parent_id === null).length
+
+  // Page type breakdown
+  const countByType = (type: string) => pages.filter((p) => p.page_type === type).length
+
+  // ModuleAIPanel data
+  const panelContextItems = [
+    {
+      label: 'Toplam Sayfa',
+      value: pageCount + ' sayfa',
+      status: (pageCount > 0 ? 'ok' : 'missing') as 'ok' | 'missing' | 'warning',
+    },
+    {
+      label: 'Yetim Sayfa',
+      value: orphanCount + ' sayfa',
+      status: (orphanCount === 0 ? 'ok' : 'warning') as 'ok' | 'missing' | 'warning',
+    },
+    {
+      label: 'Blueprint',
+      value: blueprintApproved ? 'Onaylandı' : 'Taslak',
+      status: (blueprintApproved ? 'ok' : 'warning') as 'ok' | 'missing' | 'warning',
+    },
+    ...(pageCount > 0
+      ? [
+          {
+            label: 'Ana Sayfa',
+            value: countByType('homepage') + ' adet',
+            status: 'ok' as const,
+          },
+          {
+            label: 'Kategori',
+            value: countByType('category') + ' adet',
+            status: 'ok' as const,
+          },
+          {
+            label: 'Ürün / Hizmet',
+            value: (countByType('product') + countByType('service')) + ' adet',
+            status: 'ok' as const,
+          },
+          {
+            label: 'Blog',
+            value: countByType('blog_post') + ' adet',
+            status: 'ok' as const,
+          },
+        ]
+      : []),
+  ]
+
+  const panelNextStep =
+    pageCount === 0
+      ? 'Sayfa oluşturun veya kümelerden transfer edin'
+      : orphanCount > 0
+        ? `${orphanCount} yetim sayfa var — iç link haritasını kontrol edin`
+        : !blueprintApproved
+          ? 'Blueprint onaylanmadı — gözden geçirin'
+          : 'Blueprint onaylandı. İçerik üretimi başlayabilir.'
+
+  const ccBase = `/control-center/projects/${id}`
+  const panelActions = [
+    { label: 'Ağaç Görünümü', href: `${base}?view=tree`, variant: 'primary' as const },
+    { label: 'Liste Görünümü', href: `${base}?view=list` },
+    { label: 'İç Link Haritası', href: `${ccBase}/architecture/link-graph` },
+    { label: 'Sayfa Listesi', href: `${ccBase}/architecture/pages` },
+  ]
 
   const menus: Menu[] = (menusData ?? []) as Menu[]
   const menuMap: Partial<Record<MenuType, MenuItem[]>> = {}
@@ -281,8 +356,6 @@ export default async function BlueprintPage({
 
   const unmappedKeywords: UnmappedKeyword[] = (unmappedRaw ?? []).map((k) => ({ id: k.id, keyword: k.keyword }))
 
-  const blueprintApproved = (project as unknown as { blueprint_approved: boolean | null }).blueprint_approved ?? false
-
   return (
     <div className="flex flex-1 flex-col min-h-0">
       {/* Toolbar */}
@@ -371,10 +444,13 @@ export default async function BlueprintPage({
       )}
 
       <ModuleAIPanel
-    title="Blueprint Yönetimi"
-    managerName="Blueprint Mimarı"
-    hint="Site ağacını yönetir, sayfa önceliklerini belirler, iç link mantığını denetler ve içerik üretimine geçiş kararı verir."
-  />
+        title="Blueprint Yönetimi"
+        managerName="Blueprint Mimarı"
+        hint="Site ağacını yönetir, sayfa önceliklerini belirler, iç link mantığını denetler ve içerik üretimine geçiş kararı verir."
+        contextItems={panelContextItems}
+        nextStep={panelNextStep}
+        actions={panelActions}
+      />
 
       {/* Content */}
       <div className="flex-1 min-h-0 overflow-y-auto p-6 space-y-10">
