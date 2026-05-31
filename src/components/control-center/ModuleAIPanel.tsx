@@ -1,12 +1,37 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
+
+interface PanelContextItem {
+  label: string
+  value: string
+  status?: 'ok' | 'warning' | 'missing'
+}
+
+interface PanelAction {
+  label: string
+  href?: string
+  description?: string
+  disabled?: boolean
+  disabledReason?: string
+  variant?: 'default' | 'primary'
+}
 
 interface ModuleAIPanelProps {
   title: string
   managerName?: string
   hint?: string
   badge?: string
+  contextItems?: PanelContextItem[]
+  nextStep?: string
+  actions?: PanelAction[]
+}
+
+const STATUS_DOT: Record<NonNullable<PanelContextItem['status']>, string> = {
+  ok: 'bg-emerald-400/60',
+  warning: 'bg-amber-400/60',
+  missing: 'bg-red-400/50',
 }
 
 export function ModuleAIPanel({
@@ -14,6 +39,9 @@ export function ModuleAIPanel({
   managerName,
   hint,
   badge,
+  contextItems,
+  nextStep,
+  actions,
 }: ModuleAIPanelProps) {
   const [open, setOpen] = useState(true)
 
@@ -55,6 +83,70 @@ export function ModuleAIPanel({
           {hint && (
             <p className="text-[11px] text-muted-foreground/50 leading-relaxed">{hint}</p>
           )}
+
+          {contextItems && contextItems.length > 0 && (
+            <div className="bg-secondary/10 rounded-md p-2 grid grid-cols-2 gap-1.5">
+              {contextItems.map((item, i) => (
+                <div key={i} className="flex items-center gap-1.5 min-w-0">
+                  <span
+                    className={`h-1.5 w-1.5 rounded-full shrink-0 ${STATUS_DOT[item.status ?? 'ok']}`}
+                    aria-hidden="true"
+                  />
+                  <span className="text-[10px] text-muted-foreground/50 truncate shrink-0">
+                    {item.label}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground/70 truncate">
+                    {item.value}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {nextStep && (
+            <p className="text-[11px] text-muted-foreground/60 flex items-center gap-1">
+              <span aria-hidden="true">→</span>
+              {nextStep}
+            </p>
+          )}
+
+          {actions && actions.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {actions.slice(0, 5).map((action, i) => {
+                const isPrimary = action.variant === 'primary'
+                const baseClass = isPrimary
+                  ? 'border border-blue-500/30 bg-blue-500/10 text-blue-400/80'
+                  : 'border border-border/40 bg-secondary/30 text-muted-foreground/70 hover:bg-secondary/50'
+                const sizeClass = 'text-[11px] px-2.5 py-1.5 rounded-md'
+                const disabledClass = action.disabled ? 'opacity-40 cursor-default pointer-events-none' : ''
+
+                if (action.href && !action.disabled) {
+                  return (
+                    <Link
+                      key={i}
+                      href={action.href}
+                      title={action.description}
+                      className={`${baseClass} ${sizeClass} transition-colors`}
+                    >
+                      {action.label}
+                    </Link>
+                  )
+                }
+
+                return (
+                  <button
+                    key={i}
+                    disabled={action.disabled}
+                    title={action.disabled ? action.disabledReason : action.description}
+                    className={`${baseClass} ${sizeClass} ${disabledClass} transition-colors`}
+                  >
+                    {action.label}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+
           <div className="flex items-center gap-2 rounded-lg border border-border/50 bg-background/80 px-4 py-3 focus-within:border-border/80 transition-colors">
             <input
               type="text"
