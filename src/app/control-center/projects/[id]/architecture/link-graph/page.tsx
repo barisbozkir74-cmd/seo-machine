@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { LockedModuleBanner } from '@/components/control-center/LockedModuleBanner'
 import { computeGraph, type RawPage, type RawLink, type GscPageMetric } from '@/app/(dashboard)/projeler/[id]/ic-link-haritasi/computeGraph'
 import { ModuleAIPanel } from '@/components/control-center/ModuleAIPanel'
+import { SplitPane } from '@/components/control-center/SplitPane'
 import { LinkGraphCCShell } from './LinkGraphCCShell'
 import type { LastCrawlJob } from '@/app/(dashboard)/projeler/[id]/ic-link-haritasi/page'
 
@@ -186,23 +187,34 @@ export default async function LinkGraphPage({
           </span>
         )}
       </div>
-      <ModuleAIPanel
-        title="İç Link Analizi"
-        managerName="İç Link Uzmanı"
-        hint="Orphan sayfaları tespit eder, link dağılımını analiz eder, pillar-support ilişkilerini doğrular ve anchor text önerir."
-        contextItems={panelContextItems}
-        nextStep={panelNextStep}
-        actions={panelActions}
-      />
-      <div className="flex-1 min-h-0 flex flex-col">
-        <LinkGraphCCShell
-          projectId={id}
-          graphData={graphData}
-          lastJob={lastJob}
-          initialView={initialView}
-          initialSelected={initialSelected}
-        />
-      </div>
+      <SplitPane
+        storageKey="ic-link-haritasi"
+        defaultRightWidth={288}
+        minRightWidth={180}
+        maxRightWidth={520}
+        right={
+          <ModuleAIPanel
+            variant="sidebar"
+            title="İç Link Analizi"
+            managerName="İç Link Uzmanı"
+            hint="Orphan sayfaları tespit eder, link dağılımını analiz eder, pillar-support ilişkilerini doğrular ve anchor text önerir."
+            section="ic-link-haritasi"
+            contextItems={panelContextItems}
+            nextStep={panelNextStep}
+            actions={panelActions}
+          />
+        }
+      >
+        <div className="flex-1 min-h-0 flex flex-col overflow-y-auto">
+          <LinkGraphCCShell
+            projectId={id}
+            graphData={graphData}
+            lastJob={lastJob}
+            initialView={initialView}
+            initialSelected={initialSelected}
+          />
+        </div>
+      </SplitPane>
     </div>
   )
 }
