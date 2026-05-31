@@ -16,6 +16,7 @@ import type { DialogRow } from '@/app/(dashboard)/projeler/[id]/site-blueprint/G
 import { ArchHealthPanel } from '@/app/(dashboard)/projeler/[id]/site-blueprint/ArchHealthPanel'
 import { ApproveBlueprintButton } from '@/app/(dashboard)/projeler/[id]/site-blueprint/ApproveBlueprintButton'
 import { ModuleAIPanel } from '@/components/control-center/ModuleAIPanel'
+import { SplitPane } from '@/components/control-center/SplitPane'
 
 type Page = {
   id: string
@@ -443,15 +444,24 @@ export default async function BlueprintPage({
         </div>
       )}
 
-      <ModuleAIPanel
-        title="Blueprint Yönetimi"
-        managerName="Blueprint Mimarı"
-        hint="Site ağacını yönetir, sayfa önceliklerini belirler, iç link mantığını denetler ve içerik üretimine geçiş kararı verir."
-        contextItems={panelContextItems}
-        nextStep={panelNextStep}
-        actions={panelActions}
-      />
-
+      <SplitPane
+        storageKey="site-blueprint"
+        defaultRightWidth={288}
+        minRightWidth={180}
+        maxRightWidth={520}
+        right={
+          <ModuleAIPanel
+            variant="sidebar"
+            title="Blueprint Yönetimi"
+            managerName="Blueprint Mimarı"
+            hint="Site ağacını yönetir, sayfa önceliklerini belirler, iç link mantığını denetler ve içerik üretimine geçiş kararı verir."
+            section="site-blueprint"
+            contextItems={panelContextItems}
+            nextStep={panelNextStep}
+            actions={panelActions}
+          />
+        }
+      >
       {/* Content */}
       <div className="flex-1 min-h-0 overflow-y-auto p-6 space-y-10">
         {isHealthTab ? (
@@ -631,6 +641,7 @@ export default async function BlueprintPage({
           </>
         )}
       </div>
+      </SplitPane>
     </div>
   )
 }
