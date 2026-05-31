@@ -156,43 +156,24 @@ function SidebarPanel({
       <div
         role="tablist"
         aria-label={managerName ?? 'AI Yönetici'}
-        className="flex-shrink-0 flex items-center border-b border-border/30"
+        className="flex-shrink-0 flex border-b border-border/30"
       >
-        {/* Manager identity — sola yaslanmış küçük etiket */}
-        <div className="flex items-center gap-1.5 px-3 py-0 min-w-0 flex-1">
-          <span className="h-1.5 w-1.5 rounded-full bg-blue-400/50 shrink-0" aria-hidden="true" />
-          <span className="text-[9px] font-bold uppercase tracking-[0.12em] text-muted-foreground/35 select-none shrink-0">
-            AI
-          </span>
-          {managerName && (
-            <span className="text-[10px] text-blue-400/55 truncate">{managerName}</span>
-          )}
-          {badge && (
-            <span className="rounded border border-border/25 px-1 py-0.5 text-[9px] text-muted-foreground/35 select-none shrink-0">
-              {badge}
-            </span>
-          )}
-        </div>
-
-        {/* Sekme butonları */}
-        <div className="flex items-stretch flex-shrink-0 border-l border-border/25">
-          {(['ai', 'tasks'] as const).map(tab => (
-            <button
-              key={tab}
-              role="tab"
-              aria-selected={activeTab === tab}
-              onClick={() => setActiveTab(tab)}
-              className={[
-                'px-3 py-2.5 text-[11px] font-medium transition-colors select-none',
-                activeTab === tab
-                  ? 'text-foreground/80 border-b-2 border-blue-400/60 -mb-px bg-transparent'
-                  : 'text-muted-foreground/40 hover:text-muted-foreground/60',
-              ].join(' ')}
-            >
-              {tab === 'ai' ? 'AI Yöneticisi' : 'Görevler'}
-            </button>
-          ))}
-        </div>
+        {(['ai', 'tasks'] as const).map(tab => (
+          <button
+            key={tab}
+            role="tab"
+            aria-selected={activeTab === tab}
+            onClick={() => setActiveTab(tab)}
+            className={[
+              'flex-1 py-2.5 text-[11px] font-medium transition-colors select-none',
+              activeTab === tab
+                ? 'text-foreground/80 border-b-2 border-blue-400/60 -mb-px'
+                : 'text-muted-foreground/35 hover:text-muted-foreground/55',
+            ].join(' ')}
+          >
+            {tab === 'ai' ? 'AI Yöneticisi' : 'Görevler'}
+          </button>
+        ))}
       </div>
 
       {/* ── AI Yöneticisi sekmesi ── */}
