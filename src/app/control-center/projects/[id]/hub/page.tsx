@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { KPIGrid } from '@/components/control-center/KPIGrid'
 import { StatePanel } from '@/components/control-center/StatePanel'
 import { ModuleAIPanel } from '@/components/control-center/ModuleAIPanel'
+import { SplitPane } from '@/components/control-center/SplitPane'
 import Link from 'next/link'
 
 type NextStep = { description: string; cta: string; href: string }
@@ -200,21 +201,9 @@ export default async function ProjectHubPage({
   ]
 
   return (
-    <div className="flex flex-col gap-5">
-      {/* Master AI Manager panel — top of page, full-width, borderless container */}
-      <ModuleAIPanel
-        title="Proje Koordinasyonu"
-        managerName="Master AI Yöneticisi"
-        hint="Tüm bölüm yöneticilerinden durum raporu toplar. Projenin genel sağlığını analiz eder ve öncelikli adımları koordine eder."
-        badge="Koordinasyon Merkezi"
-        contextItems={aiContextItems}
-        nextStep={aiNextStep}
-        actions={aiActions}
-      />
-
-      <div className="flex flex-col gap-5 px-6 pb-6">
+    <div className="flex flex-1 flex-col min-h-0">
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between px-6 pt-5 pb-0">
         <div>
           <h1 className="text-base font-semibold text-foreground">{project.name}</h1>
           {project.domain && (
@@ -228,6 +217,27 @@ export default async function ProjectHubPage({
           Ayarlar →
         </Link>
       </div>
+
+      <SplitPane
+        storageKey="proje-merkezi"
+        defaultRightWidth={288}
+        minRightWidth={180}
+        maxRightWidth={520}
+        right={
+          <ModuleAIPanel
+            variant="sidebar"
+            title="Proje Koordinasyonu"
+            managerName="Master AI Yöneticisi"
+            hint="Tüm bölüm yöneticilerinden durum raporu toplar. Projenin genel sağlığını analiz eder ve öncelikli adımları koordine eder."
+            section="proje-merkezi"
+            badge="Koordinasyon Merkezi"
+            contextItems={aiContextItems}
+            nextStep={aiNextStep}
+            actions={aiActions}
+          />
+        }
+      >
+      <div className="flex flex-col gap-5 px-6 pt-5 pb-6 overflow-y-auto">
 
       {/* KPIs */}
       <section aria-label="Proje metrikleri">
@@ -469,6 +479,7 @@ export default async function ProjectHubPage({
         </div>
       </section>
       </div>{/* end px-6 pb-6 inner wrapper */}
+      </SplitPane>
     </div>
   )
 }
