@@ -3,7 +3,9 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { getDataForSeoCredentials } from '@/lib/supabase/vault'
-import { fetchKeywordData, fetchRelatedKeywords } from '@/lib/dataforseo/client'
+import { fetchKeywordData, fetchRelatedKeywords, fetchSerpDomains } from '@/lib/dataforseo/client'
+import { getCachedOrFetch } from '@/lib/dataforseo/cache'
+import type { TaskSpec } from '@/lib/dataforseo/types'
 import { parseKeywordText } from '@/lib/keywords/parser'
 import { clusterKeywords, clusterKeywordsWithAI } from '@/lib/keywords/clustering'
 import { calculateOpportunityScore, buildScoringContext } from '@/lib/keywords/scoring'
@@ -1030,6 +1032,16 @@ export type DraftCluster = {
   keywords: Array<{ id: string; keyword: string; volume: number | null }>
 }
 
+// ─── Phase 24: DataForSEO Analysis Types ─────────────────────────────────────
+
+export type LightAnalysisResult =
+  | { success: true; count: number; fromCache: boolean }
+  | { success: false; error: string }
+
+export type StandardAnalysisResult =
+  | { success: true; count: number; fromCache: boolean }
+  | { success: false; error: string }
+
 export type RemoveKeywordFromClusterResult =
   | { success: true }
   | { success: false; error: string }
@@ -1086,3 +1098,172 @@ export async function removeKeywordFromCluster(
   // Not: Cluster boşalırsa silinmez — kullanıcı ayrıca reddeder (Pitfall 4)
   return { success: true }
 }
+
+// ─── Phase 24: Light Analysis Action (DFS-03, DFS-07, DFS-08) ────────────────
+
+export async function lightAnalysisAction(projectId: string): Promise<LightAnalysisResult> {
+  // 1. UUID validation (T-24-10)
+  const uuidRegex = /^[0-9a-f-]{36}$/i
+  if (!uuidRegex.test(projectId)) return { success: false, error: 'Geçersiz proje ID.' }
+
+  // 2. Auth
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Oturum bulunamadı.' }
+
+  // 3. Ownership (T-24-01)
+  const { data: project } = await supabase
+    .from('projects')
+    .select('id, target_country')
+    .eq('id', projectId)
+    .eq('user_id', user.id)
+    .single()
+  if (!project) return { success: false, error: 'Proje bulunamadı.' }
+
+  // 4. DFS-08 Concurrent guard — workflow_runs running check
+  const { data: runningJob } = await supabase
+    .from('workflow_runs')
+    .select('id')
+    .eq('project_id', projectId)
+    .eq('user_id', user.id)
+    .in('status', ['pending', 'running'])
+    .maybeSingle()
+  if (runningJob) return { success: false, error: 'Analiz devam ediyor. Tamamlanmasını bekleyin.' }
+
+  // 5. Keywords al (max 50 — DFS-03, T-24-11)
+  const { data: keywords } = await supabase
+    .from('keywords')
+    .select('id, keyword')
+    .eq('project_id', projectId)
+    .eq('user_id', user.id)
+    .limit(50)
+  if (!keywords || keywords.length === 0) return { success: false, error: 'Projede keyword bulunamadı.' }
+
+  // 6. Credentials
+  let credentials: { login: string; password: string }
+  try {
+    credentials = await getDataForSeoCredentials()
+  } catch {
+    return { success: false, error: 'DataForSEO credentials bulunamadı.' }
+  }
+
+  // 7. Cache-first fetch (DFS-01)
+  const keywordTexts = keywords.map((k: { id: string; keyword: string }) => k.keyword)
+  const spec: TaskSpec = {
+    module: 'keyword_stratejisi',
+    endpoint: 'keyword_data/search_volume',
+    target: { type: 'keywords', value: keywordTexts },
+    locationCode: 2792,
+    languageCode: 'tr',
+  }
+  const result = await getCachedOrFetch({
+    projectId,
+    userId: user.id,
+    spec,
+    fetcher: () => fetchKeywordData(keywordTexts, credentials),
+  })
+  if (!result) return { success: false, error: 'DataForSEO analizi başlatılamadı (budget veya backoff).' }
+
+  // 8. dfs_fetched_at güncelle (DFS-07)
+  const keywordIds = keywords.map((k: { id: string; keyword: string }) => k.id)
+  await supabase
+    .from('keywords')
+    .update({ dfs_fetched_at: new Date().toISOString() })
+    .in('id', keywordIds)
+    .eq('user_id', user.id)
+
+  // 9. Revalidate
+  revalidatePath(`/projeler/${projectId}/keyword-stratejisi`)
+
+  return { success: true, count: keywords.length, fromCache: result.fromCache }
+}
+
+// ─── Phase 24: Standard Analysis Action (DFS-04, DFS-07, DFS-08) ─────────────
+
+export async function standardAnalysisAction(projectId: string): Promise<StandardAnalysisResult> {
+  // 1. UUID validation (T-24-10)
+  const uuidRegex = /^[0-9a-f-]{36}$/i
+  if (!uuidRegex.test(projectId)) return { success: false, error: 'Geçersiz proje ID.' }
+
+  // 2. Auth
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Oturum bulunamadı.' }
+
+  // 3. Ownership (T-24-01)
+  const { data: project } = await supabase
+    .from('projects')
+    .select('id, target_country')
+    .eq('id', projectId)
+    .eq('user_id', user.id)
+    .single()
+  if (!project) return { success: false, error: 'Proje bulunamadı.' }
+
+  // 4. DFS-08 Concurrent guard
+  const { data: runningJob } = await supabase
+    .from('workflow_runs')
+    .select('id')
+    .eq('project_id', projectId)
+    .eq('user_id', user.id)
+    .in('status', ['pending', 'running'])
+    .maybeSingle()
+  if (runningJob) return { success: false, error: 'Analiz devam ediyor. Tamamlanmasını bekleyin.' }
+
+  // 5. Cluster-scoped check: cluster'lar yoksa hata (DFS-04)
+  const { data: clusters } = await supabase
+    .from('keyword_clusters')
+    .select('id')
+    .eq('project_id', projectId)
+    .eq('user_id', user.id)
+    .limit(1)
+  if (!clusters || clusters.length === 0) return { success: false, error: 'Önce kümeleme yapın.' }
+
+  // 6. Kümelenmiş keywords (max 50 — T-24-11)
+  const { data: keywords } = await supabase
+    .from('keywords')
+    .select('id, keyword')
+    .eq('project_id', projectId)
+    .eq('user_id', user.id)
+    .not('cluster_id', 'is', null)
+    .limit(50)
+  if (!keywords || keywords.length === 0) return { success: false, error: 'Kümelenmiş keyword bulunamadı.' }
+
+  // 7. Credentials
+  let credentials: { login: string; password: string }
+  try {
+    credentials = await getDataForSeoCredentials()
+  } catch {
+    return { success: false, error: 'DataForSEO credentials bulunamadı.' }
+  }
+
+  // 8. Cache-first fetch
+  const keywordTexts = keywords.map((k: { id: string; keyword: string }) => k.keyword)
+  const spec: TaskSpec = {
+    module: 'keyword_stratejisi',
+    endpoint: 'labs/related_keywords',
+    target: { type: 'keywords', value: keywordTexts },
+    locationCode: 2792,
+    languageCode: 'tr',
+  }
+  const result = await getCachedOrFetch({
+    projectId,
+    userId: user.id,
+    spec,
+    fetcher: () => fetchRelatedKeywords(keywordTexts, credentials),
+  })
+  if (!result) return { success: false, error: 'Standart analiz başlatılamadı (budget veya backoff).' }
+
+  // 9. dfs_fetched_at güncelle (DFS-07)
+  await supabase
+    .from('keywords')
+    .update({ dfs_fetched_at: new Date().toISOString() })
+    .in('id', keywords.map((k: { id: string; keyword: string }) => k.id))
+    .eq('user_id', user.id)
+
+  revalidatePath(`/projeler/${projectId}/keyword-stratejisi`)
+  return { success: true, count: keywords.length, fromCache: result.fromCache }
+}
+
+// fetchSerpDomains Phase 25'te kullanılacak (deep analysis SERP endpoint'i)
+// Import guard: bu satır kaldırılmamalı — Phase 25 executor bu import'u kullanır
+void (fetchSerpDomains as unknown)
