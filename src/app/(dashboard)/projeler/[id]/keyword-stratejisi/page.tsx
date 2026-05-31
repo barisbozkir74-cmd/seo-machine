@@ -21,6 +21,7 @@ import { MasterSeoMap } from './MasterSeoMap'
 import { AiSuggestButton } from './AiSuggestButton'
 import { KeywordStratejisiToolbar } from './KeywordStratejisiToolbar'
 import { AnalysisButtons } from './AnalysisButtons'
+import { DeepAnalysisPoller } from './DeepAnalysisPoller'
 import { intentToPageType } from '../site-blueprint/page-utils'
 import { type DialogRow } from '../site-blueprint/GeneratePagesDialog'
 
@@ -264,6 +265,13 @@ export default async function KeywordStratejisiPage({
                 clusterCount={clusterCount ?? 0}
                 isAnalysisRunning={!!activeWorkflow}
               />
+              {/* Phase 24: Deep analiz polling — activeWorkflow varsa mount et */}
+              {activeWorkflow && (
+                <DeepAnalysisPoller
+                  initialStatus={activeWorkflow.status as 'pending' | 'running'}
+                  currentStatus={activeWorkflow.status as 'pending' | 'running' | 'done' | 'failed' | 'timeout'}
+                />
+              )}
             </>
           )}
           {/* Görünüm seçici */}

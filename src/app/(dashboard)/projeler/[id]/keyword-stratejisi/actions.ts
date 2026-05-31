@@ -1267,3 +1267,83 @@ export async function standardAnalysisAction(projectId: string): Promise<Standar
 // fetchSerpDomains Phase 25'te kullanılacak (deep analysis SERP endpoint'i)
 // Import guard: bu satır kaldırılmamalı — Phase 25 executor bu import'u kullanır
 void (fetchSerpDomains as unknown)
+
+// ─── Phase 24: Deep Analysis Action (DFS-05, DFS-08) ─────────────────────────
+
+export type DeepAnalysisResult =
+  | { success: true; workflowRunId: string }
+  | { success: false; error: string }
+
+export async function triggerDeepAnalysisAction(projectId: string): Promise<DeepAnalysisResult> {
+  // 1. UUID validation (T-24-10)
+  const uuidRegex = /^[0-9a-f-]{36}$/i
+  if (!uuidRegex.test(projectId)) return { success: false, error: 'Geçersiz proje ID.' }
+
+  // 2. Auth
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Oturum bulunamadı.' }
+
+  // 3. Ownership (T-24-01)
+  const { data: project } = await supabase
+    .from('projects')
+    .select('id')
+    .eq('id', projectId)
+    .eq('user_id', user.id)
+    .single()
+  if (!project) return { success: false, error: 'Proje bulunamadı.' }
+
+  // 4. DFS-08 Concurrent guard — aynı projede aktif deep analysis var mı?
+  const { data: runningJob } = await supabase
+    .from('workflow_runs')
+    .select('id')
+    .eq('project_id', projectId)
+    .eq('user_id', user.id)
+    .eq('workflow_type', 'dfs_deep_analysis')
+    .in('status', ['pending', 'running'])
+    .maybeSingle()
+  if (runningJob) return { success: false, error: 'Analiz devam ediyor. Tamamlanmasını bekleyin.' }
+
+  // 5. workflow_runs INSERT (anon client — user RLS ile yazıyor)
+  const { data: workflowRun, error: insertError } = await supabase
+    .from('workflow_runs')
+    .insert({
+      user_id: user.id,
+      project_id: projectId,
+      workflow_type: 'dfs_deep_analysis',
+      status: 'pending',
+      input_payload: {
+        analysisLevel: 'deep',
+        triggeredAt: new Date().toISOString(),
+      },
+    })
+    .select('id')
+    .single()
+
+  if (insertError || !workflowRun) return { success: false, error: 'Workflow kaydı oluşturulamadı.' }
+
+  // 6. n8n webhook — server-only env var (NEXT_PUBLIC değil)
+  const n8nUrl = process.env.N8N_DEEP_ANALYSIS_WEBHOOK_URL
+  if (n8nUrl) {
+    try {
+      await fetch(n8nUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-N8n-Webhook-Secret': process.env.N8N_WEBHOOK_SECRET ?? '',
+        },
+        body: JSON.stringify({
+          projectId,
+          userId: user.id,
+          workflowRunId: workflowRun.id,
+        }),
+      })
+    } catch {
+      return { success: false, error: 'n8n webhook tetiklenemedi.' }
+    }
+  }
+  // N8N_DEEP_ANALYSIS_WEBHOOK_URL yoksa workflow_runs 'pending'te kalır (n8n kurulmamış ortam)
+
+  revalidatePath(`/projeler/${projectId}/keyword-stratejisi`)
+  return { success: true, workflowRunId: workflowRun.id }
+}
