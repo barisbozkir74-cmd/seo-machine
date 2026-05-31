@@ -122,8 +122,9 @@ export default async function ProjectInfoPage({
         </div>
 
         {/* Sağ: AI Manager sidebar */}
-        <aside className="w-72 flex-shrink-0 border-l border-border/40 flex flex-col overflow-y-auto">
+        <aside className="w-72 flex-shrink-0 border-l border-border/40 flex flex-col">
           <ModuleAIPanel
+            variant="sidebar"
             title="Proje Analizi"
             managerName="Proje Koordinatörü"
             hint="Proje bağlamını analiz eder, eksik alanları tespit eder ve öncelikli adımları önerir."
