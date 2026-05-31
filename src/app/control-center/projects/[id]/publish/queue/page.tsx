@@ -6,6 +6,19 @@ import { listAuditEntries } from '@/core/audit/trail'
 import { OnaylarTabs } from '@/app/(dashboard)/projeler/[id]/onaylar/OnaylarTabs'
 import { ModuleAIPanel } from '@/components/control-center/ModuleAIPanel'
 
+const WP_STATUS_LABEL: Record<string, string> = {
+  publish: 'Yayında',
+  draft:   'Taslak',
+  pending: 'İncelemede',
+  private: 'Gizli',
+}
+
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString('tr-TR', {
+    day: '2-digit', month: 'short', year: 'numeric',
+  })
+}
+
 export default async function PublishQueuePage({
   params,
 }: {
@@ -26,6 +39,50 @@ export default async function PublishQueuePage({
   if (!project) notFound()
 
   const isProjectOwner = (project as unknown as { user_id: string }).user_id === user.id
+
+  // Fetch pages ready to publish (locked or published packages)
+  const { data: pagesRaw } = await supabase
+    .from('pages')
+    .select('id, title, page_type')
+    .eq('project_id', id)
+    .eq('user_id', user.id)
+
+  const pageIds = (pagesRaw ?? []).map((p: { id: string }) => p.id)
+  const pageMap = Object.fromEntries(
+    (pagesRaw ?? []).map((p: { id: string; title: string; page_type: string | null }) => [
+      p.id, { title: p.title, page_type: p.page_type },
+    ])
+  )
+
+  type QueueItem = {
+    page_id: string; page_title: string; page_type: string | null
+    pkg_status: string; seo_title: string | null
+    wp_status: string | null; wp_published_at: string | null; updated_at: string
+  }
+
+  let queueItems: QueueItem[] = []
+  if (pageIds.length > 0) {
+    const { data: pkgs } = await supabase
+      .from('page_packages')
+      .select('page_id, status, seo_title, wp_status, wp_published_at, updated_at')
+      .in('page_id', pageIds)
+      .in('status', ['locked', 'published'])
+      .order('updated_at', { ascending: false })
+
+    queueItems = (pkgs ?? []).map((pkg: {
+      page_id: string; status: string; seo_title: string | null
+      wp_status: string | null; wp_published_at: string | null; updated_at: string
+    }) => ({
+      page_id:         pkg.page_id,
+      page_title:      (pageMap as Record<string, { title: string; page_type: string | null }>)[pkg.page_id]?.title ?? '—',
+      page_type:       (pageMap as Record<string, { title: string; page_type: string | null }>)[pkg.page_id]?.page_type ?? null,
+      pkg_status:      pkg.status,
+      seo_title:       pkg.seo_title,
+      wp_status:       pkg.wp_status,
+      wp_published_at: pkg.wp_published_at,
+      updated_at:      pkg.updated_at,
+    }))
+  }
 
   const [approvalResult, auditResult] = await Promise.all([
     listApprovalHistory(supabase, id, { status: 'all', limit: 20 }),
@@ -100,33 +157,124 @@ export default async function PublishQueuePage({
 
   return (
     <div className="flex flex-1 flex-col min-h-0">
-      <div className="flex flex-shrink-0 items-center border-b border-border px-6 py-3">
-        <span className="text-sm font-medium text-foreground">Onaylar</span>
+      <div className="flex flex-shrink-0 items-center gap-4 border-b border-border px-6 py-3">
+        <span className="text-sm font-medium text-foreground">Yayın Kuyruğu</span>
+        {queueItems.length > 0 && (
+          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+            <span className="text-violet-400">{queueItems.filter(q => q.pkg_status === 'locked').length} yayına hazır</span>
+            {queueItems.filter(q => q.pkg_status === 'published').length > 0 && (
+              <span className="text-green-400">{queueItems.filter(q => q.pkg_status === 'published').length} yayında</span>
+            )}
+          </div>
+        )}
         {approvalResult.items.length > 0 && (
-          <span className="ml-3 text-xs text-muted-foreground">
-            {approvalResult.items.length} kayıt
+          <span className="ml-auto text-xs text-muted-foreground">
+            {approvalResult.items.length} onay kaydı
           </span>
         )}
       </div>
       <ModuleAIPanel title="Yayın Yöneticisi" hint="Onay akışı, yayın kuyruğu ve süreç yönetimi" />
-      <div className="flex-1 min-h-0 overflow-y-auto p-6">
-        <OnaylarTabs
-          projectId={id}
-          userId={user.id}
-          isProjectOwner={isProjectOwner}
-          initialApprovalPage={{
-            approvals:   approvalResult.items,
-            has_more:    approvalResult.has_more,
-            next_cursor: approvalResult.next_cursor,
-          }}
-          initialAuditPage={{
-            entries:     auditResult.items,
-            has_more:    auditResult.has_more,
-            next_cursor: auditResult.next_cursor,
-          }}
-          approvalEmptyNode={approvalEmptyNode}
-          auditEmptyNode={auditEmptyNode}
-        />
+      <div className="flex-1 min-h-0 overflow-y-auto p-6 space-y-8">
+
+        {/* ── Publish Queue Table ─────────────────────────────────────────── */}
+        {queueItems.length > 0 && (
+          <div>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+              Yayına Hazır Sayfalar
+            </p>
+            <div className="rounded-md border border-border overflow-hidden">
+              <div className="grid grid-cols-[1fr_auto_auto_auto_auto] bg-muted/50 border-b border-border text-xs text-muted-foreground">
+                <div className="px-4 py-2">Sayfa</div>
+                <div className="px-4 py-2 w-28">Tip</div>
+                <div className="px-4 py-2 w-32">Durum</div>
+                <div className="px-4 py-2 w-36">WordPress</div>
+                <div className="px-4 py-2 w-20" />
+              </div>
+              {queueItems.map((item) => {
+                const wpLabel = item.wp_status
+                  ? (WP_STATUS_LABEL[item.wp_status] ?? item.wp_status)
+                  : '—'
+                return (
+                  <div
+                    key={item.page_id}
+                    className="grid grid-cols-[1fr_auto_auto_auto_auto] border-b border-border last:border-0 items-center text-sm hover:bg-muted/30 transition-colors"
+                  >
+                    <div className="px-4 py-3 min-w-0">
+                      <p className="font-normal truncate">{item.page_title}</p>
+                      {item.seo_title && item.seo_title !== item.page_title && (
+                        <p className="text-[11px] text-muted-foreground/60 truncate mt-0.5">{item.seo_title}</p>
+                      )}
+                    </div>
+                    <div className="px-4 py-3 w-28 text-xs text-muted-foreground truncate">
+                      {item.page_type ?? '—'}
+                    </div>
+                    <div className={`px-4 py-3 w-32 text-xs font-medium ${item.pkg_status === 'published' ? 'text-green-400' : 'text-violet-400'}`}>
+                      {item.pkg_status === 'published' ? 'Yayında' : 'Yayına Hazır'}
+                    </div>
+                    <div className="px-4 py-3 w-36 text-xs text-muted-foreground">
+                      {item.wp_published_at
+                        ? <span className="text-green-400">{formatDate(item.wp_published_at)}</span>
+                        : wpLabel
+                      }
+                    </div>
+                    <div className="px-4 py-3 w-20 text-right">
+                      <Link
+                        href={`/control-center/projects/${id}/content/studio/${item.page_id}`}
+                        className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4"
+                      >
+                        İncele
+                      </Link>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+            <p className="mt-3 text-xs text-muted-foreground/60">
+              WordPress entegrasyonu aktif olduğunda yayın işlemleri buradan yönetilebilir.
+            </p>
+          </div>
+        )}
+
+        {/* ── Approvals & Audit ───────────────────────────────────────────── */}
+        <div>
+          {queueItems.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-16 text-center space-y-2">
+              <p className="text-sm text-muted-foreground">Henüz yayına hazır içerik yok.</p>
+              <p className="text-xs text-muted-foreground/70">
+                İçerik Studio&apos;da brief tamamlandığında sayfalar burada görünür.
+              </p>
+              <Link
+                href={`/control-center/projects/${id}/content/lifecycle`}
+                className="text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground mt-2"
+              >
+                İçerik Lifecycle&apos;a Git
+              </Link>
+            </div>
+          )}
+          <div className={queueItems.length > 0 ? '' : 'hidden'}>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+              Onaylar & Audit Trail
+            </p>
+          </div>
+          <OnaylarTabs
+            projectId={id}
+            userId={user.id}
+            isProjectOwner={isProjectOwner}
+            initialApprovalPage={{
+              approvals:   approvalResult.items,
+              has_more:    approvalResult.has_more,
+              next_cursor: approvalResult.next_cursor,
+            }}
+            initialAuditPage={{
+              entries:     auditResult.items,
+              has_more:    auditResult.has_more,
+              next_cursor: auditResult.next_cursor,
+            }}
+            approvalEmptyNode={approvalEmptyNode}
+            auditEmptyNode={auditEmptyNode}
+          />
+        </div>
+
       </div>
     </div>
   )
