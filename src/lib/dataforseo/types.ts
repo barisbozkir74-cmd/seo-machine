@@ -43,7 +43,10 @@ export const ENDPOINT_TTL: Record<EndpointId, number> = {
   'keyword_data/search_volume':  30 * 24 * 3600,   // 30 gün
   'backlinks/summary':           30 * 24 * 3600,   // 30 gün
   'backlinks/referring_domains': 30 * 24 * 3600,   // 30 gün
-  'onpage/crawl':                0,                // user-triggered, TTL yok
+  'onpage/crawl':                0,                // WR-03: TTL=0 means "always re-fetch" — expires_at is null,
+                                                  // isStale(null) returns true, so cache is bypassed every call.
+                                                  // This is intentional for user-triggered crawls; call sites
+                                                  // must use forceRefresh:true or accept repeated fetches.
 }
 
 // ─── Bütçe ────────────────────────────────────────────────────────────────────

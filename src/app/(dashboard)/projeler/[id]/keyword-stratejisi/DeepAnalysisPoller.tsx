@@ -7,7 +7,7 @@
  * 5 saniye interval + router.refresh() → SSR page workflow_runs durumunu okur
  * Stop conditions: done / failed / timeout (12 dakika = 144 × 5s)
  */
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 type PollerStatus = 'pending' | 'running' | 'done' | 'failed' | 'timeout'
@@ -19,7 +19,6 @@ interface DeepAnalysisPollerProps {
 
 export function DeepAnalysisPoller({ initialStatus, currentStatus }: DeepAnalysisPollerProps) {
   const router = useRouter()
-  const triggered = useRef(false)
   const [phase, setPhase] = useState<PollerStatus>(initialStatus)
 
   // currentStatus SSR'dan gelince güncelle
@@ -33,9 +32,9 @@ export function DeepAnalysisPoller({ initialStatus, currentStatus }: DeepAnalysi
   }, [currentStatus])
 
   useEffect(() => {
-    if (triggered.current) return
+    // WR-04: rely solely on phase as stop condition — no triggered.current guard needed.
+    // React's cleanup runs before each re-render, clearing the old interval when phase changes.
     if (phase === 'done' || phase === 'failed' || phase === 'timeout') return
-    triggered.current = true
 
     let loopCount = 0
     const MAX_LOOPS = 144 // 12 dakika timeout (UI-SPEC)

@@ -248,6 +248,10 @@ export async function fetchWithCache<T>(opts: {
     const rawMsg = err instanceof Error ? err.message : 'Bilinmeyen hata'
 
     // retry_count için mevcut değeri oku (Phase 1: select-then-update, race condition kabul edilebilir)
+    // WR-01 (known benign race): concurrent errors for the same fingerprint can both read
+    // retry_count=N, both compute N+1, and both write N+1. The backoff threshold may be
+    // reached later than expected under concurrent load. Acceptable in Phase 24 scope;
+    // address with an atomic RPC increment in a future phase if budget bleed becomes an issue.
     const { data: currentRow } = await supabase
       .from('dataforseo_task_cache')
       .select('retry_count')
