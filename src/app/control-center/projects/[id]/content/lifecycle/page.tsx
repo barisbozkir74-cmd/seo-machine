@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { LockedModuleBanner } from '@/components/control-center/LockedModuleBanner'
 import { ModuleAIPanel } from '@/components/control-center/ModuleAIPanel'
+import { SplitPane } from '@/components/control-center/SplitPane'
 import { InventoryTable, type InventoryPage } from '@/app/(dashboard)/projeler/[id]/icerik-envanteri/InventoryTable'
 
 type PageWithPackage = {
@@ -193,7 +194,20 @@ export default async function LifecyclePage({
         )}
       </div>
 
-      <ModuleAIPanel title="İçerik Yöneticisi" hint="İçerik üretim akışı, taslak-yayın geçişleri ve önceliklendirme" />
+      <SplitPane
+        storageKey="content-lifecycle"
+        defaultRightWidth={288}
+        minRightWidth={180}
+        maxRightWidth={520}
+        right={
+          <ModuleAIPanel
+            variant="sidebar"
+            title="İçerik Yöneticisi"
+            hint="İçerik üretim akışı, taslak-yayın geçişleri ve önceliklendirme"
+            section="content-lifecycle"
+          />
+        }
+      >
       <div className="flex-1 min-h-0 overflow-y-auto p-6">
         {pages.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center space-y-2">
@@ -268,6 +282,7 @@ export default async function LifecyclePage({
           </>
         )}
       </div>
+      </SplitPane>
     </div>
   )
 }
