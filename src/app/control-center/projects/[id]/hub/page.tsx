@@ -53,6 +53,7 @@ export default async function ProjectHubPage({
     { count: publishedCount },
     { count: pendingApprovalCount },
     { count: clusterCount },
+    { data: stages },
   ] = await Promise.all([
     supabase
       .from('projects')
@@ -70,9 +71,12 @@ export default async function ProjectHubPage({
     supabase.from('publishes').select('*', { count: 'exact', head: true }).eq('project_id', id).eq('status', 'published'),
     supabase.from('approval_requests').select('*', { count: 'exact', head: true }).eq('project_id', id).eq('status', 'pending'),
     supabase.from('keyword_clusters').select('*', { count: 'exact', head: true }).eq('project_id', id),
+    supabase.from('stages').select('stage_name, status').eq('project_id', id).order('created_at', { ascending: true }),
   ])
 
   if (!project) notFound()
+
+  const stageItems = (stages ?? []) as Array<{ stage_name: string; status: string }>
 
   const base = `/control-center/projects/${id}`
 
@@ -292,6 +296,34 @@ export default async function ProjectHubPage({
           ))}
         </div>
       </section>
+
+      {/* Aşama Durumları — proje bilgileri sayfasından taşındı */}
+      {stageItems.length > 0 && (
+        <section aria-label="Aşama durumları">
+          <p className="mb-2 text-[9px] font-bold uppercase tracking-[0.12em] text-muted-foreground/35 select-none">
+            Aşama Durumları
+          </p>
+          <div className="rounded-lg border border-border/40 bg-secondary/10 divide-y divide-border/20">
+            {stageItems.map((stage, idx) => (
+              <div key={idx} className="flex items-center justify-between px-4 py-2.5">
+                <span className="text-xs text-foreground/70">{stage.stage_name}</span>
+                <span className={[
+                  'rounded px-2 py-0.5 text-[10px] font-medium',
+                  stage.status === 'completed'
+                    ? 'bg-emerald-500/10 text-emerald-400'
+                    : stage.status === 'in_progress'
+                    ? 'bg-blue-500/10 text-blue-400'
+                    : 'bg-secondary/60 text-muted-foreground/40',
+                ].join(' ')}>
+                  {stage.status === 'completed' ? 'Tamamlandı'
+                    : stage.status === 'in_progress' ? 'Devam Ediyor'
+                    : 'Bekliyor'}
+                </span>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Next step — only when actionable */}
       {nextStep && (

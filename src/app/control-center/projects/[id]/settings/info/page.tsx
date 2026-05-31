@@ -26,24 +26,6 @@ export default async function ProjectInfoPage({
 
   const p = project as unknown as Record<string, string | null>
 
-  // Sistem Durumu: created_at formatting
-  const createdAt = p.created_at
-    ? new Date(p.created_at).toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric' })
-    : null
-
-  // Stages are in a separate table — query separately
-  const { data: stagesData } = await supabase
-    .from('stages')
-    .select('stage_name, status')
-    .eq('project_id', id)
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: true })
-
-  const stageItems: Array<{ name: string; status: string }> = (stagesData ?? []).map(s => ({
-    name: s.stage_name,
-    status: s.status,
-  }))
-
   return (
     <div className="flex flex-1 flex-col min-h-0">
       {/* ── Sayfa başlığı ── */}
@@ -87,51 +69,6 @@ export default async function ProjectInfoPage({
                 notes:                p.notes,
               }}
             />
-
-            {/* Sistem Durumu — read-only */}
-            <div className="pt-5 pb-1 px-3">
-              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground/35 border-b border-border/30 pb-1.5">
-                Sistem Durumu
-              </p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-x-2">
-              <div className="rounded-md px-3 py-2.5">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground/50 mb-0.5">
-                  Oluşturulma
-                </p>
-                <p className="text-sm text-foreground">
-                  {createdAt ?? <span className="text-muted-foreground/40 italic">—</span>}
-                </p>
-              </div>
-            </div>
-
-            {stageItems.length > 0 && (
-              <div className="px-3 py-2.5">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground/50 mb-2">
-                  Aşama Durumları
-                </p>
-                <div className="space-y-1">
-                  {stageItems.map((stage, idx) => (
-                    <div key={idx} className="flex items-center justify-between text-xs py-0.5">
-                      <span className="text-muted-foreground">{stage.name}</span>
-                      <span className={[
-                        'rounded px-1.5 py-0.5 text-[10px] font-medium',
-                        stage.status === 'completed'
-                          ? 'bg-green-500/10 text-green-400'
-                          : stage.status === 'in_progress'
-                          ? 'bg-blue-500/10 text-blue-400'
-                          : 'bg-secondary/60 text-muted-foreground/50',
-                      ].join(' ')}>
-                        {stage.status === 'completed' ? 'Tamamlandı'
-                          : stage.status === 'in_progress' ? 'Devam Ediyor'
-                          : 'Bekliyor'}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
 
             {/* ── Onayla & İlerle ── */}
             <ApproveProjectInfoButton projectId={id} />
