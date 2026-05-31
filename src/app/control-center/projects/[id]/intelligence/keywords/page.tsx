@@ -371,6 +371,29 @@ export default async function KeywordsPage({
         title="Keyword Stratejisi"
         managerName="Keyword Stratejisti"
         hint="Keyword kümeleri analiz eder, dil uyumunu kontrol eder, cluster önerileri üretir ve strateji boşluklarını tespit eder."
+        contextItems={[
+          { label: 'Keywords',     value: `${totalKeywords} adet`,           status: totalKeywords > 0 ? 'ok' : 'missing' },
+          { label: 'Kümeler',      value: `${totalClusters} küme`,           status: totalClusters > 0 ? 'ok' : 'missing' },
+          { label: 'Onaylı Küme', value: `${approvedClusters.length} onaylı`, status: approvedClusters.length > 0 ? 'ok' : 'warning' },
+          { label: 'Strateji',     value: isStrategyApproved ? 'Kilitli' : 'Taslak', status: isStrategyApproved ? 'ok' : 'warning' },
+        ]}
+        nextStep={
+          totalKeywords === 0
+            ? 'Keyword ekleyin veya CSV ile içe aktarın'
+            : totalClusters === 0
+            ? 'Kümeleme başlatın'
+            : approvedClusters.length === 0
+            ? 'Kümeleri gözden geçirin ve onaylayın'
+            : !isStrategyApproved
+            ? 'Stratejiyi kilitleyin'
+            : 'Strateji onaylandı. Blueprint oluşturabilirsiniz.'
+        }
+        actions={[
+          { label: 'Keyword Ekle',   href: `${base}?view=flat`,            variant: totalKeywords === 0 ? 'primary' : 'default' },
+          { label: 'Küme Görünümü',  href: `${base}?view=cluster` },
+          { label: 'Harita Görünümü', href: `${base}?view=map` },
+          { label: 'Site Blueprint', href: blueprintBase, disabled: !isStrategyApproved, disabledReason: 'Stratejiyi kilitleyin' },
+        ]}
       />
 
       {/* Content area */}
