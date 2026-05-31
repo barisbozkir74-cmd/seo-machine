@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { getDataForSeoCredentials } from '@/lib/supabase/vault'
-import { fetchKeywordData, fetchRelatedKeywords, fetchSerpDomains } from '@/lib/dataforseo/client'
+import { fetchKeywordData, fetchRelatedKeywords } from '@/lib/dataforseo/client'
 import { getCachedOrFetch } from '@/lib/dataforseo/cache'
 import type { TaskSpec } from '@/lib/dataforseo/types'
 import { parseKeywordText } from '@/lib/keywords/parser'
@@ -1264,9 +1264,7 @@ export async function standardAnalysisAction(projectId: string): Promise<Standar
   return { success: true, count: keywords.length, fromCache: result.fromCache }
 }
 
-// fetchSerpDomains Phase 25'te kullanılacak (deep analysis SERP endpoint'i)
-// Import guard: bu satır kaldırılmamalı — Phase 25 executor bu import'u kullanır
-void (fetchSerpDomains as unknown)
+// TODO(Phase 25): fetchSerpDomains buraya eklenecek — deep analysis SERP endpoint'i (DFS-09)
 
 // ─── Phase 24: Deep Analysis Action (DFS-05, DFS-08) ─────────────────────────
 
