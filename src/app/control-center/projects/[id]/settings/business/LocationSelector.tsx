@@ -211,53 +211,6 @@ export function LocationSelector({ projectId, existingAreas }: LocationSelectorP
         </div>
       </div>
 
-      {/* ── Eklenen bölgeler ── */}
-      {existingAreas.length > 0 && (
-        <div className="space-y-2">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/40">
-            Hizmet Bölgeleri ({existingAreas.length})
-          </p>
-          <div className="grid gap-2 sm:grid-cols-2">
-            {existingAreas.map(area => {
-              const loc = parseLocation(area)
-              return (
-                <div
-                  key={area.id}
-                  className="flex items-center gap-3 rounded-lg border border-border/40 bg-secondary/10 px-4 py-3 group"
-                >
-                  {/* İkon */}
-                  <span className="text-base shrink-0 text-muted-foreground/40" aria-hidden="true">📍</span>
-
-                  {/* Metin */}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground/80 truncate">{area.name}</p>
-                    {loc.radius && (
-                      <p className="text-[10px] text-muted-foreground/40">{loc.radius}km yarıçap</p>
-                    )}
-                  </div>
-
-                  {/* Sil */}
-                  <button
-                    onClick={() => handleRemove(area.id)}
-                    disabled={isPending}
-                    title="Kaldır"
-                    className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground/30 hover:text-red-400/70 text-lg leading-none"
-                  >
-                    ×
-                  </button>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
-
-      {existingAreas.length === 0 && (
-        <p className="text-[11px] text-muted-foreground/30 text-center py-4">
-          Henüz hizmet bölgesi eklenmedi. Yukarıdan ülke, il ve ilçe seçerek ekleyin.
-        </p>
-      )}
-
     </div>
   )
 }

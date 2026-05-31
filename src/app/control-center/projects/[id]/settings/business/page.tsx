@@ -156,8 +156,6 @@ export default async function SettingsBusinessPage({
   const filledCount  = filledSectionCount(grouped)
   const base         = `/control-center/projects/${id}/settings/business`
 
-  const cardGroups = groupEntitiesForCards(allEntities)
-
   return (
     <div className="flex flex-1 flex-col min-h-0">
       {/* ── Header ── */}
@@ -292,61 +290,6 @@ export default async function SettingsBusinessPage({
             />
           )}
 
-          {/* ── Grouped entity cards (product / service / category / other) ── */}
-          {cardGroups.length > 0 && (
-            <div className="mt-6 space-y-6">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/30">
-                Tüm Varlıklar — Türe Göre
-              </p>
-              {cardGroups.map(({ key, label, items }) => (
-                <div key={key} className="space-y-2">
-                  <h3 className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wide">
-                    {label}
-                    <span className="ml-2 text-[10px] font-normal text-muted-foreground/30">
-                      {items.length} kayıt
-                    </span>
-                  </h3>
-                  <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-                    {items.map((entity) => (
-                      <div
-                        key={entity.id}
-                        className="rounded-lg border border-border/40 bg-secondary/10 px-4 py-3 space-y-1.5 hover:bg-secondary/20 transition-colors"
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <span className="text-sm font-medium text-foreground/90 leading-snug line-clamp-2">
-                            {entity.name}
-                          </span>
-                          <span
-                            className={[
-                              'shrink-0 rounded border px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide',
-                              TYPE_BADGE_STYLES[entity.type] ?? TYPE_BADGE_STYLES.other,
-                            ].join(' ')}
-                          >
-                            {TABS.find((t) => t.type === entity.type)?.singular ?? entity.type}
-                          </span>
-                        </div>
-                        {entity.description && (
-                          <p className="text-[11px] text-muted-foreground/60 leading-relaxed line-clamp-2">
-                            {entity.description}
-                          </p>
-                        )}
-                        {entity.seo_intent && (
-                          <span
-                            className={[
-                              'inline-flex rounded border px-1.5 py-0.5 text-[9px] font-medium',
-                              INTENT_BADGE_STYLES[entity.seo_intent] ?? 'bg-secondary/50 text-muted-foreground border-border',
-                            ].join(' ')}
-                          >
-                            {entity.seo_intent}
-                          </span>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       </SplitPane>
     </div>
