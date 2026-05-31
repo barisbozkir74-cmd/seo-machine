@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect, KeyboardEvent } from 'react'
+import { useState, useRef, useEffect, useCallback, type KeyboardEvent } from 'react'
 import Link from 'next/link'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -33,8 +33,13 @@ interface ModuleAIPanelProps {
   contextItems?: PanelContextItem[]
   nextStep?: string
   actions?: PanelAction[]
-  /** sidebar: full-height right panel with real chat. compact: collapsible top bar (default) */
+  /** sidebar: full-height right panel with tabs + chat. compact: collapsible top bar (default) */
   variant?: 'sidebar' | 'compact'
+  /**
+   * Unique section key for persisting task notes (e.g. 'proje-bilgileri', 'arastirma').
+   * Falls back to managerName if omitted. Used as localStorage key.
+   */
+  section?: string
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -48,6 +53,60 @@ const STATUS_DOT: Record<NonNullable<PanelContextItem['status']>, string> = {
 const PLACEHOLDER_RESPONSE =
   'Bu özellik yakında aktif olacak. Şu an için bağlam bilgilerini ve hızlı aksiyonları kullanabilirsiniz.'
 
+// ─── Tasks tab ────────────────────────────────────────────────────────────────
+
+function TasksTab({ storageKey }: { storageKey: string }) {
+  const [text, setText] = useState('')
+  const [savedFeedback, setSavedFeedback] = useState(false)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Mount'ta localStorage'dan yükle
+  useEffect(() => {
+    const saved = localStorage.getItem(`tasks:${storageKey}`)
+    if (saved) setText(saved)
+  }, [storageKey])
+
+  const save = useCallback(() => {
+    localStorage.setItem(`tasks:${storageKey}`, text)
+    setSavedFeedback(true)
+    if (timerRef.current) clearTimeout(timerRef.current)
+    timerRef.current = setTimeout(() => setSavedFeedback(false), 2000)
+  }, [storageKey, text])
+
+  // Ctrl/Cmd+S ile kaydet
+  function onKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
+    if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+      e.preventDefault()
+      save()
+    }
+  }
+
+  return (
+    <div className="flex flex-col h-full">
+      <div className="flex-1 min-h-0 p-3">
+        <textarea
+          value={text}
+          onChange={e => setText(e.target.value)}
+          onKeyDown={onKeyDown}
+          placeholder="Bu bölüm yöneticisinin görev tanımı henüz eklenmedi.&#10;&#10;Görevleri buraya yazabilirsiniz. Her satır ayrı bir görev olarak ele alınabilir."
+          className="w-full h-full resize-none bg-transparent text-sm text-foreground/80 placeholder:text-muted-foreground/30 outline-none leading-relaxed"
+        />
+      </div>
+      <div className="flex-shrink-0 border-t border-border/20 px-3 py-2 flex items-center justify-between">
+        <span className="text-[10px] text-muted-foreground/30 select-none">
+          {savedFeedback ? '✓ Kaydedildi' : 'Ctrl+S ile kaydet'}
+        </span>
+        <button
+          onClick={save}
+          className="text-[10px] px-2.5 py-1 rounded border border-border/35 text-muted-foreground/60 hover:bg-secondary/40 transition-colors"
+        >
+          Kaydet
+        </button>
+      </div>
+    </div>
+  )
+}
+
 // ─── Sidebar variant ──────────────────────────────────────────────────────────
 
 function SidebarPanel({
@@ -57,14 +116,20 @@ function SidebarPanel({
   contextItems,
   nextStep,
   actions,
+  section,
 }: Omit<ModuleAIPanelProps, 'title' | 'variant'>) {
+  const [activeTab, setActiveTab] = useState<'ai' | 'tasks'>('ai')
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const bottomRef = useRef<HTMLDivElement>(null)
 
+  const storageKey = section ?? (managerName ?? 'default').toLowerCase().replace(/\s+/g, '-')
+
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+    if (activeTab === 'ai') {
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [messages, activeTab])
 
   function send() {
     const text = input.trim()
@@ -77,7 +142,7 @@ function SidebarPanel({
     setInput('')
   }
 
-  function onKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
+  function onChatKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       send()
@@ -87,120 +152,157 @@ function SidebarPanel({
   return (
     <div className="flex flex-col h-full">
 
-      {/* ── Başlık ── */}
-      <div className="flex-shrink-0 flex items-center gap-2 px-4 py-3 border-b border-border/30">
-        <span className="h-1.5 w-1.5 rounded-full bg-blue-400/50 shrink-0" aria-hidden="true" />
-        <span className="text-[9px] font-bold uppercase tracking-[0.12em] text-muted-foreground/35 select-none">
-          AI Yönetici
-        </span>
-        {managerName && (
-          <span className="text-[11px] font-medium text-blue-400/60 truncate">{managerName}</span>
-        )}
-        {badge && (
-          <span className="ml-auto rounded border border-border/30 px-1.5 py-0.5 text-[9px] text-muted-foreground/40 select-none">
-            {badge}
+      {/* ── Tab bar ── */}
+      <div
+        role="tablist"
+        aria-label={managerName ?? 'AI Yönetici'}
+        className="flex-shrink-0 flex items-center border-b border-border/30"
+      >
+        {/* Manager identity — sola yaslanmış küçük etiket */}
+        <div className="flex items-center gap-1.5 px-3 py-0 min-w-0 flex-1">
+          <span className="h-1.5 w-1.5 rounded-full bg-blue-400/50 shrink-0" aria-hidden="true" />
+          <span className="text-[9px] font-bold uppercase tracking-[0.12em] text-muted-foreground/35 select-none shrink-0">
+            AI
           </span>
-        )}
+          {managerName && (
+            <span className="text-[10px] text-blue-400/55 truncate">{managerName}</span>
+          )}
+          {badge && (
+            <span className="rounded border border-border/25 px-1 py-0.5 text-[9px] text-muted-foreground/35 select-none shrink-0">
+              {badge}
+            </span>
+          )}
+        </div>
+
+        {/* Sekme butonları */}
+        <div className="flex items-stretch flex-shrink-0 border-l border-border/25">
+          {(['ai', 'tasks'] as const).map(tab => (
+            <button
+              key={tab}
+              role="tab"
+              aria-selected={activeTab === tab}
+              onClick={() => setActiveTab(tab)}
+              className={[
+                'px-3 py-2.5 text-[11px] font-medium transition-colors select-none',
+                activeTab === tab
+                  ? 'text-foreground/80 border-b-2 border-blue-400/60 -mb-px bg-transparent'
+                  : 'text-muted-foreground/40 hover:text-muted-foreground/60',
+              ].join(' ')}
+            >
+              {tab === 'ai' ? 'AI Yöneticisi' : 'Görevler'}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* ── Bağlam & aksiyonlar ── */}
-      {(hint || contextItems?.length || nextStep || actions?.length) && (
-        <div className="flex-shrink-0 px-4 py-3 space-y-2 border-b border-border/20">
-          {hint && (
-            <p className="text-[11px] text-muted-foreground/45 leading-relaxed">{hint}</p>
-          )}
+      {/* ── AI Yöneticisi sekmesi ── */}
+      {activeTab === 'ai' && (
+        <div className="flex flex-col flex-1 min-h-0" role="tabpanel" aria-label="AI Yöneticisi">
 
-          {contextItems && contextItems.length > 0 && (
-            <div className="grid grid-cols-2 gap-1">
-              {contextItems.map((item, i) => (
-                <div key={i} className="flex items-center gap-1.5 min-w-0">
-                  <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${STATUS_DOT[item.status ?? 'ok']}`} aria-hidden="true" />
-                  <span className="text-[10px] text-muted-foreground/45 shrink-0 truncate">{item.label}</span>
-                  <span className="text-[10px] text-muted-foreground/65 truncate">{item.value}</span>
+          {/* Bağlam ve aksiyonlar */}
+          {(hint || contextItems?.length || nextStep || actions?.length) && (
+            <div className="flex-shrink-0 px-4 py-3 space-y-2 border-b border-border/20">
+              {hint && (
+                <p className="text-[11px] text-muted-foreground/45 leading-relaxed">{hint}</p>
+              )}
+              {contextItems && contextItems.length > 0 && (
+                <div className="grid grid-cols-2 gap-1">
+                  {contextItems.map((item, i) => (
+                    <div key={i} className="flex items-center gap-1.5 min-w-0">
+                      <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${STATUS_DOT[item.status ?? 'ok']}`} aria-hidden="true" />
+                      <span className="text-[10px] text-muted-foreground/45 shrink-0 truncate">{item.label}</span>
+                      <span className="text-[10px] text-muted-foreground/65 truncate">{item.value}</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
+              {nextStep && (
+                <p className="text-[11px] text-muted-foreground/50 flex items-start gap-1">
+                  <span aria-hidden="true" className="shrink-0 mt-px">→</span>
+                  <span>{nextStep}</span>
+                </p>
+              )}
+              {actions && actions.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {actions.slice(0, 5).map((action, i) => {
+                    const cls = action.variant === 'primary'
+                      ? 'border border-blue-500/25 bg-blue-500/8 text-blue-400/70'
+                      : 'border border-border/35 text-muted-foreground/60 hover:bg-secondary/40'
+                    if (action.href && !action.disabled) {
+                      return (
+                        <Link key={i} href={action.href} title={action.description}
+                          className={`${cls} text-[10px] px-2 py-1 rounded transition-colors`}>
+                          {action.label}
+                        </Link>
+                      )
+                    }
+                    return (
+                      <button key={i} disabled={action.disabled}
+                        title={action.disabled ? action.disabledReason : action.description}
+                        className={`${cls} text-[10px] px-2 py-1 rounded ${action.disabled ? 'opacity-30 cursor-default' : ''}`}>
+                        {action.label}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
             </div>
           )}
 
-          {nextStep && (
-            <p className="text-[11px] text-muted-foreground/50 flex items-start gap-1">
-              <span aria-hidden="true" className="shrink-0 mt-px">→</span>
-              <span>{nextStep}</span>
+          {/* Mesajlar */}
+          <div className="flex-1 min-h-0 overflow-y-auto px-4 py-3 space-y-3">
+            {messages.length === 0 && (
+              <p className="text-[11px] text-muted-foreground/30 text-center pt-4 select-none">
+                {managerName ? `${managerName} ile konuşmak için yazın` : 'Yöneticiye soru sorun'}
+              </p>
+            )}
+            {messages.map((msg, i) => (
+              <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div className={[
+                  'max-w-[85%] rounded-lg px-3 py-2 text-xs leading-relaxed',
+                  msg.role === 'user'
+                    ? 'bg-blue-500/15 text-foreground/80'
+                    : 'bg-secondary/50 text-muted-foreground/70',
+                ].join(' ')}>
+                  {msg.content}
+                </div>
+              </div>
+            ))}
+            <div ref={bottomRef} />
+          </div>
+
+          {/* Chat input */}
+          <div className="flex-shrink-0 border-t border-border/25 p-3">
+            <div className="flex items-end gap-2 rounded-lg border border-border/40 bg-secondary/20 px-3 py-2 focus-within:border-border/60 transition-colors">
+              <textarea
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                onKeyDown={onChatKeyDown}
+                placeholder={managerName ? `${managerName} ile konuş…` : 'Sor…'}
+                rows={1}
+                className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/30 resize-none leading-relaxed max-h-24 overflow-y-auto"
+              />
+              <button
+                onClick={send}
+                disabled={!input.trim()}
+                className="flex-shrink-0 rounded-md bg-blue-500/20 text-blue-400/70 px-2 py-1 text-[11px] font-medium hover:bg-blue-500/30 transition-colors disabled:opacity-25 disabled:cursor-default"
+              >
+                Gönder
+              </button>
+            </div>
+            <p className="text-[9px] text-muted-foreground/25 text-center mt-1.5 select-none">
+              Enter ile gönder · Shift+Enter yeni satır
             </p>
-          )}
-
-          {actions && actions.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              {actions.slice(0, 5).map((action, i) => {
-                const cls = action.variant === 'primary'
-                  ? 'border border-blue-500/25 bg-blue-500/8 text-blue-400/70'
-                  : 'border border-border/35 text-muted-foreground/60 hover:bg-secondary/40'
-                if (action.href && !action.disabled) {
-                  return (
-                    <Link key={i} href={action.href} title={action.description}
-                      className={`${cls} text-[10px] px-2 py-1 rounded transition-colors`}>
-                      {action.label}
-                    </Link>
-                  )
-                }
-                return (
-                  <button key={i} disabled={action.disabled}
-                    title={action.disabled ? action.disabledReason : action.description}
-                    className={`${cls} text-[10px] px-2 py-1 rounded ${action.disabled ? 'opacity-30 cursor-default' : ''}`}>
-                    {action.label}
-                  </button>
-                )
-              })}
-            </div>
-          )}
+          </div>
         </div>
       )}
 
-      {/* ── Mesajlar ── */}
-      <div className="flex-1 min-h-0 overflow-y-auto px-4 py-3 space-y-3">
-        {messages.length === 0 && (
-          <p className="text-[11px] text-muted-foreground/30 text-center pt-4 select-none">
-            {managerName ? `${managerName} ile konuşmak için yazın` : 'Yöneticiye soru sorun'}
-          </p>
-        )}
-        {messages.map((msg, i) => (
-          <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={[
-              'max-w-[85%] rounded-lg px-3 py-2 text-xs leading-relaxed',
-              msg.role === 'user'
-                ? 'bg-blue-500/15 text-foreground/80'
-                : 'bg-secondary/50 text-muted-foreground/70',
-            ].join(' ')}>
-              {msg.content}
-            </div>
-          </div>
-        ))}
-        <div ref={bottomRef} />
-      </div>
-
-      {/* ── Input ── */}
-      <div className="flex-shrink-0 border-t border-border/25 p-3">
-        <div className="flex items-end gap-2 rounded-lg border border-border/40 bg-secondary/20 px-3 py-2 focus-within:border-border/60 transition-colors">
-          <textarea
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={onKeyDown}
-            placeholder={managerName ? `${managerName} ile konuş…` : 'Sor…'}
-            rows={1}
-            className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/30 resize-none leading-relaxed max-h-24 overflow-y-auto"
-          />
-          <button
-            onClick={send}
-            disabled={!input.trim()}
-            className="flex-shrink-0 rounded-md bg-blue-500/20 text-blue-400/70 px-2 py-1 text-[11px] font-medium hover:bg-blue-500/30 transition-colors disabled:opacity-25 disabled:cursor-default"
-          >
-            Gönder
-          </button>
+      {/* ── Görevler sekmesi ── */}
+      {activeTab === 'tasks' && (
+        <div className="flex-1 min-h-0" role="tabpanel" aria-label="Görevler">
+          <TasksTab storageKey={storageKey} />
         </div>
-        <p className="text-[9px] text-muted-foreground/25 text-center mt-1.5 select-none">
-          Enter ile gönder · Shift+Enter yeni satır
-        </p>
-      </div>
+      )}
 
     </div>
   )
@@ -216,7 +318,7 @@ function CompactPanel({
   contextItems,
   nextStep,
   actions,
-}: Omit<ModuleAIPanelProps, 'variant'>) {
+}: Omit<ModuleAIPanelProps, 'variant' | 'section'>) {
   const [open, setOpen] = useState(true)
 
   return (
