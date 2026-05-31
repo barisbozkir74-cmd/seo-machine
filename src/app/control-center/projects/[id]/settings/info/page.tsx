@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { ProjectInfoEditForm } from './ProjectInfoEditForm'
 import { ModuleAIPanel } from '@/components/control-center/ModuleAIPanel'
+import { SplitPane } from '@/components/control-center/SplitPane'
 
 export default async function ProjectInfoPage({
   params,
@@ -49,11 +50,23 @@ export default async function ProjectInfoPage({
         <span className="text-sm font-medium text-foreground">Proje Bilgileri</span>
       </div>
 
-      {/* ── İki sütunlu gövde: sol içerik | sağ AI panel ── */}
-      <div className="flex flex-1 min-h-0">
-
+      {/* ── İki sütunlu gövde: sürüklenebilir ayraçlı ── */}
+      <SplitPane
+        storageKey="proje-bilgileri"
+        defaultRightWidth={288}
+        minRightWidth={180}
+        maxRightWidth={520}
+        right={
+          <ModuleAIPanel
+            variant="sidebar"
+            title="Proje Analizi"
+            managerName="Proje Koordinatörü"
+            hint="Proje bağlamını analiz eder, eksik alanları tespit eder ve öncelikli adımları önerir."
+          />
+        }
+      >
         {/* Sol: form içeriği */}
-        <div className="flex-1 min-w-0 overflow-y-auto p-6">
+        <div className="overflow-y-auto h-full p-6">
           <div className="max-w-xl">
             <ProjectInfoEditForm
               projectId={id}
@@ -120,18 +133,7 @@ export default async function ProjectInfoPage({
             )}
           </div>
         </div>
-
-        {/* Sağ: AI Manager sidebar */}
-        <aside className="w-72 flex-shrink-0 border-l border-border/40 flex flex-col">
-          <ModuleAIPanel
-            variant="sidebar"
-            title="Proje Analizi"
-            managerName="Proje Koordinatörü"
-            hint="Proje bağlamını analiz eder, eksik alanları tespit eder ve öncelikli adımları önerir."
-          />
-        </aside>
-
-      </div>
+      </SplitPane>
     </div>
   )
 }
