@@ -11,6 +11,7 @@ import { SaveResearchDecisionsButton } from '@/app/(dashboard)/projeler/[id]/ara
 import Link from 'next/link'
 import { ResearchGroupPanel } from '@/components/control-center/ResearchGroupPanel'
 import { ModuleAIPanel } from '@/components/control-center/ModuleAIPanel'
+import { SplitPane } from '@/components/control-center/SplitPane'
 import type { ManagerBrief, ResearchMode } from '@/lib/research/sector-research'
 import type { SectionKey } from '@/app/(dashboard)/projeler/[id]/arastirma/actions'
 
@@ -288,20 +289,9 @@ export default async function ResearchPage({
     .filter(g => g.items.length > 0)
 
   return (
-    <div className="flex flex-col gap-5">
-      {/* AI Manager Panel */}
-      <ModuleAIPanel
-        title="Araştırma Analizi"
-        managerName="Araştırma Uzmanı"
-        hint="Sektör araştırmasını yönetir, rakip verilerini değerlendirir ve araştırma kalitesini denetler."
-        contextItems={panelContextItems}
-        nextStep={panelNextStep}
-        actions={panelActions}
-      />
-
-      <div className="flex flex-col gap-5 p-6">
+    <div className="flex flex-1 flex-col min-h-0">
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex items-start justify-between gap-4 p-6 pb-0">
         <div className="flex flex-col gap-2">
           <h1 className="text-base font-semibold text-foreground">Araştırma</h1>
           {/* Inline status chips */}
@@ -337,6 +327,26 @@ export default async function ResearchPage({
           </div>
         )}
       </div>
+
+      <SplitPane
+        storageKey="arastirma"
+        defaultRightWidth={288}
+        minRightWidth={180}
+        maxRightWidth={520}
+        right={
+          <ModuleAIPanel
+            variant="sidebar"
+            title="Araştırma Analizi"
+            managerName="Araştırma Uzmanı"
+            hint="Sektör araştırmasını yönetir, rakip verilerini değerlendirir ve araştırma kalitesini denetler."
+            section="arastirma"
+            contextItems={panelContextItems}
+            nextStep={panelNextStep}
+            actions={panelActions}
+          />
+        }
+      >
+      <div className="flex flex-col gap-5 p-6 overflow-y-auto">
 
       {/* Approved but no data rows — sparse state */}
       {!hasResearchData && isApproved && (
@@ -521,6 +531,7 @@ export default async function ResearchPage({
         </>
       )}
       </div>
+      </SplitPane>
     </div>
   )
 }
