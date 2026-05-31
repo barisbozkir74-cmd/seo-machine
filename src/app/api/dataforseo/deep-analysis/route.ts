@@ -25,10 +25,14 @@ function getServiceClient() {
 }
 
 export async function POST(request: NextRequest) {
-  // 1. Webhook secret auth (T-24-05 mitigation)
-  const secret = request.headers.get('X-N8n-Webhook-Secret')
+  // 1. Webhook secret auth (T-24-05 mitigation) — fail-closed (CR-01)
   const expectedSecret = process.env.N8N_WEBHOOK_SECRET
-  if (expectedSecret && secret !== expectedSecret) {
+  if (!expectedSecret) {
+    // Secret not configured — refuse all requests to prevent open access
+    return NextResponse.json({ error: 'Webhook secret not configured' }, { status: 503 })
+  }
+  const secret = request.headers.get('X-N8n-Webhook-Secret')
+  if (secret !== expectedSecret) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
