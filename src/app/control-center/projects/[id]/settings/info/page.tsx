@@ -16,7 +16,7 @@ export default async function ProjectInfoPage({
 
   const { data: project } = await supabase
     .from('projects')
-    .select('id, name, domain, sector, site_type, target_country, target_language, business_model, brand_tone, target_customer, main_goal, target_keywords, initial_competitors, notes, created_at, stages')
+    .select('id, name, domain, sector, site_type, target_country, target_language, business_model, brand_tone, target_customer, main_goal, target_keywords, initial_competitors, notes, created_at')
     .eq('id', id)
     .eq('user_id', user.id)
     .single()
@@ -29,17 +29,18 @@ export default async function ProjectInfoPage({
     ? new Date(p.created_at).toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric' })
     : null
 
-  // Stages: try to parse JSON array of stage objects
-  let stageItems: Array<{ name: string; status: string }> = []
-  try {
-    const raw = p.stages
-    if (raw) {
-      const parsed = JSON.parse(raw)
-      if (Array.isArray(parsed)) stageItems = parsed
-    }
-  } catch {
-    // ignore parse errors
-  }
+  // Stages are in a separate table — query separately
+  const { data: stagesData } = await supabase
+    .from('stages')
+    .select('stage_name, status')
+    .eq('project_id', id)
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: true })
+
+  const stageItems: Array<{ name: string; status: string }> = (stagesData ?? []).map(s => ({
+    name: s.stage_name,
+    status: s.status,
+  }))
 
   return (
     <div className="flex flex-1 flex-col min-h-0">
