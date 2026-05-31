@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { ProjectInfoEditForm } from './ProjectInfoEditForm'
+import { ApproveProjectInfoButton } from './ApproveProjectInfoButton'
 import { ModuleAIPanel } from '@/components/control-center/ModuleAIPanel'
 import { SplitPane } from '@/components/control-center/SplitPane'
 
@@ -131,6 +132,9 @@ export default async function ProjectInfoPage({
                 </div>
               </div>
             )}
+
+            {/* ── Onayla & İlerle ── */}
+            <ApproveProjectInfoButton projectId={id} />
           </div>
         </div>
       </SplitPane>
