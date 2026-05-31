@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { EntityTable } from '@/app/(dashboard)/projeler/[id]/isletme/EntityTable'
 import type { BusinessEntity, EntityType } from '@/app/(dashboard)/projeler/[id]/isletme/actions'
 import { ModuleAIPanel } from '@/components/control-center/ModuleAIPanel'
+import { SplitPane } from '@/components/control-center/SplitPane'
 
 type TabConfig = {
   type:       EntityType
@@ -158,13 +159,6 @@ export default async function SettingsBusinessPage({
 
   return (
     <div className="flex flex-1 flex-col min-h-0">
-      {/* ── AI Panel ── */}
-      <ModuleAIPanel
-        title="Ürün & Hizmet Analizi"
-        managerName="Ürün Yöneticisi"
-        hint="Ürün kataloğunu analiz eder, SEO fırsatlarını ve eksik ürün açıklamalarını tespit eder."
-      />
-
       {/* ── Header ── */}
       <div className="flex flex-shrink-0 items-center justify-between border-b border-border px-6 py-3">
         <div>
@@ -178,141 +172,157 @@ export default async function SettingsBusinessPage({
         )}
       </div>
 
-      {/* ── Profile completeness strip ── */}
-      <div className="flex flex-shrink-0 items-center gap-3 border-b border-border/40 px-6 py-2 bg-secondary/20">
-        <span className="text-[10px] text-muted-foreground/50 font-medium uppercase tracking-wide shrink-0">
-          Profil
-        </span>
-        <div className="flex items-center gap-2 flex-wrap">
+      <SplitPane
+        storageKey="urunler-hizmetler"
+        defaultRightWidth={288}
+        minRightWidth={180}
+        maxRightWidth={520}
+        right={
+          <ModuleAIPanel
+            variant="sidebar"
+            title="Ürün & Hizmet Analizi"
+            managerName="Ürün Yöneticisi"
+            hint="Ürün kataloğunu analiz eder, SEO fırsatlarını ve eksik ürün açıklamalarını tespit eder."
+            section="urunler-hizmetler"
+          />
+        }
+      >
+        {/* ── Profile completeness strip ── */}
+        <div className="flex flex-shrink-0 items-center gap-3 border-b border-border/40 px-6 py-2 bg-secondary/20">
+          <span className="text-[10px] text-muted-foreground/50 font-medium uppercase tracking-wide shrink-0">
+            Profil
+          </span>
+          <div className="flex items-center gap-2 flex-wrap">
+            {TABS.map((t) => {
+              const count = grouped[t.type].length
+              const filled = count > 0
+              return (
+                <Link
+                  key={t.type}
+                  href={`${base}?tab=${t.type}`}
+                  className={[
+                    'flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] transition-colors',
+                    filled
+                      ? 'text-foreground/70 bg-secondary hover:bg-secondary/80'
+                      : 'text-muted-foreground/30 hover:text-muted-foreground/50',
+                  ].join(' ')}
+                >
+                  <span className={filled ? 'text-emerald-400' : 'text-muted-foreground/20'}>
+                    {filled ? '●' : '○'}
+                  </span>
+                  {t.label}
+                  {filled && (
+                    <span className="tabular-nums text-muted-foreground/50">{count}</span>
+                  )}
+                </Link>
+              )
+            })}
+          </div>
+          <span className="ml-auto text-[10px] text-muted-foreground/40 tabular-nums shrink-0">
+            {filledCount}/{TABS.length} bölüm
+          </span>
+        </div>
+
+        {/* ── Tab bar ── */}
+        <div role="tablist" aria-label="Varlık türleri" className="flex flex-shrink-0 border-b border-border px-6 gap-0 overflow-x-auto">
           {TABS.map((t) => {
-            const count = grouped[t.type].length
-            const filled = count > 0
+            const count    = grouped[t.type].length
+            const isActive = t.type === activeType
             return (
               <Link
                 key={t.type}
                 href={`${base}?tab=${t.type}`}
+                role="tab"
+                aria-selected={isActive}
                 className={[
-                  'flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] transition-colors',
-                  filled
-                    ? 'text-foreground/70 bg-secondary hover:bg-secondary/80'
-                    : 'text-muted-foreground/30 hover:text-muted-foreground/50',
+                  'px-4 py-3 text-xs font-medium border-b-2 transition-colors flex items-center gap-1.5 whitespace-nowrap shrink-0',
+                  isActive
+                    ? 'border-foreground text-foreground'
+                    : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border',
                 ].join(' ')}
               >
-                <span className={filled ? 'text-emerald-400' : 'text-muted-foreground/20'}>
-                  {filled ? '●' : '○'}
-                </span>
                 {t.label}
-                {filled && (
-                  <span className="tabular-nums text-muted-foreground/50">{count}</span>
+                {count > 0 && (
+                  <span className={[
+                    'text-[10px] px-1.5 py-0.5 rounded-full font-medium',
+                    isActive ? 'bg-secondary text-foreground' : 'bg-secondary/50 text-muted-foreground/60',
+                  ].join(' ')}>
+                    {count}
+                  </span>
                 )}
               </Link>
             )
           })}
         </div>
-        <span className="ml-auto text-[10px] text-muted-foreground/40 tabular-nums shrink-0">
-          {filledCount}/{TABS.length} bölüm
-        </span>
-      </div>
 
-      {/* ── Tab bar ── */}
-      <div role="tablist" aria-label="Varlık türleri" className="flex flex-shrink-0 border-b border-border px-6 gap-0 overflow-x-auto">
-        {TABS.map((t) => {
-          const count    = grouped[t.type].length
-          const isActive = t.type === activeType
-          return (
-            <Link
-              key={t.type}
-              href={`${base}?tab=${t.type}`}
-              role="tab"
-              aria-selected={isActive}
-              className={[
-                'px-4 py-3 text-xs font-medium border-b-2 transition-colors flex items-center gap-1.5 whitespace-nowrap shrink-0',
-                isActive
-                  ? 'border-foreground text-foreground'
-                  : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border',
-              ].join(' ')}
-            >
-              {t.label}
-              {count > 0 && (
-                <span className={[
-                  'text-[10px] px-1.5 py-0.5 rounded-full font-medium',
-                  isActive ? 'bg-secondary text-foreground' : 'bg-secondary/50 text-muted-foreground/60',
-                ].join(' ')}>
-                  {count}
-                </span>
-              )}
-            </Link>
-          )
-        })}
-      </div>
+        {/* ── Content ── */}
+        <div className="flex-1 min-h-0 overflow-y-auto p-6 space-y-4">
+          <p className="text-xs text-muted-foreground/70 max-w-prose">{activeTab.description}</p>
+          <EntityTable
+            projectId={id}
+            type={activeType}
+            typeLabel={activeTab.singular}
+            emptyHint={activeTab.emptyHint}
+            entities={grouped[activeType]}
+          />
 
-      {/* ── Content ── */}
-      <div className="flex-1 min-h-0 overflow-y-auto p-6 space-y-4">
-        <p className="text-xs text-muted-foreground/70 max-w-prose">{activeTab.description}</p>
-        <EntityTable
-          projectId={id}
-          type={activeType}
-          typeLabel={activeTab.singular}
-          emptyHint={activeTab.emptyHint}
-          entities={grouped[activeType]}
-        />
-
-        {/* ── Grouped entity cards (product / service / category / other) ── */}
-        {cardGroups.length > 0 && (
-          <div className="mt-6 space-y-6">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/30">
-              Tüm Varlıklar — Türe Göre
-            </p>
-            {cardGroups.map(({ key, label, items }) => (
-              <div key={key} className="space-y-2">
-                <h3 className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wide">
-                  {label}
-                  <span className="ml-2 text-[10px] font-normal text-muted-foreground/30">
-                    {items.length} kayıt
-                  </span>
-                </h3>
-                <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-                  {items.map((entity) => (
-                    <div
-                      key={entity.id}
-                      className="rounded-lg border border-border/40 bg-secondary/10 px-4 py-3 space-y-1.5 hover:bg-secondary/20 transition-colors"
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <span className="text-sm font-medium text-foreground/90 leading-snug line-clamp-2">
-                          {entity.name}
-                        </span>
-                        <span
-                          className={[
-                            'shrink-0 rounded border px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide',
-                            TYPE_BADGE_STYLES[entity.type] ?? TYPE_BADGE_STYLES.other,
-                          ].join(' ')}
-                        >
-                          {TABS.find((t) => t.type === entity.type)?.singular ?? entity.type}
-                        </span>
+          {/* ── Grouped entity cards (product / service / category / other) ── */}
+          {cardGroups.length > 0 && (
+            <div className="mt-6 space-y-6">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/30">
+                Tüm Varlıklar — Türe Göre
+              </p>
+              {cardGroups.map(({ key, label, items }) => (
+                <div key={key} className="space-y-2">
+                  <h3 className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wide">
+                    {label}
+                    <span className="ml-2 text-[10px] font-normal text-muted-foreground/30">
+                      {items.length} kayıt
+                    </span>
+                  </h3>
+                  <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                    {items.map((entity) => (
+                      <div
+                        key={entity.id}
+                        className="rounded-lg border border-border/40 bg-secondary/10 px-4 py-3 space-y-1.5 hover:bg-secondary/20 transition-colors"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <span className="text-sm font-medium text-foreground/90 leading-snug line-clamp-2">
+                            {entity.name}
+                          </span>
+                          <span
+                            className={[
+                              'shrink-0 rounded border px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide',
+                              TYPE_BADGE_STYLES[entity.type] ?? TYPE_BADGE_STYLES.other,
+                            ].join(' ')}
+                          >
+                            {TABS.find((t) => t.type === entity.type)?.singular ?? entity.type}
+                          </span>
+                        </div>
+                        {entity.description && (
+                          <p className="text-[11px] text-muted-foreground/60 leading-relaxed line-clamp-2">
+                            {entity.description}
+                          </p>
+                        )}
+                        {entity.seo_intent && (
+                          <span
+                            className={[
+                              'inline-flex rounded border px-1.5 py-0.5 text-[9px] font-medium',
+                              INTENT_BADGE_STYLES[entity.seo_intent] ?? 'bg-secondary/50 text-muted-foreground border-border',
+                            ].join(' ')}
+                          >
+                            {entity.seo_intent}
+                          </span>
+                        )}
                       </div>
-                      {entity.description && (
-                        <p className="text-[11px] text-muted-foreground/60 leading-relaxed line-clamp-2">
-                          {entity.description}
-                        </p>
-                      )}
-                      {entity.seo_intent && (
-                        <span
-                          className={[
-                            'inline-flex rounded border px-1.5 py-0.5 text-[9px] font-medium',
-                            INTENT_BADGE_STYLES[entity.seo_intent] ?? 'bg-secondary/50 text-muted-foreground border-border',
-                          ].join(' ')}
-                        >
-                          {entity.seo_intent}
-                        </span>
-                      )}
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </SplitPane>
     </div>
   )
 }
