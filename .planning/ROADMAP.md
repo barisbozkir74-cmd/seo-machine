@@ -215,7 +215,12 @@ Phase 24 must run first — it creates `keyword_data_cache` and `strategy_decisi
   3. Keyword listesinde her keyword'ün son DataForSEO fetch tarihi (`dfs_fetched_at`) ayrı bir sütunda görüntülenir — `enriched_at` ile karıştırılmaz
   4. Eş zamanlı analiz girişimi engellenir: aynı projede analiz çalışırken ikinci tetikleme "analiz devam ediyor" uyarısı gösterir
   5. Deep analiz tamamlandığında `workflow_runs` satırı `completed` statüsüne geçer ve UI 5 saniyelik polling ile güncellenir
-**Plans**: TBD
+**Plans**: 4 plans
+Plans:
+- [ ] 24-01-PLAN.md — strategy_decisions migration + keywords.dfs_fetched_at + supabase db push [BLOCKING]
+- [ ] 24-02-PLAN.md — getCachedOrFetch() cache.ts wrapper + Wave 0 test stubs
+- [ ] 24-03-PLAN.md — lightAnalysisAction + standardAnalysisAction + AnalysisButtons.tsx + dfs_fetched_at UI
+- [ ] 24-04-PLAN.md — deep analysis n8n route + callback route + DeepAnalysisPoller
 
 **Pitfalls to watch:**
 - `dfs_fetched_at` sütunu migration'da `DEFAULT now()` ALMAMALI — mevcut keywordler NULL kalmalı, ilk kullanımda stale-data check'i tetiklenmelidir
