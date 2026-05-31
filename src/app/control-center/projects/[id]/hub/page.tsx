@@ -171,6 +171,34 @@ export default async function ProjectHubPage({
     },
   ] as const
 
+  // Compute nextStep string for ModuleAIPanel
+  const aiNextStep = !research
+    ? 'Araştırmayı tamamlayın ve onaylayın'
+    : !strategy
+      ? 'Keyword stratejisini kilitleyin'
+      : !blueprint
+        ? "Site blueprint'ini onaylayın"
+        : pages === 0
+          ? 'İlk sayfaları oluşturun'
+          : 'İçerik üretimi için hazır'
+
+  const aiContextItems = [
+    { label: 'Keywords',  value: `${keywords} adet`,   status: keywords  > 0 ? 'ok' as const : 'missing' as const },
+    { label: 'Kümeler',   value: `${clusters} küme`,   status: clusters  > 0 ? 'ok' as const : 'missing' as const },
+    { label: 'Sayfalar',  value: `${pages} sayfa`,     status: pages     > 0 ? 'ok' as const : 'missing' as const },
+    { label: 'Araştırma', value: research  ? 'Onaylandı' : 'Bekliyor', status: research  ? 'ok' as const : 'warning' as const },
+    { label: 'Strateji',  value: strategy  ? 'Onaylandı' : 'Bekliyor', status: strategy  ? 'ok' as const : 'warning' as const },
+    { label: 'Blueprint', value: blueprint ? 'Onaylandı' : 'Bekliyor', status: blueprint ? 'ok' as const : 'warning' as const },
+  ]
+
+  const aiActions = [
+    { label: 'Araştırma',        href: `${base}/intelligence/research`,  variant: (research  ? 'default' : 'primary') as 'default' | 'primary' },
+    { label: 'Keyword Stratejisi', href: `${base}/intelligence/keywords`, variant: (strategy  ? 'default' : research ? 'primary' : 'default') as 'default' | 'primary' },
+    { label: 'Blueprint',        href: `${base}/architecture/blueprint`  },
+    { label: 'Kararlar',         href: `${base}/intelligence/decisions`  },
+    { label: 'İç Link',          href: `${base}/architecture/link-graph` },
+  ]
+
   return (
     <div className="flex flex-col gap-5">
       {/* Master AI Manager panel — top of page, full-width, borderless container */}
@@ -179,6 +207,9 @@ export default async function ProjectHubPage({
         managerName="Master AI Yöneticisi"
         hint="Tüm bölüm yöneticilerinden durum raporu toplar. Projenin genel sağlığını analiz eder ve öncelikli adımları koordine eder."
         badge="Koordinasyon Merkezi"
+        contextItems={aiContextItems}
+        nextStep={aiNextStep}
+        actions={aiActions}
       />
 
       <div className="flex flex-col gap-5 px-6 pb-6">
