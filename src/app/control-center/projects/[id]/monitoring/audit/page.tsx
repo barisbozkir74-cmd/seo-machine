@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { LockedModuleBanner } from '@/components/control-center/LockedModuleBanner'
 import { ModuleAIPanel } from '@/components/control-center/ModuleAIPanel'
+import { SplitPane } from '@/components/control-center/SplitPane'
 import { AuditScoreDialog } from '@/app/(dashboard)/projeler/[id]/seo-denetimi/AuditScoreDialog'
 import { ApproveTechnicalAuditButton } from '@/app/(dashboard)/projeler/[id]/seo-denetimi/ApproveTechnicalAuditButton'
 import type { AuditScores } from '@/app/(dashboard)/projeler/[id]/seo-denetimi/actions'
@@ -130,84 +131,94 @@ export default async function AuditPage({
         <ApproveTechnicalAuditButton projectId={id} isApproved={technicalAudit} />
       </div>
 
-      <ModuleAIPanel
-        title="SEO Denetimi"
-        managerName="Denetim Uzmanı"
-        hint="Teknik SEO sorunlarını tespit eder, öncelikli iyileştirmeleri önerir ve denetim geçmişini takip eder."
-        actions={[
-          { label: 'Teknik Sorunlar', href: '?filter=technical' },
-          { label: 'İçerik Sorunları', href: '?filter=content' },
-          { label: 'Monitoring Genel', href: `/control-center/projects/${id}/monitoring/overview` },
-        ]}
-      />
-
-      <div className="flex-1 min-h-0 overflow-y-auto p-6 space-y-6">
-        {/* Summary KPIs */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {[
-            { label: 'Toplam Sayfa',      value: pages.length },
-            { label: 'Ort. SEO Hazırlık', value: avgSeoReadiness !== null ? avgSeoReadiness : '—' },
-            { label: 'Eksik Meta',         value: missingMetaCount },
-            { label: 'Eksik H1',           value: missingH1Count },
-          ].map((card) => (
-            <div key={card.label} className="rounded-lg border border-border bg-card px-4 py-3">
-              <p className="text-xs text-muted-foreground">{card.label}</p>
-              <p className="text-2xl font-semibold mt-1">{card.value}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* Pages table */}
-        {pages.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-border p-12 text-center">
-            <p className="text-sm text-muted-foreground">
-              Henüz sayfa eklenmemiş. Sayfa Listesi bölümünden sayfa ekleyin.
-            </p>
+      <SplitPane
+        storageKey="seo-denetimi"
+        defaultRightWidth={288}
+        minRightWidth={180}
+        maxRightWidth={520}
+        right={
+          <ModuleAIPanel
+            variant="sidebar"
+            title="SEO Denetimi"
+            managerName="Denetim Uzmanı"
+            hint="Teknik SEO sorunlarını tespit eder, öncelikli iyileştirmeleri önerir ve denetim geçmişini takip eder."
+            section="seo-denetimi"
+            actions={[
+              { label: 'Teknik Sorunlar', href: '?filter=technical' },
+              { label: 'İçerik Sorunları', href: '?filter=content' },
+              { label: 'Monitoring Genel', href: `/control-center/projects/${id}/monitoring/overview` },
+            ]}
+          />
+        }
+      >
+        <div className="flex-1 min-h-0 overflow-y-auto p-6 space-y-6">
+          {/* Summary KPIs */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              { label: 'Toplam Sayfa',      value: pages.length },
+              { label: 'Ort. SEO Hazırlık', value: avgSeoReadiness !== null ? avgSeoReadiness : '—' },
+              { label: 'Eksik Meta',         value: missingMetaCount },
+              { label: 'Eksik H1',           value: missingH1Count },
+            ].map((card) => (
+              <div key={card.label} className="rounded-lg border border-border bg-card px-4 py-3">
+                <p className="text-xs text-muted-foreground">{card.label}</p>
+                <p className="text-2xl font-semibold mt-1">{card.value}</p>
+              </div>
+            ))}
           </div>
-        ) : (
-          <div className="rounded-lg border border-border overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border bg-muted/40">
-                    {['Sayfa', 'Sayfa Tipi', 'SEO Hazırlık', 'Fırsat Skoru', 'Ticari Değer', 'Öncelik Skoru', 'Sorunlar', ''].map((h) => (
-                      <th key={h} className="px-4 py-3 text-left text-xs font-medium text-muted-foreground whitespace-nowrap">
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {pages.map((page) => (
-                    <tr key={page.id} className="hover:bg-muted/20 transition-colors">
-                      <td className="px-4 py-3">
-                        <p className="font-medium text-foreground leading-tight">{page.title}</p>
-                        {page.slug && (
-                          <p className="text-xs text-muted-foreground mt-0.5">/{page.slug}</p>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-muted-foreground text-xs">{page.page_type ?? '—'}</td>
-                      <td className="px-4 py-3"><ScoreCell value={page.audit_scores?.seo_readiness_score} /></td>
-                      <td className="px-4 py-3"><ScoreCell value={page.audit_scores?.opportunity_score} /></td>
-                      <td className="px-4 py-3"><ScoreCell value={page.audit_scores?.commercial_value_score} /></td>
-                      <td className="px-4 py-3"><ScoreCell value={page.audit_scores?.build_priority_score} /></td>
-                      <td className="px-4 py-3"><IssuesBadges page={page} /></td>
-                      <td className="px-4 py-3 text-right">
-                        <AuditScoreDialog
-                          projectId={id}
-                          pageId={page.id}
-                          pageName={page.title}
-                          initialScores={page.audit_scores}
-                        />
-                      </td>
+
+          {/* Pages table */}
+          {pages.length === 0 ? (
+            <div className="rounded-lg border border-dashed border-border p-12 text-center">
+              <p className="text-sm text-muted-foreground">
+                Henüz sayfa eklenmemiş. Sayfa Listesi bölümünden sayfa ekleyin.
+              </p>
+            </div>
+          ) : (
+            <div className="rounded-lg border border-border overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-border bg-muted/40">
+                      {['Sayfa', 'Sayfa Tipi', 'SEO Hazırlık', 'Fırsat Skoru', 'Ticari Değer', 'Öncelik Skoru', 'Sorunlar', ''].map((h) => (
+                        <th key={h} className="px-4 py-3 text-left text-xs font-medium text-muted-foreground whitespace-nowrap">
+                          {h}
+                        </th>
+                      ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {pages.map((page) => (
+                      <tr key={page.id} className="hover:bg-muted/20 transition-colors">
+                        <td className="px-4 py-3">
+                          <p className="font-medium text-foreground leading-tight">{page.title}</p>
+                          {page.slug && (
+                            <p className="text-xs text-muted-foreground mt-0.5">/{page.slug}</p>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-muted-foreground text-xs">{page.page_type ?? '—'}</td>
+                        <td className="px-4 py-3"><ScoreCell value={page.audit_scores?.seo_readiness_score} /></td>
+                        <td className="px-4 py-3"><ScoreCell value={page.audit_scores?.opportunity_score} /></td>
+                        <td className="px-4 py-3"><ScoreCell value={page.audit_scores?.commercial_value_score} /></td>
+                        <td className="px-4 py-3"><ScoreCell value={page.audit_scores?.build_priority_score} /></td>
+                        <td className="px-4 py-3"><IssuesBadges page={page} /></td>
+                        <td className="px-4 py-3 text-right">
+                          <AuditScoreDialog
+                            projectId={id}
+                            pageId={page.id}
+                            pageName={page.title}
+                            initialScores={page.audit_scores}
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      </SplitPane>
     </div>
   )
 }
