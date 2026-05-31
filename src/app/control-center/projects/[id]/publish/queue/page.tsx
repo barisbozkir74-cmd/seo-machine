@@ -5,6 +5,7 @@ import { listApprovalHistory } from '@/core/approval/queue'
 import { listAuditEntries } from '@/core/audit/trail'
 import { OnaylarTabs } from '@/app/(dashboard)/projeler/[id]/onaylar/OnaylarTabs'
 import { ModuleAIPanel } from '@/components/control-center/ModuleAIPanel'
+import { SplitPane } from '@/components/control-center/SplitPane'
 
 const WP_STATUS_LABEL: Record<string, string> = {
   publish: 'Yayında',
@@ -173,15 +174,25 @@ export default async function PublishQueuePage({
           </span>
         )}
       </div>
-      <ModuleAIPanel
-        title="Yayın Kuyruğu"
-        managerName="Yayın Koordinatörü"
-        hint="Yayın sırasını yönetir, onay bekleyen içerikleri listeler ve yayın takvimine göre önceliklendirir."
-        actions={[
-          { label: 'Yayın Geçmişi', href: `/control-center/projects/${id}/publish/history` },
-          { label: 'İçerik Stüdyosu', href: `/control-center/projects/${id}/content/studio` },
-        ]}
-      />
+      <SplitPane
+        storageKey="publish-queue"
+        defaultRightWidth={288}
+        minRightWidth={180}
+        maxRightWidth={520}
+        right={
+          <ModuleAIPanel
+            variant="sidebar"
+            title="Yayın Kuyruğu"
+            managerName="Yayın Koordinatörü"
+            hint="Yayın sırasını yönetir, onay bekleyen içerikleri listeler ve yayın takvimine göre önceliklendirir."
+            section="publish-queue"
+            actions={[
+              { label: 'Yayın Geçmişi', href: `/control-center/projects/${id}/publish/history` },
+              { label: 'İçerik Stüdyosu', href: `/control-center/projects/${id}/content/studio` },
+            ]}
+          />
+        }
+      >
       <div className="flex-1 min-h-0 overflow-y-auto p-6 space-y-8">
 
         {/* ── Publish Queue Table ─────────────────────────────────────────── */}
@@ -284,6 +295,7 @@ export default async function PublishQueuePage({
         </div>
 
       </div>
+      </SplitPane>
     </div>
   )
 }
