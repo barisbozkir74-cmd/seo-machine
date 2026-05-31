@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { LockedModuleBanner } from '@/components/control-center/LockedModuleBanner'
 import { ModuleAIPanel } from '@/components/control-center/ModuleAIPanel'
+import { SplitPane } from '@/components/control-center/SplitPane'
 import { SiteMimarisiShell } from '@/app/(dashboard)/projeler/[id]/site-mimarisi/SiteMimarisiShell'
 import { getProjectLocale } from '@/lib/serp-engine/fingerprint'
 
@@ -195,76 +196,86 @@ export default async function StructurePage({
           </div>
         </div>
       )}
-      <ModuleAIPanel
-        title="Mimari Analiz"
-        managerName="Site Mimarı"
-        hint="Keyword kümelerinden site yapısını tasarlar, SERP analizinden mimari kararlar üretir ve blueprint ile sorumluluk ayrımını korur."
-        contextItems={panelContextItems}
-        nextStep={panelNextStep}
-        actions={panelActions}
-      />
+      <SplitPane
+        storageKey="site-mimarisi"
+        defaultRightWidth={288}
+        minRightWidth={180}
+        maxRightWidth={520}
+        right={
+          <ModuleAIPanel
+            variant="sidebar"
+            title="Mimari Analiz"
+            managerName="Site Mimarı"
+            hint="Keyword kümelerinden site yapısını tasarlar, SERP analizinden mimari kararlar üretir ve blueprint ile sorumluluk ayrımını korur."
+            section="site-mimarisi"
+            contextItems={panelContextItems}
+            nextStep={panelNextStep}
+            actions={panelActions}
+          />
+        }
+      >
+        {/* Module purpose + responsibility boundary */}
+        <div className="flex-shrink-0 mx-6 mt-4 mb-1 rounded-lg border border-border/40 bg-muted/30 px-4 py-3 space-y-1.5">
+          <p className="text-[11px] font-bold uppercase tracking-[0.11em] text-muted-foreground/50 select-none">
+            Modül Amacı
+          </p>
+          <p className="text-sm text-foreground/80 leading-relaxed">
+            Site Mimarisi modülü, keyword stratejisinden çıkan temaları bir site yapısına dönüştürür.
+            Blueprint (sayfa listesi) bu mimariye dayanır.
+          </p>
+          <div className="flex flex-wrap gap-4 pt-0.5">
+            <span className="text-xs text-muted-foreground">
+              <span className="font-semibold text-foreground/70">Mimari</span>
+              {' '}→ yapı ve hiyerarşi
+            </span>
+            <span className="text-xs text-muted-foreground/40 select-none">|</span>
+            <span className="text-xs text-muted-foreground">
+              <span className="font-semibold text-foreground/70">Blueprint</span>
+              {' '}→ sayfa öznitelikleri ve içerik kararları
+            </span>
+          </div>
+        </div>
 
-      {/* Module purpose + responsibility boundary */}
-      <div className="flex-shrink-0 mx-6 mt-4 mb-1 rounded-lg border border-border/40 bg-muted/30 px-4 py-3 space-y-1.5">
-        <p className="text-[11px] font-bold uppercase tracking-[0.11em] text-muted-foreground/50 select-none">
-          Modül Amacı
-        </p>
-        <p className="text-sm text-foreground/80 leading-relaxed">
-          Site Mimarisi modülü, keyword stratejisinden çıkan temaları bir site yapısına dönüştürür.
-          Blueprint (sayfa listesi) bu mimariye dayanır.
-        </p>
-        <div className="flex flex-wrap gap-4 pt-0.5">
-          <span className="text-xs text-muted-foreground">
-            <span className="font-semibold text-foreground/70">Mimari</span>
-            {' '}→ yapı ve hiyerarşi
-          </span>
-          <span className="text-xs text-muted-foreground/40 select-none">|</span>
-          <span className="text-xs text-muted-foreground">
-            <span className="font-semibold text-foreground/70">Blueprint</span>
-            {' '}→ sayfa öznitelikleri ve içerik kararları
-          </span>
+        {/* Section legend: maps the shell's tabs to their logical role */}
+        <div className="flex-shrink-0 flex gap-4 px-6 pt-3 pb-1">
+          <div className="flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-blue-400/70" />
+            <span className="text-[10px] font-medium uppercase tracking-[0.1em] text-muted-foreground/50">
+              Analiz
+            </span>
+            <span className="text-[10px] text-muted-foreground/35">(SERP, Cluster, Konu Haritası)</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400/70" />
+            <span className="text-[10px] font-medium uppercase tracking-[0.1em] text-muted-foreground/50">
+              Mimari Öneri
+            </span>
+            <span className="text-[10px] text-muted-foreground/35">(Önerilen yapı)</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-amber-400/70" />
+            <span className="text-[10px] font-medium uppercase tracking-[0.1em] text-muted-foreground/50">
+              Kararlar
+            </span>
+            <span className="text-[10px] text-muted-foreground/35">(Çakışmalar, kilitli kararlar)</span>
+          </div>
         </div>
-      </div>
 
-      {/* Section legend: maps the shell's tabs to their logical role */}
-      <div className="flex-shrink-0 flex gap-4 px-6 pt-3 pb-1">
-        <div className="flex items-center gap-1.5">
-          <span className="h-1.5 w-1.5 rounded-full bg-blue-400/70" />
-          <span className="text-[10px] font-medium uppercase tracking-[0.1em] text-muted-foreground/50">
-            Analiz
-          </span>
-          <span className="text-[10px] text-muted-foreground/35">(SERP, Cluster, Konu Haritası)</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400/70" />
-          <span className="text-[10px] font-medium uppercase tracking-[0.1em] text-muted-foreground/50">
-            Mimari Öneri
-          </span>
-          <span className="text-[10px] text-muted-foreground/35">(Önerilen yapı)</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="h-1.5 w-1.5 rounded-full bg-amber-400/70" />
-          <span className="text-[10px] font-medium uppercase tracking-[0.1em] text-muted-foreground/50">
-            Kararlar
-          </span>
-          <span className="text-[10px] text-muted-foreground/35">(Çakışmalar, kilitli kararlar)</span>
-        </div>
-      </div>
-
-      <SiteMimarisiShell
-        projectId={projectId}
-        fingerprintCount={freshFps.length}
-        staleCount={staleFps.length}
-        pendingSuggestions={pendingSuggestions}
-        suggestions={suggestions ?? []}
-        keywordMap={keywordMap}
-        topicMaps={topicMaps ?? []}
-        clusterMap={clusterMap}
-        pages={pages ?? []}
-        cases={cases ?? []}
-        pageMap={pageMap}
-        totalKeywords={keywords?.length ?? 0}
-      />
+        <SiteMimarisiShell
+          projectId={projectId}
+          fingerprintCount={freshFps.length}
+          staleCount={staleFps.length}
+          pendingSuggestions={pendingSuggestions}
+          suggestions={suggestions ?? []}
+          keywordMap={keywordMap}
+          topicMaps={topicMaps ?? []}
+          clusterMap={clusterMap}
+          pages={pages ?? []}
+          cases={cases ?? []}
+          pageMap={pageMap}
+          totalKeywords={keywords?.length ?? 0}
+        />
+      </SplitPane>
     </div>
   )
 }
