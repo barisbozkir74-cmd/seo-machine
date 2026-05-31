@@ -1346,6 +1346,12 @@ export async function triggerDeepAnalysisAction(projectId: string): Promise<Deep
         }),
       })
     } catch {
+      // WR-02: Mark run as failed so concurrent guard clears and user can retry
+      await supabase
+        .from('workflow_runs')
+        .update({ status: 'failed', error_message: 'n8n webhook ulaşılamadı.' })
+        .eq('id', workflowRun.id)
+        .eq('user_id', user.id)
       return { success: false, error: 'n8n webhook tetiklenemedi.' }
     }
   }
