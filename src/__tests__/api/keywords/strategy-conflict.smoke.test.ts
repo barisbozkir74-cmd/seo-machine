@@ -191,13 +191,10 @@ describe('POST /api/keywords/strategy — conflict enforcement smoke', () => {
     expect(_kcUpdateSpy).toHaveBeenCalled()
   })
 
-  // ── Fail-open risk (documented) ─────────────────────────────────────────────
+  // ── Fail-close (Wave G) ──────────────────────────────────────────────────────
 
-  it('OPEN RISK — guard throw ederse .catch(() => null) fail-open: 409 dönmez, write devam eder', async () => {
-    // Route: const guardResult = await checkOutputAgainstLockedDecisions(...).catch(() => null)
-    // Guard throw → guardResult = null → if (null && !null.passed) = false → write proceeds
-    // Bu davranış bilinçli: guard servis hatası üretimi bloklamasın.
-    // Risk: guard'ın kendisi crash ederse kilitli karar ihlali tespit edilemez.
+  it('FAIL-CLOSE — guard throw ederse 503 döner, GUARD_ERROR kodu, write bloklanır', async () => {
+    // Wave G: .catch(() => null) kaldırıldı; guard crash → 503 + write yok.
     vi.mocked(checkOutputAgainstLockedDecisions).mockRejectedValue(new Error('guard service unavailable'))
 
     const { _kcUpdateSpy, supabase } = makeSupabase()
@@ -206,10 +203,8 @@ describe('POST /api/keywords/strategy — conflict enforcement smoke', () => {
     const res = await POST(makeRequest())
     const body = await res.json()
 
-    // Guard crash = fail-open: üretim devam etti, 409 dönmedi
-    expect(res.status).toBe(200)
-    expect(body.ok).toBe(true)
-    // DB write gerçekleşti — guard bypass edildi
-    expect(_kcUpdateSpy).toHaveBeenCalled()
+    expect(res.status).toBe(503)
+    expect(body.code).toBe('GUARD_ERROR')
+    expect(_kcUpdateSpy).not.toHaveBeenCalled()
   })
 })
