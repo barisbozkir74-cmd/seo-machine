@@ -1,11 +1,18 @@
 import { NextRequest } from 'next/server'
-import Anthropic from '@anthropic-ai/sdk'
+import OpenAI from 'openai'
 import { createClient } from '@/lib/supabase/server'
+import { buildFullSystemPrompt } from '@/core/context/prompt-builder'
+import { registerInjectionAuditCallback } from '@/core/governance/prompt-security'
+import { checkOutputAgainstLockedDecisions } from '@/core/decision/decision-guard'
+import { logGuardFailure } from '@/core/decision/guard-policy'
+import { checkPhasePrerequisites } from '@/core/phase/engine'
+import { recordAuditEntry } from '@/core/audit/trail'
 
-if (!process.env.ANTHROPIC_API_KEY) {
-  throw new Error('ANTHROPIC_API_KEY environment variable is not set')
+const QA_AUDIT_BASE_PROMPT = 'Sen bir SEO içerik denetçisisin. Görevin: sayfa paketini 4 boyutta denetle ve structured JSON döndür.'
+
+function getClient() {
+  return new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 }
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
 export async function POST(req: NextRequest) {
   // Auth check
@@ -34,6 +41,22 @@ export async function POST(req: NextRequest) {
     .eq('user_id', user.id)
     .single()
   if (!project) return new Response('Project not found', { status: 404 })
+
+  // Phase gate — content auditing requires keywords to exist
+  const phaseResult = await checkPhasePrerequisites(supabase, projectId, user.id, 'content_generation')
+  if (phaseResult.blocked) {
+    return new Response('İçerik denetimi için en az bir keyword gereklidir.', { status: 400 })
+  }
+
+  // Wire injection audit callback
+  registerInjectionAuditCallback((pattern, _input) => {
+    recordAuditEntry(supabase, {
+      project_id: projectId, user_id: user.id,
+      actor_type: 'user', actor_id: 'prompt_security',
+      action_type: 'injection_detected', resource_type: 'input',
+      severity: 'critical', reason: `Injection pattern detected: ${pattern}`,
+    }).catch(() => {})
+  })
 
   // Package ownership doğrula (T-11-02: başkasının package'ı QA edilemez)
   const { data: pkg } = await supabase
@@ -74,22 +97,29 @@ export async function POST(req: NextRequest) {
   // Prompt oluştur — user-controlled içerik template'e gömülür (T-11-03: prompt injection azaltma)
   const prompt = buildQaPrompt(pkg, project, focusKeyword)
 
-  // Non-streaming Anthropic call (D-06: streaming değil, tek JSON yanıt)
-  let message
+  // 4-layer governed system prompt
+  const { systemPrompt: governedPrompt } = await buildFullSystemPrompt(supabase, {
+    projectId, userId: user.id, section: 'icerik-studio',
+    baseSystemPrompt: QA_AUDIT_BASE_PROMPT,
+    phaseWarning: phaseResult.warning_text,
+  })
+
+  // Non-streaming OpenAI call (D-06: streaming değil, tek JSON yanıt)
+  let completion
   try {
-    message = await client.messages.create({
-      model: 'claude-sonnet-4-6',
+    completion = await getClient().chat.completions.create({
+      model: 'gpt-4o',
       max_tokens: 1000,
-      messages: [{ role: 'user', content: prompt }],
+      messages: [
+        { role: 'system', content: governedPrompt },
+        { role: 'user', content: prompt },
+      ],
     })
   } catch {
-    return new Response('Claude API error', { status: 502 })
+    return new Response('OpenAI API error', { status: 502 })
   }
 
-  const text = message.content
-    .filter((b) => b.type === 'text')
-    .map((b) => (b as { type: 'text'; text: string }).text)
-    .join('')
+  const text = completion.choices[0]?.message?.content ?? ''
 
   // JSON extract — kod bloğu veya ham JSON
   const jsonMatch =
@@ -101,6 +131,24 @@ export async function POST(req: NextRequest) {
     result = JSON.parse(jsonText.trim())
   } catch {
     return new Response('Invalid JSON from Claude', { status: 502 })
+  }
+
+  // Fail-close output guard (Wave G) — guard crash → 503; violation → 409.
+  let guardResult: Awaited<ReturnType<typeof checkOutputAgainstLockedDecisions>> | null = null
+  try {
+    guardResult = await checkOutputAgainstLockedDecisions(supabase, projectId, user.id, text, 'icerik-studio')
+  } catch (guardError) {
+    logGuardFailure('ai/qa-audit', guardError)
+    return new Response(
+      JSON.stringify({ error: 'Guard kontrolü başarısız — denetim tamamlanamadı', code: 'GUARD_ERROR' }),
+      { status: 503, headers: { 'Content-Type': 'application/json' } }
+    )
+  }
+  if (guardResult && !guardResult.passed) {
+    return new Response(
+      JSON.stringify({ error: 'QA çıktısı kilitli kararlarla çakışıyor', code: 'DECISION_CONFLICT', violations: guardResult.violations }),
+      { status: 409, headers: { 'Content-Type': 'application/json' } }
+    )
   }
 
   return new Response(JSON.stringify(result), {
