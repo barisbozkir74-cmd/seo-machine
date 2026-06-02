@@ -23,9 +23,15 @@ AI çıktıları DB'ye yazılmadan önce `project_decisions` tablosundaki kilitl
 | `POST /api/keywords/strategy` | Pattern (post-AI) | Violation → 409; crash → 503 GUARD_ERROR | Wave E→G |
 | `POST /api/content/generate` | Pattern (post-AI) | Violation → 409; crash → 503 GUARD_ERROR | Wave F |
 | `POST /api/ai/qa-audit` | Pattern (post-AI) | Violation → 409; crash → 503 GUARD_ERROR | Wave G |
+| `POST /api/keywords/expand` | Pattern (post-AI) | Violation → 409; crash → 503 GUARD_ERROR | Wave H |
+| `POST /api/ai/generate-page-package` | Pattern (pre-stream, page metadata) | Violation → 409; crash → 503 — stream başlamaz | Wave H |
 
 `/api/keywords/strategy` Wave E'de fail-open olarak teslim edildi (`.catch(() => null)`).
 Wave G'de fail-close'a yükseltildi — guard crash artık üretimi bloklıyor.
+
+`/api/ai/generate-page-package` streaming route'tur. Post-stream guard response'u geri alamaz.
+Wave H'de pre-stream guard eklendi: sayfa metadatası (title, slug, page_type, focusKeyword)
+stream açılmadan kontrol edilir. Violation veya crash → stream asla başlamaz.
 
 ### Kritik karar tipleri
 
@@ -41,7 +47,7 @@ Guard crash (timeout, servis hatası, vs.) gerçekleştiğinde:
 2. Çağıran route 503 döner (fail-close endpoint'lerde)
 3. İstemci `{ code: 'GUARD_ERROR' }` alır
 
-Log formatı: `[GUARD_FAILURE] keywords/strategy: guard service unavailable`
+Log formatı (Wave H structured): `[GUARD_FAILURE] endpoint=keywords/expand decision_type=strategy conflict_count=1 ts=2026-06-03T00:00:00.000Z: guard timeout`
 
 Prodüksiyonda bu loglar uygulama log aggregator'ına (Vercel, Datadog, vs.) akar.
 Alert kuralı önerisi: 5 dakikada 3+ `[GUARD_FAILURE]` → PagerDuty/Slack bildirimi.
@@ -59,7 +65,7 @@ logGuardFailure(endpoint: string, error: unknown): void
 CRITICAL_DECISION_TYPES: readonly ['architecture', 'strategy', 'brand']
 
 // Fail-close endpoint listesi
-FAIL_CLOSE_ENDPOINTS: readonly ['content/generate', 'keywords/strategy', 'ai/qa-audit']
+FAIL_CLOSE_ENDPOINTS: readonly ['content/generate', 'keywords/strategy', 'ai/qa-audit', 'keywords/expand', 'ai/generate-page-package']
 ```
 
 ### Yeni endpoint ekleme kuralı
