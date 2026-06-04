@@ -1,8 +1,13 @@
 import { NextRequest } from 'next/server'
-import Anthropic from '@anthropic-ai/sdk'
+import OpenAI from 'openai'
 import { createClient } from '@/lib/supabase/server'
+import { readHub, hubToPromptContext } from '@/lib/ai-context/hub'
+import { buildFullSystemPrompt } from '@/core/context/prompt-builder'
+import { checkPhasePrerequisites } from '@/core/phase/engine'
+import { checkOutputAgainstLockedDecisions } from '@/core/decision/decision-guard'
+import { logGuardFailure } from '@/core/decision/guard-policy'
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+function getClient() { return new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) }
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient()
@@ -15,7 +20,11 @@ export async function POST(req: NextRequest) {
   } catch {
     return new Response('Invalid JSON body', { status: 400 })
   }
-  const { projectId, pageId } = body as { projectId?: string; pageId?: string }
+  const { projectId, pageId, keywordBrief } = body as {
+    projectId?: string
+    pageId?: string
+    keywordBrief?: { supporting?: string[]; long_tail?: string[]; question?: string[]; commercial?: string[]; synonym?: string[] } | null
+  }
   if (!projectId || !pageId) {
     return new Response('projectId and pageId are required', { status: 400 })
   }
@@ -32,12 +41,24 @@ export async function POST(req: NextRequest) {
   // Sayfa bilgileri
   const { data: page } = await supabase
     .from('pages')
-    .select('id, title, slug, page_type, focus_keyword_id')
+    .select('id, title, slug, page_type, focus_keyword_id, source_wp_id')
     .eq('id', pageId)
     .eq('project_id', projectId)
     .eq('user_id', user.id)
     .single()
   if (!page) return new Response('Page not found', { status: 404 })
+
+  // Improvement context — fetch WP source if this is an improvement brief
+  let wpSourceContext: Record<string, unknown> | null = null
+  if (page.source_wp_id) {
+    const { data: wpPage } = await supabase
+      .from('project_imported_pages')
+      .select('title, slug, link, gsc_clicks, gsc_impressions, gsc_avg_position, content_summary, primary_intent, flag_orphan, flag_weak_page, flag_outdated, flag_missing_metadata, flag_missing_keyword, flag_duplicate_intent')
+      .eq('project_id', projectId)
+      .eq('wp_id', page.source_wp_id)
+      .single()
+    if (wpPage) wpSourceContext = wpPage as Record<string, unknown>
+  }
 
   // D-03: Locked package'ı AI ile regenerate edemezsin — önce kilidi aç
   const { data: existingPkg } = await supabase
@@ -50,6 +71,15 @@ export async function POST(req: NextRequest) {
 
   if (existingPkg?.status === 'locked') {
     return new Response('Package is locked. Unlock before regenerating.', { status: 403 })
+  }
+
+  // Phase check — content_generation: keywords=0 ise blokla
+  const phaseResult = await checkPhasePrerequisites(supabase, projectId, user.id, 'content_generation')
+  if (phaseResult.blocked) {
+    return new Response(
+      JSON.stringify({ error: 'Önce keyword stratejisi oluşturun.', missing: phaseResult.missing_prerequisites }),
+      { status: 403, headers: { 'Content-Type': 'application/json' } }
+    )
   }
 
   // Focus keyword
@@ -85,32 +115,75 @@ export async function POST(req: NextRequest) {
     return `### ${r.section_key}\n${lines}`
   }).join('\n\n')
 
-  const prompt = buildPrompt({
+  // Merkezi karar havuzu
+  const hub = await readHub(projectId, user.id, supabase).catch(() => null)
+  const hubContext = hub ? hubToPromptContext(hub) : ''
+
+  const baseSystemPrompt = buildPrompt({
     project,
     page,
     focusKeyword,
     relatedKws: relatedKws ?? [],
+    keywordBrief: keywordBrief ?? null,
     researchSummary,
+    hubContext,
+    wpSourceContext,
   })
 
-  const stream = await client.messages.stream({
-    model: 'claude-sonnet-4-6',
+  // 4-katman sistem promptu
+  const { systemPrompt } = await buildFullSystemPrompt(supabase, {
+    projectId,
+    userId: user.id,
+    section: 'icerik-studio',
+    baseSystemPrompt,
+    phaseWarning: phaseResult.warning_text,
+  })
+
+  // Pre-stream fail-close guard (Wave H) — sayfa metadatası üzerinden kilitli kararlarla karşılaştır.
+  // Stream başlamadan önce bloklanır: violation → 409; crash → 503.
+  const preflightText = [project.name, project.domain, page.title, page.slug, page.page_type, focusKeyword]
+    .filter(Boolean).join(' ')
+  try {
+    const preflightGuard = await checkOutputAgainstLockedDecisions(supabase, projectId, user.id, preflightText, 'icerik-studio')
+    if (!preflightGuard.passed) {
+      return new Response(
+        JSON.stringify({ error: 'Sayfa metadatası kilitli kararlarla çakışıyor — paket oluşturulamadı', code: 'DECISION_CONFLICT', violations: preflightGuard.violations }),
+        { status: 409, headers: { 'Content-Type': 'application/json' } }
+      )
+    }
+  } catch (guardError) {
+    logGuardFailure('ai/generate-page-package', guardError)
+    return new Response(
+      JSON.stringify({ error: 'Guard kontrolü başarısız — paket oluşturulamadı', code: 'GUARD_ERROR' }),
+      { status: 503, headers: { 'Content-Type': 'application/json' } }
+    )
+  }
+
+  const stream = await getClient().chat.completions.create({
+    model: 'gpt-4o',
     max_tokens: 4000,
-    messages: [{ role: 'user', content: prompt }],
+    stream: true,
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: 'Sayfa paketini JSON formatında oluştur.' },
+    ],
   })
 
   const encoder = new TextEncoder()
+  let streamOutput = ''
   const readable = new ReadableStream({
     async start(controller) {
       for await (const chunk of stream) {
-        if (
-          chunk.type === 'content_block_delta' &&
-          chunk.delta.type === 'text_delta'
-        ) {
-          controller.enqueue(encoder.encode(chunk.delta.text))
+        const text = chunk.choices[0]?.delta?.content ?? ''
+        if (text) {
+          streamOutput += text
+          controller.enqueue(encoder.encode(text))
         }
       }
       controller.close()
+      // Guard: stream tamamlandıktan sonra çalışır, bloklamaz
+      checkOutputAgainstLockedDecisions(supabase, projectId, user.id, streamOutput, 'icerik-studio')
+        .catch(() => {})
     },
   })
 
@@ -128,17 +201,54 @@ function buildPrompt({
   page,
   focusKeyword,
   relatedKws,
+  keywordBrief,
   researchSummary,
+  hubContext,
+  wpSourceContext,
 }: {
   project: Record<string, string | null>
   page: Record<string, unknown>
   focusKeyword: string
   relatedKws: Array<{ keyword: string; volume: number | null }>
+  keywordBrief: { supporting?: string[]; long_tail?: string[]; question?: string[]; commercial?: string[]; synonym?: string[] } | null
   researchSummary: string
+  hubContext: string
+  wpSourceContext: Record<string, unknown> | null
 }) {
-  const kwList = relatedKws.map((k) => k.keyword).join(', ')
+  let kwSection: string
+  if (keywordBrief) {
+    const parts: string[] = []
+    if (keywordBrief.supporting?.length)  parts.push(`Supporting: ${keywordBrief.supporting.join(', ')}`)
+    if (keywordBrief.long_tail?.length)   parts.push(`Long Tail: ${keywordBrief.long_tail.join(', ')}`)
+    if (keywordBrief.question?.length)    parts.push(`Question/FAQ: ${keywordBrief.question.join(', ')}`)
+    if (keywordBrief.commercial?.length)  parts.push(`Commercial: ${keywordBrief.commercial.join(', ')}`)
+    if (keywordBrief.synonym?.length)     parts.push(`Synonym/Varyasyon: ${keywordBrief.synonym.join(', ')}`)
+    kwSection = parts.join('\n')
+  } else {
+    kwSection = relatedKws.map((k) => k.keyword).join(', ')
+  }
 
-  return `Sen bir SEO strateji uzmanısın. Aşağıdaki proje ve sayfa bilgilerini kullanarak sayfa paketini JSON formatında doldur.
+  const isImprovement = wpSourceContext !== null
+  const improvementSection = isImprovement ? `
+## Mevcut WP Sayfası (İyileştirme Briefingi)
+Bu sayfa sıfırdan oluşturulmayacak — mevcut bir WordPress sayfasının SEO iyileştirmesidir.
+- Mevcut URL: ${wpSourceContext!.link ?? wpSourceContext!.slug ?? 'bilinmiyor'}
+- Mevcut GSC Tıklama: ${wpSourceContext!.gsc_clicks ?? 'veri yok'}
+- Mevcut GSC Gösterim: ${wpSourceContext!.gsc_impressions ?? 'veri yok'}
+- Ort. Pozisyon: ${wpSourceContext!.gsc_avg_position ?? 'veri yok'}
+- Mevcut İçerik Özeti: ${wpSourceContext!.content_summary ?? 'özet yok'}
+- Tespit Edilen Sorunlar: ${[
+    wpSourceContext!.flag_orphan ? 'Orphan' : null,
+    wpSourceContext!.flag_weak_page ? 'Zayıf İçerik' : null,
+    wpSourceContext!.flag_outdated ? 'Eskimiş' : null,
+    wpSourceContext!.flag_missing_metadata ? 'Meta Eksik' : null,
+    wpSourceContext!.flag_missing_keyword ? 'KW Eksik' : null,
+    wpSourceContext!.flag_duplicate_intent ? 'Intent Çakışması' : null,
+  ].filter(Boolean).join(', ') || 'yok'}
+
+Görevin: Bu sayfayı iyileştiren bir SEO briefingi oluştur. Mevcut sorunları gider, GSC performansını artır.` : ''
+
+  return `${hubContext ? hubContext + '\n\n' : ''}Sen bir SEO strateji uzmanısın. Aşağıdaki proje ve sayfa bilgilerini kullanarak sayfa paketini JSON formatında doldur.
 
 ## Proje Bilgileri
 - Domain: ${project.domain}
@@ -156,14 +266,14 @@ function buildPrompt({
 - Mevcut Slug: ${page.slug ?? 'belirsiz'}
 - Sayfa Tipi: ${page.page_type ?? 'belirtilmemiş'}
 - Focus Keyword: ${focusKeyword || 'belirtilmemiş'}
-
-## Proje Keywordleri (ilgili olanları secondary keyword olarak kullan)
-${kwList || 'Henüz keyword eklenmemiş'}
+${improvementSection}
+## Keyword Seti (rol bazlı — secondary_keywords ve FAQ sorularını buradan türet)
+${kwSection || 'Henüz keyword eklenmemiş'}
 
 ${researchSummary ? `## Araştırma Verileri\n${researchSummary}` : ''}
 
 ## Görev
-Aşağıdaki JSON formatında sayfa paketini doldur. Her alan için gerçekçi, SEO odaklı içerik üret.
+Aşağıdaki JSON formatında sayfa paketini doldur. Her alan için gerçekçi, SEO odaklı içerik üret.${isImprovement ? ' Mevcut sayfanın sorunlarını ve GSC verisini göz önünde bulundurarak iyileştirme odaklı bir brifing hazırla.' : ''}
 
 \`\`\`json
 {
